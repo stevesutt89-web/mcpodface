@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Back up the Room DB and DataStore, never the downloaded audio (PLAN.md §9). -->
+<!-- Back up only the Room DB and DataStore. Downloads live in external app storage, which is
+     not included, so audio is never backed up (PLAN.md §9). -->
 <data-extraction-rules>
     <cloud-backup>
         <include domain="database" path="." />
         <include domain="file" path="datastore/" />
-        <exclude domain="external" path="." />
     </cloud-backup>
     <device-transfer>
         <include domain="database" path="." />
         <include domain="file" path="datastore/" />
-        <exclude domain="external" path="." />
     </device-transfer>
 </data-extraction-rules>
