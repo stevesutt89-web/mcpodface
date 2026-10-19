@@ -17,6 +17,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -185,6 +186,31 @@ internal fun ActionRow(
         divider = divider,
         enabled = enabled,
         modifier = modifier.clickable(enabled = enabled, role = Role.Button, onClick = onClick),
+    )
+}
+
+/** A row that opens another screen: leading icon tile, title and a trailing chevron. */
+@Composable
+internal fun NavigationRow(
+    title: String,
+    onClick: () -> Unit,
+    icon: ImageVector? = null,
+    subtitle: String? = null,
+    divider: Boolean = true,
+) {
+    SettingsRow(
+        title = title,
+        icon = icon,
+        subtitle = subtitle,
+        divider = divider,
+        modifier = Modifier.clickable(role = Role.Button, onClick = onClick),
+        trailing = {
+            Icon(
+                Icons.Rounded.ChevronRight,
+                contentDescription = null,
+                tint = AppTheme.colors.textSecondary,
+            )
+        },
     )
 }
 

@@ -223,6 +223,7 @@ class PlaybackEngine @Inject constructor(
         val episode = episodeDao.getById(next) ?: return
         val start = PlaybackDecisions.startPosition(
             episode.positionMs, episode.playState, episode.lastPlayedAt, now, settings.resumeRewind,
+            settings.resumeRewindSec, settings.longPauseMinutes,
             podcastSettingsDao.get(episode.podcastId)?.skipIntroSec ?: 0, episode.durationSec?.times(1_000L),
         )
         player.setMediaItem(item, start)

@@ -127,7 +127,14 @@ class MainActivity : ComponentActivity() {
                 ThemeMode.DARK -> true
             }
             EdgeToEdge(dark)
-            AppTheme(themeMode = s.theme, pureBlack = s.pureBlack, dynamicColor = s.dynamicColor) {
+            AppTheme(
+                themeMode = s.theme,
+                pureBlack = s.pureBlack,
+                dynamicColor = s.dynamicColor,
+                accentColor = s.accentColor,
+                glassStyle = s.glassStyle,
+                reduceEffects = s.reduceEffects,
+            ) {
                 NotificationPermissionPrompt(
                     alreadyAsked = s.notificationPermissionAsked,
                     onAsked = viewModel::onNotificationPermissionAsked,

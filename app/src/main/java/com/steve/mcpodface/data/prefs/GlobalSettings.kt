@@ -4,7 +4,7 @@ package com.steve.mcpodface.data.prefs
 
 enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
-/** SEARCH is no longer a tab. It stays so stored values parse, and restores as LATEST. */
+/** DOWNLOADS is no longer a tab. It stays so stored values parse, and restores as LATEST. */
 enum class AppTab { LATEST, LIBRARY, PLAYLISTS, DOWNLOADS, UP_NEXT, SEARCH }
 
 enum class SearchMode { YOUR_PODCASTS, DISCOVER }
@@ -15,6 +15,12 @@ enum class LibraryLayout { GRID, LIST }
 
 enum class LatestFilter { ALL, UNPLAYED, DOWNLOADED }
 
+/** How strong the Liquid Glass reads (PLAN.md §11). BALANCED is the original look. */
+enum class GlassLook { CLEAR, BALANCED, FROSTED }
+
+/** Accent presets (PLAN.md §11). VIOLET is the original accent. */
+enum class AccentColor { VIOLET, BLUE, TEAL, GREEN, ORANGE, PINK, GRAPHITE }
+
 /** Every global setting from PLAN.md §10, with its default. */
 data class GlobalSettings(
     // Appearance
@@ -23,6 +29,10 @@ data class GlobalSettings(
     /** Artwork-coloured full player (the Liquid Glass look); off = neutral background, app accent. */
     val tintPlayer: Boolean = true,
     val dynamicColor: Boolean = false,
+    val glassStyle: GlassLook = GlassLook.BALANCED,
+    val accentColor: AccentColor = AccentColor.VIOLET,
+    /** No live backdrop sampling, refraction or artwork glow: cheaper glass for slower phones. */
+    val reduceEffects: Boolean = false,
     // UI state
     val lastTab: AppTab = AppTab.LATEST,
     val searchMode: SearchMode = SearchMode.YOUR_PODCASTS,
@@ -46,7 +56,11 @@ data class GlobalSettings(
     val skipForwardSec: Int = 30,
     val defaultSpeed: Float = 1.0f,
     val autoplayNext: Boolean = false,
+    /** On/off for the resume rewind; the amount and pause length are the two settings below. */
     val resumeRewind: Boolean = true,
+    val resumeRewindSec: Int = 5,
+    /** A pause at least this long rewinds by [resumeRewindSec] on resume. */
+    val longPauseMinutes: Int = 1,
     val trimSilence: Boolean = false,
     val voiceBoost: Boolean = false,
     // Refresh. 0 = manual only.

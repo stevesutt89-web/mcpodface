@@ -74,7 +74,6 @@ import com.steve.mcpodface.data.db.PodcastEntity
 import com.steve.mcpodface.data.prefs.LibraryLayout
 import com.steve.mcpodface.data.prefs.LibrarySort
 import com.steve.mcpodface.ui.components.LargeTitleScaffold
-import com.steve.mcpodface.ui.components.SearchButton
 import com.steve.mcpodface.ui.components.SettingsButton
 import com.steve.mcpodface.ui.components.glass.GlassIconButton
 import com.steve.mcpodface.ui.components.glass.GlassPage
@@ -96,7 +95,6 @@ private val fullRow: LazyGridItemSpanScope.() -> GridItemSpan = { GridItemSpan(m
 @Composable
 fun LibraryScreen(
     onOpenSettings: () -> Unit,
-    onOpenSearch: () -> Unit,
     onOpenPodcast: (Long) -> Unit,
 ) {
     val viewModel: LibraryViewModel = hiltViewModel()
@@ -105,7 +103,6 @@ fun LibraryScreen(
     LibraryContent(
         state = state,
         onOpenSettings = onOpenSettings,
-        onOpenSearch = onOpenSearch,
         onOpenPodcast = onOpenPodcast,
         onSortSelected = viewModel::setSort,
         onLayoutSelected = viewModel::setLayout,
@@ -119,7 +116,6 @@ fun LibraryScreen(
 private fun LibraryContent(
     state: LibraryUiState,
     onOpenSettings: () -> Unit,
-    onOpenSearch: () -> Unit = {},
     onOpenPodcast: (Long) -> Unit,
     onSortSelected: (LibrarySort) -> Unit,
     onLayoutSelected: (LibraryLayout) -> Unit,
@@ -172,7 +168,6 @@ private fun LibraryContent(
                     iconSize = 20.dp,
                     modifier = Modifier.padding(end = Spacing.xs),
                 )
-                SearchButton(onOpenSearch)
                 SettingsButton(onOpenSettings)
             },
         ) { padding ->

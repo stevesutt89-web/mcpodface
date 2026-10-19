@@ -30,9 +30,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
@@ -64,7 +61,6 @@ import com.kyant.shapes.Capsule
 import com.kyant.shapes.RoundedRectangle
 import com.steve.mcpodface.data.db.EpisodeListItem
 import com.steve.mcpodface.playback.NowPlaying
-import com.steve.mcpodface.ui.components.SearchButton
 import com.steve.mcpodface.ui.components.SettingsButton
 import com.steve.mcpodface.ui.components.EpisodeRow
 import androidx.compose.ui.semantics.CustomAccessibilityAction
@@ -80,27 +76,32 @@ import com.steve.mcpodface.ui.theme.ThemePreviews
 import sh.calvin.reorderable.ReorderableCollectionItemScope
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
+import com.steve.mcpodface.ui.components.LocalAppSnackbarHostState
+import com.steve.mcpodface.ui.components.showReplacing
+import kotlinx.coroutines.launch
 
 private const val PREVIEW_NOW = 1_792_411_200_000L // 2026-10-19T12:00Z
 
 /** Up Next tab (PLAN.md §8.8): reorderable queue, swipe to remove, clear queue. */
 @Composable
-fun UpNextScreen(onOpenSettings: () -> Unit = {}, onOpenSearch: () -> Unit = {}) {
+fun UpNextScreen(onOpenSettings: () -> Unit = {}) {
     val viewModel: UpNextViewModel = hiltViewModel()
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val snackbarHostState = remember { SnackbarHostState() }
+    val snackbarHostState = LocalAppSnackbarHostState.current
 
     LaunchedEffect(viewModel) {
         viewModel.messages.collect { message ->
-            when (message) {
-                is UpNextMessage.Removed -> {
-                    val result = snackbarHostState.showSnackbar(
-                        message = "Removed from Up Next",
-                        actionLabel = "Undo",
-                        duration = SnackbarDuration.Short,
-                    )
-                    if (result == SnackbarResult.ActionPerformed) {
-                        viewModel.undoRemove(message.episodeId, message.index)
+            // Each message replaces the one on screen, so collecting never waits on a snackbar.
+            launch {
+                when (message) {
+                    is UpNextMessage.Removed -> {
+                        val result = snackbarHostState.showReplacing(
+                            message = "Removed from Up Next",
+                            actionLabel = "Undo",
+                        )
+                        if (result == SnackbarResult.ActionPerformed) {
+                            viewModel.undoRemove(message.episodeId, message.index)
+                        }
                     }
                 }
             }
@@ -109,9 +110,7 @@ fun UpNextScreen(onOpenSettings: () -> Unit = {}, onOpenSearch: () -> Unit = {})
 
     UpNextContent(
         state = state,
-        snackbarHostState = snackbarHostState,
         onOpenSettings = onOpenSettings,
-        onOpenSearch = onOpenSearch,
         onPlayClick = viewModel::togglePlay,
         onRemove = viewModel::remove,
         onDragStarted = viewModel::onDragStarted,
@@ -125,9 +124,7 @@ fun UpNextScreen(onOpenSettings: () -> Unit = {}, onOpenSearch: () -> Unit = {})
 @Composable
 private fun UpNextContent(
     state: UpNextUiState,
-    snackbarHostState: SnackbarHostState,
     onOpenSettings: () -> Unit = {},
-    onOpenSearch: () -> Unit = {},
     onPlayClick: (Long) -> Unit,
     onRemove: (Long) -> Unit,
     onDragStarted: (Long) -> Unit,
@@ -150,7 +147,6 @@ private fun UpNextContent(
             title = "Up Next",
             background = Color.Transparent,
             actions = {
-                SearchButton(onOpenSearch)
                 SettingsButton(onOpenSettings)
                 if (state.items.isNotEmpty()) {
                     Box {
@@ -230,10 +226,6 @@ private fun UpNextContent(
                         }
                     }
                 }
-                SnackbarHost(
-                    hostState = snackbarHostState,
-                    modifier = Modifier.align(Alignment.BottomCenter),
-                )
             }
         }
     }
@@ -455,7 +447,6 @@ private fun UpNextListPreview() {
                     nowPlayingHeader = items[2],
                     now = PREVIEW_NOW,
                 ),
-                snackbarHostState = remember { SnackbarHostState() },
                 onPlayClick = {}, onRemove = {}, onDragStarted = {}, onDragMove = { _, _ -> },
                 onDragStopped = {}, onClearQueue = {},
             )
@@ -470,7 +461,6 @@ private fun UpNextEmptyPreview() {
         Surface {
             UpNextContent(
                 state = UpNextUiState(loaded = true, now = PREVIEW_NOW),
-                snackbarHostState = remember { SnackbarHostState() },
                 onPlayClick = {}, onRemove = {}, onDragStarted = {}, onDragMove = { _, _ -> },
                 onDragStopped = {}, onClearQueue = {},
             )

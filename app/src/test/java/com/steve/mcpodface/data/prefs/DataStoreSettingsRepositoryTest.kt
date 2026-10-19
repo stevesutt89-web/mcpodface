@@ -25,6 +25,7 @@ class DataStoreSettingsRepositoryTest {
         val repo = repo()
         val changed = GlobalSettings(
             theme = ThemeMode.DARK, pureBlack = false, tintPlayer = false, dynamicColor = true,
+            glassStyle = GlassLook.FROSTED, accentColor = AccentColor.TEAL, reduceEffects = true,
             lastTab = AppTab.SEARCH, searchMode = SearchMode.DISCOVER,
             librarySort = LibrarySort.ALPHABETICAL, libraryLayout = LibraryLayout.LIST,
             latestFilter = LatestFilter.DOWNLOADED, autoDownload = false, keepLatestCount = 9,
@@ -32,6 +33,7 @@ class DataStoreSettingsRepositoryTest {
             deletePlayed = false, deletePlayedDelayHours = 72, maxAgeDays = 0,
             countManualTowardLimit = true, markPlayedPercent = 98, skipBackSec = 15,
             skipForwardSec = 45, defaultSpeed = 1.3f, autoplayNext = true, resumeRewind = false,
+            resumeRewindSec = 30, longPauseMinutes = 15,
             trimSilence = true, voiceBoost = true, refreshIntervalHours = 12,
             notifyNewEpisodes = false, backfillEnabled = false, backfillWifiOnly = false,
             backfillChargingOnly = true, apiDailyBudget = 250, apiRequestsToday = 17,

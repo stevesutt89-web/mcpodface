@@ -82,14 +82,21 @@ fun GlassTabBar(
                     .offset(x = lensX)
                     .width(itemWidth)
                     .fillMaxHeight()
-                    .glass(lensShape, GlassStyle.Selected, backdrop = backdrop),
+                    // Neutral frosted pill: a wash of the text colour rather than the accent.
+                    .glass(
+                        lensShape,
+                        GlassStyle.Selected,
+                        tint = glassTint(GlassStyle.Selected, accent = AppTheme.colors.textPrimary),
+                        backdrop = backdrop,
+                    ),
             )
         }
         Row(Modifier.fillMaxSize()) {
             tabs.forEachIndexed { index, tab ->
                 val selected = index == selectedIndex
                 val color by animateColorAsState(
-                    if (selected) AppTheme.colors.accent else AppTheme.colors.textPrimary.copy(alpha = 0.72f),
+                    // Selected reads white in dark mode and black in light mode, not the accent.
+                    if (selected) AppTheme.colors.textPrimary else AppTheme.colors.textPrimary.copy(alpha = 0.72f),
                     label = "tabColor",
                 )
                 Column(

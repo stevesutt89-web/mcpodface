@@ -1,5 +1,7 @@
 package com.steve.mcpodface.ui.settings
 
+import com.steve.mcpodface.data.prefs.AccentColor
+import com.steve.mcpodface.data.prefs.GlassLook
 import com.steve.mcpodface.data.prefs.GlobalSettings
 import kotlin.math.abs
 
@@ -136,6 +138,50 @@ internal object SettingsOptions {
         ),
         read = { nearestFloat(it.defaultSpeed, speedValues) },
         write = { s, v -> s.copy(defaultSpeed = v) },
+    )
+
+    val resumeRewindSec = intChoice(
+        values = listOf(5, 10, 15, 30, 60),
+        label = { "$it seconds" },
+        get = { it.resumeRewindSec },
+        set = { s, v -> s.copy(resumeRewindSec = v) },
+    )
+
+    val longPause = intChoice(
+        values = listOf(1, 5, 15, 30, 60),
+        label = {
+            when (it) {
+                1 -> "1 minute"
+                60 -> "1 hour"
+                else -> "$it minutes"
+            }
+        },
+        get = { it.longPauseMinutes },
+        set = { s, v -> s.copy(longPauseMinutes = v) },
+    )
+
+    val glassStyle = ChoiceSetting(
+        options = listOf(
+            GlassLook.CLEAR to "Clear",
+            GlassLook.BALANCED to "Balanced",
+            GlassLook.FROSTED to "Frosted",
+        ),
+        read = { it.glassStyle },
+        write = { s, v -> s.copy(glassStyle = v) },
+    )
+
+    val accentColor = ChoiceSetting(
+        options = listOf(
+            AccentColor.VIOLET to "Violet",
+            AccentColor.BLUE to "Blue",
+            AccentColor.TEAL to "Teal",
+            AccentColor.GREEN to "Green",
+            AccentColor.ORANGE to "Orange",
+            AccentColor.PINK to "Pink",
+            AccentColor.GRAPHITE to "Graphite",
+        ),
+        read = { it.accentColor },
+        write = { s, v -> s.copy(accentColor = v) },
     )
 
     val markPlayed = intChoice(

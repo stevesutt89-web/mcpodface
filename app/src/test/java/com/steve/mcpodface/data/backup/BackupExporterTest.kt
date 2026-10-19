@@ -314,11 +314,13 @@ class BackupExporterTest {
 
         /** PLAN.md §10 keys, plus notificationPermissionAsked. Rate-limiter keys are excluded. */
         val EXPECTED_SETTING_KEYS = setOf(
-            "theme", "pureBlack", "tintPlayer", "dynamicColor", "lastTab", "searchMode", "librarySort",
+            "theme", "pureBlack", "tintPlayer", "dynamicColor", "glassStyle", "accentColor", "reduceEffects",
+            "lastTab", "searchMode", "librarySort",
             "libraryLayout", "latestFilter", "autoDownload", "keepLatestCount", "allowCellularDownload",
             "downloadOnlyWhileCharging", "streamOnCellular", "deletePlayed", "deletePlayedDelayHours",
             "maxAgeDays", "countManualTowardLimit", "markPlayedPercent", "skipBackSec", "skipForwardSec",
-            "defaultSpeed", "autoplayNext", "resumeRewind", "trimSilence", "voiceBoost", "refreshIntervalHours",
+            "defaultSpeed", "autoplayNext", "resumeRewind", "resumeRewindSec",
+            "longPauseMinutes", "trimSilence", "voiceBoost", "refreshIntervalHours",
             "notifyNewEpisodes", "backfillEnabled", "backfillWifiOnly", "backfillChargingOnly",
             "apiDailyBudget", "notificationPermissionAsked",
         )

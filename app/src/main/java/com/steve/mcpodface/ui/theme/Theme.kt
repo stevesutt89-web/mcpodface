@@ -14,7 +14,11 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import com.steve.mcpodface.data.prefs.AccentColor
+import com.steve.mcpodface.data.prefs.GlassLook
 import com.steve.mcpodface.data.prefs.ThemeMode
+import com.steve.mcpodface.ui.components.glass.GlassEffects
+import com.steve.mcpodface.ui.components.glass.LocalGlassEffects
 
 private val LocalAppColors = staticCompositionLocalOf { LightAppColors }
 
@@ -28,14 +32,13 @@ object AppTheme {
 // up), every container is a neutral grey, and surfaceTint is transparent so there is no tonal
 // elevation. Filled buttons must use AppButtonDefaults.primaryColors() for the neutral look.
 
-private fun lightScheme(): ColorScheme {
-    val c = LightAppColors
+private fun lightScheme(c: AppColors, inverseAccent: Color): ColorScheme {
     return lightColorScheme(
         primary = c.accent,
         onPrimary = c.onAccent,
         primaryContainer = Palette.Zinc100,
         onPrimaryContainer = Palette.Zinc900,
-        inversePrimary = Palette.AccentDark,
+        inversePrimary = inverseAccent,
         secondary = Palette.Zinc700,
         onSecondary = Palette.White,
         secondaryContainer = Palette.Zinc100,
@@ -70,15 +73,14 @@ private fun lightScheme(): ColorScheme {
     )
 }
 
-private fun darkScheme(pureBlack: Boolean): ColorScheme {
-    val c = DarkAppColors
+private fun darkScheme(c: AppColors, inverseAccent: Color, pureBlack: Boolean): ColorScheme {
     val bg = darkBackground(pureBlack)
     return darkColorScheme(
         primary = c.accent,
         onPrimary = c.onAccent,
         primaryContainer = Palette.Zinc900,
         onPrimaryContainer = Palette.Zinc100,
-        inversePrimary = Palette.AccentLight,
+        inversePrimary = inverseAccent,
         secondary = Palette.Zinc300,
         onSecondary = Palette.Zinc900,
         secondaryContainer = Palette.Zinc900,
@@ -118,6 +120,9 @@ fun AppTheme(
     themeMode: ThemeMode = ThemeMode.SYSTEM,
     pureBlack: Boolean = true,
     dynamicColor: Boolean = false,
+    accentColor: AccentColor = AccentColor.VIOLET,
+    glassStyle: GlassLook = GlassLook.BALANCED,
+    reduceEffects: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val dark = when (themeMode) {
@@ -125,6 +130,8 @@ fun AppTheme(
         ThemeMode.LIGHT -> false
         ThemeMode.DARK -> true
     }
+    val (lightAccent, darkAccent) = accentPair(accentColor)
+    val presetColors = appColorsFor(dark, accentColor)
     val scheme = when {
         dynamicColor -> {
             val context = LocalContext.current
@@ -136,8 +143,8 @@ fun AppTheme(
                 dynamicLightColorScheme(context)
             }
         }
-        dark -> darkScheme(pureBlack)
-        else -> lightScheme()
+        dark -> darkScheme(presetColors, lightAccent, pureBlack)
+        else -> lightScheme(presetColors, darkAccent)
     }
     val appColors = when {
         dynamicColor -> (if (dark) DarkAppColors else LightAppColors).copy(
@@ -145,11 +152,13 @@ fun AppTheme(
             onAccent = scheme.onPrimary,
             accentSubtle = scheme.primary.copy(alpha = 0.14f),
         )
-        dark -> DarkAppColors
-        else -> LightAppColors
+        else -> presetColors
     }
 
-    CompositionLocalProvider(LocalAppColors provides appColors) {
+    CompositionLocalProvider(
+        LocalAppColors provides appColors,
+        LocalGlassEffects provides GlassEffects(look = glassStyle, reduced = reduceEffects),
+    ) {
         MaterialTheme(
             colorScheme = scheme,
             typography = AppTypography,

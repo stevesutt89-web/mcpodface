@@ -1,6 +1,7 @@
 package com.steve.mcpodface.ui.theme
 
 import androidx.compose.ui.graphics.Color
+import com.steve.mcpodface.data.prefs.AccentColor
 
 // Raw palette (PLAN.md §11). Screens never use these directly: use MaterialTheme.colorScheme
 // or AppTheme.colors.
@@ -20,7 +21,8 @@ internal object Palette {
     val Zinc900 = Color(0xFF18181B)
     val Grey950 = Color(0xFF121212)
 
-    // The accent: a vivid violet (PLAN.md §11, iOS 26 direction). Change it here only.
+    // The default accent: a vivid violet (PLAN.md §11, iOS 26 direction). The other presets are in
+    // accentPair below.
     val AccentLight = Color(0xFF6B4EFF)
     val AccentDark = Color(0xFF9B8CFF)
 
@@ -73,3 +75,24 @@ internal val DarkAppColors = AppColors(
 )
 
 internal fun darkBackground(pureBlack: Boolean) = if (pureBlack) Palette.Black else Palette.Grey950
+
+/** The preset's accent for light mode, then dark mode (Settings → Appearance, PLAN.md §11). */
+internal fun accentPair(preset: AccentColor): Pair<Color, Color> = when (preset) {
+    AccentColor.VIOLET -> Palette.AccentLight to Palette.AccentDark
+    AccentColor.BLUE -> Color(0xFF0A6CFF) to Color(0xFF5AA2FF)
+    AccentColor.TEAL -> Color(0xFF00897B) to Color(0xFF4DD0C4)
+    AccentColor.GREEN -> Color(0xFF2E9E4F) to Color(0xFF5FD27F)
+    AccentColor.ORANGE -> Color(0xFFE8660A) to Color(0xFFFF9F45)
+    AccentColor.PINK -> Color(0xFFE0336E) to Color(0xFFFF7AA8)
+    AccentColor.GRAPHITE -> Palette.Zinc600 to Palette.Zinc400
+}
+
+/** [LightAppColors] or [DarkAppColors] with the accent tokens swapped for [preset]. */
+internal fun appColorsFor(dark: Boolean, preset: AccentColor): AppColors {
+    val (light, darkAccent) = accentPair(preset)
+    return if (dark) {
+        DarkAppColors.copy(accent = darkAccent, accentSubtle = darkAccent.copy(alpha = 0.16f))
+    } else {
+        LightAppColors.copy(accent = light, accentSubtle = light.copy(alpha = 0.12f))
+    }
+}

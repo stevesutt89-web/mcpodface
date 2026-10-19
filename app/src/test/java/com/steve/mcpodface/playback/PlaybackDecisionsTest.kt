@@ -13,25 +13,37 @@ class PlaybackDecisionsTest {
         state: PlayState = PlayState.UNPLAYED,
         lastPlayedAt: Long? = null,
         rewind: Boolean = true,
+        rewindSec: Int = 5,
+        longPauseMin: Int = 1,
         intro: Int = 0,
         duration: Long? = hour,
-    ) = PlaybackDecisions.startPosition(pos, state, lastPlayedAt, now, rewind, intro, duration)
+    ) = PlaybackDecisions.startPosition(pos, state, lastPlayedAt, now, rewind, rewindSec, longPauseMin, intro, duration)
 
     @Test fun freshEpisodeStartsAtZero() = assertThat(start()).isEqualTo(0)
 
     @Test fun freshEpisodeSkipsIntro() = assertThat(start(intro = 45)).isEqualTo(45_000)
 
     @Test fun resumesAtSavedPosition() =
-        assertThat(start(pos = 600_000, state = PlayState.IN_PROGRESS, lastPlayedAt = now - 60_000)).isEqualTo(600_000)
+        assertThat(start(pos = 600_000, state = PlayState.IN_PROGRESS, lastPlayedAt = now - 30_000)).isEqualTo(600_000)
 
     @Test fun skipIntroIgnoredWhenResuming() =
-        assertThat(start(pos = 600_000, state = PlayState.IN_PROGRESS, lastPlayedAt = now - 60_000, intro = 45)).isEqualTo(600_000)
+        assertThat(start(pos = 600_000, state = PlayState.IN_PROGRESS, lastPlayedAt = now - 30_000, intro = 45)).isEqualTo(600_000)
 
-    @Test fun rewindsThreeSecondsAfterLongPause() =
-        assertThat(start(pos = 600_000, state = PlayState.IN_PROGRESS, lastPlayedAt = now - 6 * 60_000)).isEqualTo(597_000)
+    @Test fun rewindsFiveSecondsAfterOneMinutePauseByDefault() =
+        assertThat(start(pos = 600_000, state = PlayState.IN_PROGRESS, lastPlayedAt = now - 60_000)).isEqualTo(595_000)
 
     @Test fun noRewindAfterShortPause() =
-        assertThat(start(pos = 600_000, state = PlayState.IN_PROGRESS, lastPlayedAt = now - 4 * 60_000)).isEqualTo(600_000)
+        assertThat(start(pos = 600_000, state = PlayState.IN_PROGRESS, lastPlayedAt = now - 59_000)).isEqualTo(600_000)
+
+    @Test fun rewindAmountIsConfigurable() =
+        assertThat(start(pos = 600_000, state = PlayState.IN_PROGRESS, lastPlayedAt = now - hour, rewindSec = 30)).isEqualTo(570_000)
+
+    @Test fun longPauseLengthIsConfigurable() {
+        assertThat(start(pos = 600_000, state = PlayState.IN_PROGRESS, lastPlayedAt = now - 14 * 60_000, longPauseMin = 15))
+            .isEqualTo(600_000)
+        assertThat(start(pos = 600_000, state = PlayState.IN_PROGRESS, lastPlayedAt = now - 15 * 60_000, longPauseMin = 15))
+            .isEqualTo(595_000)
+    }
 
     @Test fun noRewindWhenSettingOff() =
         assertThat(start(pos = 600_000, state = PlayState.IN_PROGRESS, lastPlayedAt = now - hour, rewind = false)).isEqualTo(600_000)

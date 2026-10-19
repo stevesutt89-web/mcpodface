@@ -39,9 +39,6 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -69,8 +66,9 @@ import com.steve.mcpodface.data.db.EpisodeListItem
 import com.steve.mcpodface.data.prefs.LatestFilter
 import com.steve.mcpodface.ui.components.CellularPromptDialog
 import com.steve.mcpodface.ui.components.LargeTitleScaffold
-import com.steve.mcpodface.ui.components.SearchButton
+import com.steve.mcpodface.ui.components.LocalAppSnackbarHostState
 import com.steve.mcpodface.ui.components.SettingsButton
+import com.steve.mcpodface.ui.components.showReplacing
 import com.steve.mcpodface.ui.components.SwipeableEpisodeRow
 import com.steve.mcpodface.ui.components.glass.GlassChip
 import com.steve.mcpodface.ui.components.glass.GlassPage
@@ -81,6 +79,7 @@ import com.steve.mcpodface.ui.playlist.AddToPlaylistSheet
 import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
 import com.steve.mcpodface.ui.theme.ThemePreviews
+import kotlinx.coroutines.launch
 
 private const val PREVIEW_NOW = 1_792_411_200_000L // 2026-10-19T12:00Z
 
@@ -88,32 +87,29 @@ private const val PREVIEW_NOW = 1_792_411_200_000L // 2026-10-19T12:00Z
 @Composable
 fun LatestScreen(
     onOpenSettings: () -> Unit,
-    onOpenSearch: () -> Unit,
     onOpenPodcast: (Long) -> Unit,
     onOpenEpisode: (Long) -> Unit,
 ) {
     val viewModel: LatestViewModel = hiltViewModel()
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val snackbarHostState = remember { SnackbarHostState() }
+    val snackbarHostState = LocalAppSnackbarHostState.current
     val context = LocalContext.current
 
     LaunchedEffect(viewModel) {
         viewModel.messages.collect { message ->
-            when (message) {
-                is LatestMessage.UpNextChanged ->
-                    snackbarHostState.showSnackbar(
-                        if (message.added) "Added to Up Next" else "Removed from Up Next",
-                        duration = SnackbarDuration.Short,
-                    )
-                is LatestMessage.PlayedChanged -> {
-                    val text = if (message.nowPlayed) "Marked as played" else "Marked as unplayed"
-                    val result = snackbarHostState.showSnackbar(
-                        message = text,
-                        actionLabel = "Undo",
-                        duration = SnackbarDuration.Short,
-                    )
-                    if (result == SnackbarResult.ActionPerformed) {
-                        viewModel.undoPlayedChange(message.episodeId, message.nowPlayed)
+            // Each message replaces the one on screen, so collecting never waits on a snackbar.
+            launch {
+                when (message) {
+                    is LatestMessage.UpNextChanged ->
+                        snackbarHostState.showReplacing(
+                            if (message.added) "Added to Up Next" else "Removed from Up Next",
+                        )
+                    is LatestMessage.PlayedChanged -> {
+                        val text = if (message.nowPlayed) "Marked as played" else "Marked as unplayed"
+                        val result = snackbarHostState.showReplacing(message = text, actionLabel = "Undo")
+                        if (result == SnackbarResult.ActionPerformed) {
+                            viewModel.undoPlayedChange(message.episodeId, message.nowPlayed)
+                        }
                     }
                 }
             }
@@ -122,9 +118,7 @@ fun LatestScreen(
 
     LatestContent(
         state = state,
-        snackbarHostState = snackbarHostState,
         onOpenSettings = onOpenSettings,
-        onOpenSearch = onOpenSearch,
         onOpenPodcast = onOpenPodcast,
         onOpenEpisode = onOpenEpisode,
         onFilterSelected = viewModel::setFilter,
@@ -149,9 +143,7 @@ fun LatestScreen(
 @Composable
 private fun LatestContent(
     state: LatestUiState,
-    snackbarHostState: SnackbarHostState,
     onOpenSettings: () -> Unit,
-    onOpenSearch: () -> Unit = {},
     onOpenPodcast: (Long) -> Unit,
     onOpenEpisode: (Long) -> Unit,
     onFilterSelected: (LatestFilter) -> Unit,
@@ -172,7 +164,6 @@ private fun LatestContent(
             title = "Latest",
             background = Color.Transparent,
             actions = {
-                SearchButton(onOpenSearch)
                 SettingsButton(onOpenSettings)
             },
         ) { padding ->
@@ -226,10 +217,6 @@ private fun LatestContent(
                         }
                     }
                 }
-                SnackbarHost(
-                    hostState = snackbarHostState,
-                    modifier = Modifier.align(Alignment.BottomCenter),
-                )
             }
         }
     }
@@ -398,7 +385,6 @@ private fun LatestPreview() {
         Surface {
             LatestContent(
                 state = LatestUiState(items = previewEpisodeItems(), loaded = true, now = PREVIEW_NOW),
-                snackbarHostState = remember { SnackbarHostState() },
                 onOpenSettings = {}, onOpenPodcast = {}, onOpenEpisode = {},
                 onFilterSelected = {}, onRefresh = {}, onTogglePlay = {},
                 onToggleUpNext = {}, onTogglePlayed = {}, onToggleStar = {}, onShare = {},
@@ -414,7 +400,6 @@ private fun LatestEmptyPreview() {
         Surface {
             LatestContent(
                 state = LatestUiState(loaded = true, now = PREVIEW_NOW),
-                snackbarHostState = remember { SnackbarHostState() },
                 onOpenSettings = {}, onOpenPodcast = {}, onOpenEpisode = {},
                 onFilterSelected = {}, onRefresh = {}, onTogglePlay = {},
                 onToggleUpNext = {}, onTogglePlayed = {}, onToggleStar = {}, onShare = {},
@@ -430,7 +415,6 @@ private fun LatestFilteredEmptyPreview() {
         Surface {
             LatestContent(
                 state = LatestUiState(filter = LatestFilter.UNPLAYED, loaded = true, now = PREVIEW_NOW),
-                snackbarHostState = remember { SnackbarHostState() },
                 onOpenSettings = {}, onOpenPodcast = {}, onOpenEpisode = {},
                 onFilterSelected = {}, onRefresh = {}, onTogglePlay = {},
                 onToggleUpNext = {}, onTogglePlayed = {}, onToggleStar = {}, onShare = {},

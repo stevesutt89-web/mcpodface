@@ -31,7 +31,6 @@ import com.steve.mcpodface.ui.components.glass.LocalChromeBackdrop
 import com.steve.mcpodface.ui.components.glass.LocalChromePadding
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -73,6 +72,10 @@ import com.steve.mcpodface.ui.queue.UpNextScreen
 import com.steve.mcpodface.ui.search.EpisodeSearchScreen
 import com.steve.mcpodface.ui.search.SearchScreen
 import com.steve.mcpodface.ui.settings.SettingsScreen
+import com.steve.mcpodface.ui.settings.SettingsSection
+import com.steve.mcpodface.ui.components.LocalAppSnackbarHostState
+import com.steve.mcpodface.ui.components.showReplacing
+import kotlinx.coroutines.launch
 
 /**
  * Bottom tabs + nav graph. [startTab] is read once at launch (the splash screen waits for it);
@@ -99,9 +102,7 @@ fun AppShell(
     if (playerState != null) lastPlayerState = playerState
 
     LaunchedEffect(playerViewModel) {
-        playerViewModel.messages.collect { message ->
-            snackbarHostState.showSnackbar(message, duration = SnackbarDuration.Short)
-        }
+        playerViewModel.messages.collect { message -> launch { snackbarHostState.showReplacing(message) } }
     }
     // Nothing loaded any more (e.g. playback ended and was cleared): close the full player too.
     LaunchedEffect(playerState == null) {
@@ -123,7 +124,10 @@ fun AppShell(
     // Content fills the whole screen and is recorded into chromeBackdrop; the floating glass
     // mini player and tab bar sit on top and refract it (PLAN.md §11).
     Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-        CompositionLocalProvider(LocalChromePadding provides PaddingValues(bottom = chromeHeight + navBarBottom)) {
+        CompositionLocalProvider(
+            LocalChromePadding provides PaddingValues(bottom = chromeHeight + navBarBottom),
+            LocalAppSnackbarHostState provides snackbarHostState,
+        ) {
         NavHost(
             navController = navController,
             startDestination = TopLevelDestination.of(startTab).route,
@@ -133,8 +137,6 @@ fun AppShell(
                 .layerBackdrop(chromeBackdrop),
         ) {
             val openSettings = { navController.navigate(SettingsRoute) }
-            // Search is pushed on whichever tab opened it, so back returns to that tab.
-            val openSearch = { navController.navigate(SearchRoute) }
             val openPodcast = { id: Long -> navController.navigate(PodcastRoute(id)) }
             val openEpisode = { id: Long -> navController.navigate(EpisodeRoute(id)) }
             val back: () -> Unit = { navController.popBackStack() }
@@ -142,7 +144,6 @@ fun AppShell(
             composable<LatestRoute> {
                 LatestScreen(
                     onOpenSettings = openSettings,
-                    onOpenSearch = openSearch,
                     onOpenPodcast = openPodcast,
                     onOpenEpisode = openEpisode,
                 )
@@ -150,17 +151,14 @@ fun AppShell(
             composable<LibraryRoute> {
                 LibraryScreen(
                     onOpenSettings = openSettings,
-                    onOpenSearch = openSearch,
                     onOpenPodcast = openPodcast,
                 )
             }
             composable<PlaylistsRoute> {
                 PlaylistsScreen(
-                    onOpenSearch = openSearch,
                     onOpenSettings = openSettings,
                     onOpenStarred = { navController.navigate(StarredRoute) },
-                    onOpenHistory = { navController.navigate(HistoryRoute) },
-                    onOpenStats = { navController.navigate(StatsRoute) },
+                    onOpenDownloads = { navController.navigate(DownloadsRoute) },
                     onOpenPlaylist = { id -> navController.navigate(PlaylistRoute(id)) },
                     onNewSmartPlaylist = { navController.navigate(SmartPlaylistEditorRoute()) },
                 )
@@ -187,12 +185,23 @@ fun AppShell(
                     },
                 )
             }
-            composable<DownloadsRoute> { DownloadsScreen(onOpenSettings = openSettings, onOpenSearch = openSearch) }
-            composable<UpNextRoute> { UpNextScreen(onOpenSettings = openSettings, onOpenSearch = openSearch) }
+            composable<DownloadsRoute> { DownloadsScreen(onBack = back) }
+            composable<UpNextRoute> { UpNextScreen(onOpenSettings = openSettings) }
             composable<SearchRoute> {
-                SearchScreen(onBack = back, onOpenPodcast = openPodcast, onOpenEpisode = openEpisode)
+                SearchScreen(onOpenSettings = openSettings, onOpenPodcast = openPodcast, onOpenEpisode = openEpisode)
             }
-            composable<SettingsRoute> { SettingsScreen(onBack = back) }
+            composable<SettingsRoute> {
+                SettingsScreen(
+                    onBack = back,
+                    onOpenSection = { section -> navController.navigate(SettingsSectionRoute(section.name)) },
+                    onOpenStats = { navController.navigate(StatsRoute) },
+                    onOpenHistory = { navController.navigate(HistoryRoute) },
+                )
+            }
+            composable<SettingsSectionRoute> { entry ->
+                val name = entry.toRoute<SettingsSectionRoute>().section
+                SettingsScreen(onBack = back, section = SettingsSection.entries.firstOrNull { it.name == name })
+            }
             composable<PodcastRoute> { entry ->
                 val podcastId = entry.toRoute<PodcastRoute>().podcastId
                 PodcastScreen(
@@ -247,8 +256,8 @@ fun AppShell(
                     onSelect = { index ->
                         val dest = TopLevelDestination.entries[index]
                         onTabSelected(dest.tab)
-                        // Settings is app-wide, not part of a tab: close it before switching so the
-                        // tab doesn't reopen on it later.
+                        // Settings is app-wide, not part of a tab: close it (and its sections, Stats
+                        // and History above it) before switching so the tab doesn't reopen on it later.
                         navController.popBackStack<SettingsRoute>(inclusive = true)
                         if (dest == currentTop) {
                             // Tapping the current tab again returns to its top screen (iOS style).

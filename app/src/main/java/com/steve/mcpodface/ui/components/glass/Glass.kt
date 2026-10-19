@@ -27,6 +27,7 @@ import com.kyant.backdrop.effects.vibrancy
 import com.kyant.backdrop.highlight.Highlight
 import com.kyant.backdrop.shadow.Shadow
 import com.kyant.shapes.RoundedRectangularShape
+import com.steve.mcpodface.data.prefs.GlassLook
 import com.steve.mcpodface.ui.theme.AppTheme
 
 /*
@@ -56,6 +57,39 @@ val LocalChromeBackdrop = staticCompositionLocalOf<Backdrop?> { null }
  */
 val LocalChromePadding = compositionLocalOf { PaddingValues(0.dp) }
 
+/**
+ * The user's glass preferences (Settings → Appearance), provided by AppTheme. [look] scales blur,
+ * tint and lens; [reduced] turns off live backdrop sampling everywhere (the [glassCard] path) and
+ * the artwork glow, for slower phones and battery saver.
+ */
+data class GlassEffects(
+    val look: GlassLook = GlassLook.BALANCED,
+    val reduced: Boolean = false,
+)
+
+val LocalGlassEffects = staticCompositionLocalOf { GlassEffects() }
+
+/** Blur multiplier for the glass look: Clear is sharper, Frosted milkier. */
+private fun GlassLook.blurScale() = when (this) {
+    GlassLook.CLEAR -> 0.5f
+    GlassLook.BALANCED -> 1f
+    GlassLook.FROSTED -> 1.8f
+}
+
+/** Lens multiplier: Clear refracts more, Frosted less. */
+private fun GlassLook.lensScale() = when (this) {
+    GlassLook.CLEAR -> 1.3f
+    GlassLook.BALANCED -> 1f
+    GlassLook.FROSTED -> 0.7f
+}
+
+/** Tint opacity for the glass look: Clear lets more through, Frosted moves towards opaque. */
+private fun Color.forLook(look: GlassLook): Color = when (look) {
+    GlassLook.CLEAR -> copy(alpha = alpha * 0.6f)
+    GlassLook.BALANCED -> this
+    GlassLook.FROSTED -> copy(alpha = alpha + (1f - alpha) * 0.35f)
+}
+
 enum class GlassStyle {
     /** Toolbars, tab bar, mini player, sheets: frosted enough to keep text readable. */
     Regular,
@@ -74,6 +108,7 @@ enum class GlassStyle {
 @Composable
 fun glassTint(style: GlassStyle, accent: Color = AppTheme.colors.accent): Color {
     val dark = AppTheme.colors.isDark
+    val look = LocalGlassEffects.current.look
     return when (style) {
         // Light glass is a faint cool grey rather than pure white, so it still reads over white pages.
         GlassStyle.Regular -> if (dark) Color(0xFF1C1C1E).copy(alpha = 0.55f) else Color(0xFFF2F2F7).copy(alpha = 0.72f)
@@ -82,7 +117,7 @@ fun glassTint(style: GlassStyle, accent: Color = AppTheme.colors.accent): Color 
         // A light accent wash over frosted glass, flattened into one colour for onDrawSurface.
         GlassStyle.Selected -> accent.copy(alpha = if (dark) 0.22f else 0.16f)
             .compositeOver(if (dark) Color(0xFF2C2C2E).copy(alpha = 0.62f) else Color.White.copy(alpha = 0.68f))
-    }
+    }.let { if (style == GlassStyle.Prominent) it else it.forLook(look) }
 }
 
 /**
@@ -100,7 +135,8 @@ fun Modifier.glass(
     shadow: Boolean = false,
 ): Modifier {
     val dark = AppTheme.colors.isDark
-    if (backdrop == null || LocalInspectionMode.current) {
+    val effects = LocalGlassEffects.current
+    if (backdrop == null || effects.reduced || LocalInspectionMode.current) {
         val rim = if (dark) Color.White.copy(alpha = 0.14f) else Color.White.copy(alpha = 0.7f)
         return this
             .background(tint.copy(alpha = (tint.alpha + 0.25f).coerceAtMost(0.96f)), shape)
@@ -111,11 +147,11 @@ fun Modifier.glass(
         GlassStyle.Clear -> 2.dp
         GlassStyle.Prominent -> 6.dp
         GlassStyle.Selected -> 8.dp
-    }
+    } * effects.look.blurScale()
     val lensHeight = when (style) {
         GlassStyle.Clear -> 20.dp
         else -> 14.dp
-    }
+    } * effects.look.lensScale()
     val supportsLens = shape is RoundedRectangularShape || shape is CornerBasedShape
     return this.drawBackdrop(
         backdrop = backdrop,
@@ -167,9 +203,14 @@ fun GlassPage(
     content: @Composable BoxScope.() -> Unit,
 ) {
     val pageBackdrop = rememberLayerBackdrop()
+    // With reduced effects nothing samples the page, so don't record it.
+    val reduced = LocalGlassEffects.current.reduced
     Box(modifier.fillMaxSize()) {
-        Box(Modifier.fillMaxSize().layerBackdrop(pageBackdrop), content = background)
-        CompositionLocalProvider(LocalGlassBackdrop provides pageBackdrop) {
+        Box(
+            if (reduced) Modifier.fillMaxSize() else Modifier.fillMaxSize().layerBackdrop(pageBackdrop),
+            content = background,
+        )
+        CompositionLocalProvider(LocalGlassBackdrop provides if (reduced) null else pageBackdrop) {
             content()
         }
     }

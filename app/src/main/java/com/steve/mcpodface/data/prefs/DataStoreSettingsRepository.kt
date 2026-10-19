@@ -76,6 +76,9 @@ class DataStoreSettingsRepository @Inject constructor(
         val pureBlack = booleanPreferencesKey("pureBlack")
         val tintPlayer = booleanPreferencesKey("tintPlayer")
         val dynamicColor = booleanPreferencesKey("dynamicColor")
+        val glassStyle = stringPreferencesKey("glassStyle")
+        val accentColor = stringPreferencesKey("accentColor")
+        val reduceEffects = booleanPreferencesKey("reduceEffects")
         val lastTab = stringPreferencesKey("lastTab")
         val searchMode = stringPreferencesKey("searchMode")
         val librarySort = stringPreferencesKey("librarySort")
@@ -96,6 +99,8 @@ class DataStoreSettingsRepository @Inject constructor(
         val defaultSpeed = floatPreferencesKey("defaultSpeed")
         val autoplayNext = booleanPreferencesKey("autoplayNext")
         val resumeRewind = booleanPreferencesKey("resumeRewind")
+        val resumeRewindSec = intPreferencesKey("resumeRewindSec")
+        val longPauseMinutes = intPreferencesKey("longPauseMinutes")
         val trimSilence = booleanPreferencesKey("trimSilence")
         val voiceBoost = booleanPreferencesKey("voiceBoost")
         val refreshIntervalHours = intPreferencesKey("refreshIntervalHours")
@@ -117,6 +122,9 @@ class DataStoreSettingsRepository @Inject constructor(
             pureBlack = this[K.pureBlack] ?: d.pureBlack,
             tintPlayer = this[K.tintPlayer] ?: d.tintPlayer,
             dynamicColor = this[K.dynamicColor] ?: d.dynamicColor,
+            glassStyle = enumOr(this[K.glassStyle], d.glassStyle),
+            accentColor = enumOr(this[K.accentColor], d.accentColor),
+            reduceEffects = this[K.reduceEffects] ?: d.reduceEffects,
             lastTab = enumOr(this[K.lastTab], d.lastTab),
             searchMode = enumOr(this[K.searchMode], d.searchMode),
             librarySort = enumOr(this[K.librarySort], d.librarySort),
@@ -137,6 +145,8 @@ class DataStoreSettingsRepository @Inject constructor(
             defaultSpeed = this[K.defaultSpeed] ?: d.defaultSpeed,
             autoplayNext = this[K.autoplayNext] ?: d.autoplayNext,
             resumeRewind = this[K.resumeRewind] ?: d.resumeRewind,
+            resumeRewindSec = this[K.resumeRewindSec] ?: d.resumeRewindSec,
+            longPauseMinutes = this[K.longPauseMinutes] ?: d.longPauseMinutes,
             trimSilence = this[K.trimSilence] ?: d.trimSilence,
             voiceBoost = this[K.voiceBoost] ?: d.voiceBoost,
             refreshIntervalHours = this[K.refreshIntervalHours] ?: d.refreshIntervalHours,
@@ -157,6 +167,9 @@ class DataStoreSettingsRepository @Inject constructor(
         this[K.pureBlack] = s.pureBlack
         this[K.tintPlayer] = s.tintPlayer
         this[K.dynamicColor] = s.dynamicColor
+        this[K.glassStyle] = s.glassStyle.name
+        this[K.accentColor] = s.accentColor.name
+        this[K.reduceEffects] = s.reduceEffects
         this[K.lastTab] = s.lastTab.name
         this[K.searchMode] = s.searchMode.name
         this[K.librarySort] = s.librarySort.name
@@ -177,6 +190,8 @@ class DataStoreSettingsRepository @Inject constructor(
         this[K.defaultSpeed] = s.defaultSpeed
         this[K.autoplayNext] = s.autoplayNext
         this[K.resumeRewind] = s.resumeRewind
+        this[K.resumeRewindSec] = s.resumeRewindSec
+        this[K.longPauseMinutes] = s.longPauseMinutes
         this[K.trimSilence] = s.trimSilence
         this[K.voiceBoost] = s.voiceBoost
         this[K.refreshIntervalHours] = s.refreshIntervalHours

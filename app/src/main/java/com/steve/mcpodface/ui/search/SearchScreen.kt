@@ -32,8 +32,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -59,7 +57,7 @@ import com.kyant.shapes.Capsule
 import com.steve.mcpodface.data.catalog.CatalogPodcast
 import com.steve.mcpodface.data.prefs.SearchMode
 import com.steve.mcpodface.ui.addpodcast.AddPodcastMenu
-import com.steve.mcpodface.ui.components.BackButton
+import com.steve.mcpodface.ui.components.SettingsButton
 import com.steve.mcpodface.ui.components.LargeTitleScaffold
 import com.steve.mcpodface.ui.components.glass.GlassPage
 import com.steve.mcpodface.ui.components.glass.GlassStyle
@@ -67,15 +65,18 @@ import com.steve.mcpodface.ui.components.glass.glass
 import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
 import com.steve.mcpodface.ui.theme.ThemePreviews
+import com.steve.mcpodface.ui.components.LocalAppSnackbarHostState
+import com.steve.mcpodface.ui.components.showReplacing
+import kotlinx.coroutines.launch
 
 /**
- * Search, pushed from the top bar of each tab (PLAN.md §8.9): "Your podcasts" (local episode search)
+ * The Search tab (PLAN.md §8.9): "Your podcasts" (local episode search)
  * or "Discover". One search field serves both: its text goes to the Discover ViewModel and to the
  * episode search ViewModel.
  */
 @Composable
 fun SearchScreen(
-    onBack: () -> Unit,
+    onOpenSettings: () -> Unit,
     onOpenPodcast: (Long) -> Unit,
     onOpenEpisode: (Long) -> Unit = {},
 ) {
@@ -84,14 +85,14 @@ fun SearchScreen(
     val episodeViewModel: EpisodeSearchViewModel = hiltViewModel()
     val episodeState by episodeViewModel.uiState.collectAsStateWithLifecycle()
     val episodeActions = rememberEpisodeSearchActions(episodeViewModel, onOpenEpisode)
-    val snackbarHostState = remember { SnackbarHostState() }
+    val snackbarHostState = LocalAppSnackbarHostState.current
     val currentOnOpenPodcast by rememberUpdatedState(onOpenPodcast)
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
                 is SearchEvent.OpenPodcast -> currentOnOpenPodcast(event.podcastId)
-                is SearchEvent.ShowMessage -> snackbarHostState.showSnackbar(event.message)
+                is SearchEvent.ShowMessage -> launch { snackbarHostState.showReplacing(event.message) }
             }
         }
     }
@@ -100,8 +101,7 @@ fun SearchScreen(
         state = state,
         episodeState = episodeState,
         episodeActions = episodeActions,
-        snackbarHostState = snackbarHostState,
-        onBack = onBack,
+        onOpenSettings = onOpenSettings,
         onOpenPodcast = onOpenPodcast,
         onQueryChange = { text ->
             viewModel.onQueryChange(text)
@@ -120,8 +120,7 @@ private fun SearchContent(
     state: SearchUiState,
     episodeState: EpisodeSearchUiState,
     episodeActions: EpisodeSearchActions,
-    snackbarHostState: SnackbarHostState,
-    onBack: () -> Unit = {},
+    onOpenSettings: () -> Unit = {},
     onOpenPodcast: (Long) -> Unit,
     onQueryChange: (String) -> Unit,
     onModeChange: (SearchMode) -> Unit,
@@ -135,9 +134,9 @@ private fun SearchContent(
         LargeTitleScaffold(
             title = "Search",
             background = Color.Transparent,
-            navigationIcon = { BackButton(onBack) },
             actions = {
                 AddPodcastMenu(onOpenPodcast)
+                SettingsButton(onOpenSettings)
             },
         ) { padding ->
             // The search field and mode switch stay pinned under the large title; the results
@@ -177,10 +176,6 @@ private fun SearchContent(
                         }
                     }
                 }
-                SnackbarHost(
-                    hostState = snackbarHostState,
-                    modifier = Modifier.align(Alignment.BottomCenter).padding(Spacing.m),
-                )
             }
         }
     }
@@ -365,7 +360,6 @@ private fun SearchContentPreview() {
                 ),
                 episodeState = EpisodeSearchUiState(),
                 episodeActions = EpisodeSearchActions(),
-                snackbarHostState = SnackbarHostState(),
                 onOpenPodcast = {},
                 onQueryChange = {},
                 onModeChange = {},

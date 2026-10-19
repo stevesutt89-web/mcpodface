@@ -47,7 +47,8 @@ fun ArtworkAmbience(
     val background = MaterialTheme.colorScheme.background
     val dark = AppTheme.colors.isDark
     Box(modifier.fillMaxSize().background(background)) {
-        if (artworkUrl != null && !LocalInspectionMode.current) {
+        // Reduce visual effects: no artwork glow, just the page colour.
+        if (artworkUrl != null && !LocalGlassEffects.current.reduced && !LocalInspectionMode.current) {
             // The artwork decoded at ~24px and stretched with bilinear filtering is already a soft
             // blur, at almost no cost. (A full-screen blur(80.dp) was re-rendered by every glass
             // control on every scroll frame.)

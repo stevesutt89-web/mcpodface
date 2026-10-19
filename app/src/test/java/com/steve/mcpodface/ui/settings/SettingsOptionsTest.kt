@@ -28,6 +28,21 @@ class SettingsOptionsTest {
         assertThat(SettingsOptions.keepLatest.label(base.copy(keepLatestCount = 99))).isEqualTo("20 episodes")
     }
 
+    @Test fun resumeRewindOptionsRoundTripAndDefaultToOneMinutePause() {
+        assertRoundTrips(SettingsOptions.resumeRewindSec)
+        assertRoundTrips(SettingsOptions.longPause)
+        assertThat(SettingsOptions.longPause.label(base)).isEqualTo("1 minute")
+        assertThat(SettingsOptions.longPause.label(base.copy(longPauseMinutes = 60))).isEqualTo("1 hour")
+        assertThat(SettingsOptions.resumeRewindSec.label(base.copy(resumeRewindSec = 3))).isEqualTo("5 seconds")
+    }
+
+    @Test fun appearanceChoicesRoundTrip() {
+        assertRoundTrips(SettingsOptions.glassStyle)
+        assertRoundTrips(SettingsOptions.accentColor)
+        assertThat(SettingsOptions.glassStyle.label(base)).isEqualTo("Balanced")
+        assertThat(SettingsOptions.accentColor.label(base)).isEqualTo("Violet")
+    }
+
     @Test fun downloadOnRoundTripsAndLabels() {
         assertRoundTrips(SettingsOptions.downloadOn)
         assertThat(SettingsOptions.downloadOn.label(base.copy(allowCellularDownload = false))).isEqualTo("Wi-Fi only")

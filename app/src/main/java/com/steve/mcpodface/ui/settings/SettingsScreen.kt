@@ -17,9 +17,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AutoDelete
+import androidx.compose.material.icons.rounded.BarChart
 import androidx.compose.material.icons.rounded.BatteryChargingFull
+import androidx.compose.material.icons.rounded.BlurOn
+import androidx.compose.material.icons.rounded.ColorLens
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.ImportExport
 import androidx.compose.material.icons.rounded.Info
@@ -28,6 +32,7 @@ import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material.icons.rounded.Podcasts
 import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.Speed
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -39,6 +44,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -64,8 +70,32 @@ private val IMPORT_MIME_TYPES = arrayOf("text/x-opml", "text/xml", "application/
 private const val EXPORT_FILE_NAME = "mcpodface-subscriptions.opml"
 private val BACKUP_IMPORT_MIME_TYPES = arrayOf(BackupFileNames.MIME_TYPE, "application/octet-stream")
 
+/** The groups of the main Settings list; each opens its own sub-screen (PLAN.md §8.10). */
+enum class SettingsSection(val title: String, val icon: ImageVector) {
+    APPEARANCE("Appearance", Icons.Rounded.Palette),
+    PLAYBACK("Playback", Icons.Rounded.PlayCircle),
+    DOWNLOADS("Downloads", Icons.Rounded.Download),
+    AUTO_DELETE("Auto-delete", Icons.Rounded.AutoDelete),
+    REFRESH("Refresh & notifications", Icons.Rounded.Refresh),
+    ARCHIVE("Search & archive", Icons.Rounded.ManageSearch),
+    BACKUP("Backup and transfer", Icons.Rounded.ImportExport),
+    BATTERY("Battery", Icons.Rounded.BatteryChargingFull),
+    ABOUT("About", Icons.Rounded.Info),
+}
+
+/**
+ * Settings. With [section] null this is the main list of sections plus Listening stats and
+ * History; otherwise it is that section's sub-screen with today's rows.
+ */
 @Composable
-fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewModel()) {
+fun SettingsScreen(
+    onBack: () -> Unit,
+    section: SettingsSection? = null,
+    onOpenSection: (SettingsSection) -> Unit = {},
+    onOpenStats: () -> Unit = {},
+    onOpenHistory: () -> Unit = {},
+    viewModel: SettingsViewModel = hiltViewModel(),
+) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     val importProgress by viewModel.importProgress.collectAsStateWithLifecycle()
     val importHidden by viewModel.importHidden.collectAsStateWithLifecycle()
@@ -104,6 +134,10 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
         settings = settings,
         batteryUnrestricted = batteryUnrestricted,
         onBack = onBack,
+        section = section,
+        onOpenSection = onOpenSection,
+        onOpenStats = onOpenStats,
+        onOpenHistory = onOpenHistory,
         onUpdate = viewModel::update,
         onImportOpml = { importPicker.launch(IMPORT_MIME_TYPES) },
         onExportOpml = { exportPicker.launch(EXPORT_FILE_NAME) },
@@ -160,6 +194,10 @@ private fun SettingsContent(
     batteryUnrestricted: Boolean,
     onBack: () -> Unit,
     onUpdate: ((GlobalSettings) -> GlobalSettings) -> Unit,
+    section: SettingsSection? = null,
+    onOpenSection: (SettingsSection) -> Unit = {},
+    onOpenStats: () -> Unit = {},
+    onOpenHistory: () -> Unit = {},
     onImportOpml: () -> Unit = {},
     onExportOpml: () -> Unit = {},
     onOpenBatterySettings: () -> Unit = {},
@@ -170,30 +208,65 @@ private fun SettingsContent(
 ) {
     GlassPage {
         LargeTitleScaffold(
-            title = "Settings",
+            title = section?.title ?: "Settings",
             navigationIcon = { BackButton(onBack) },
             background = Color.Transparent,
         ) { padding ->
             LazyColumn(
-                contentPadding = padding + PaddingValues(horizontal = Spacing.m),
+                contentPadding = padding + PaddingValues(horizontal = Spacing.m, vertical = Spacing.s),
                 verticalArrangement = Arrangement.spacedBy(Spacing.s),
             ) {
-                appearanceSection(settings, onUpdate)
-                downloadsSection(settings, onUpdate)
-                autoDeleteSection(settings, onUpdate)
-                playbackSection(settings, onUpdate)
-                refreshSection(settings, onUpdate)
-                archiveSection(settings, onUpdate, archive, onBackfillNow)
-                backupSection(onImportOpml, onExportOpml, onExportAll, onImportAll)
-                batterySection(batteryUnrestricted, onOpenBatterySettings)
-                aboutSection()
+                when (section) {
+                    null -> sectionList(batteryUnrestricted, onOpenSection, onOpenStats, onOpenHistory)
+                    SettingsSection.APPEARANCE -> appearanceSection(settings, onUpdate)
+                    SettingsSection.PLAYBACK -> playbackSection(settings, onUpdate)
+                    SettingsSection.DOWNLOADS -> downloadsSection(settings, onUpdate)
+                    SettingsSection.AUTO_DELETE -> autoDeleteSection(settings, onUpdate)
+                    SettingsSection.REFRESH -> refreshSection(settings, onUpdate)
+                    SettingsSection.ARCHIVE -> archiveSection(settings, onUpdate, archive, onBackfillNow)
+                    SettingsSection.BACKUP -> backupSection(onImportOpml, onExportOpml, onExportAll, onImportAll)
+                    SettingsSection.BATTERY -> batterySection(batteryUnrestricted, onOpenBatterySettings)
+                    SettingsSection.ABOUT -> aboutSection()
+                }
             }
         }
     }
 }
 
+/** The main Settings list: one row per section, then Listening stats and History. */
+private fun LazyListScope.sectionList(
+    batteryUnrestricted: Boolean,
+    onOpenSection: (SettingsSection) -> Unit,
+    onOpenStats: () -> Unit,
+    onOpenHistory: () -> Unit,
+) {
+    item(key = "card-sections") {
+        SettingsCard {
+            SettingsSection.entries.forEachIndexed { index, section ->
+                NavigationRow(
+                    title = section.title,
+                    icon = section.icon,
+                    onClick = { onOpenSection(section) },
+                    subtitle = if (section == SettingsSection.BATTERY && !batteryUnrestricted) {
+                        "Optimised — background refresh may be delayed"
+                    } else {
+                        null
+                    },
+                    divider = index < SettingsSection.entries.lastIndex,
+                )
+            }
+        }
+    }
+    item(key = "card-listening") {
+        SettingsCard {
+            NavigationRow(title = "Listening stats", icon = Icons.Rounded.BarChart, onClick = onOpenStats)
+            NavigationRow(title = "History", icon = Icons.Rounded.History, onClick = onOpenHistory, divider = false)
+        }
+    }
+}
+
 private fun LazyListScope.appearanceSection(settings: GlobalSettings, onUpdate: ((GlobalSettings) -> GlobalSettings) -> Unit) {
-    item(key = "header-appearance") { SectionHeader("Appearance", Icons.Rounded.Palette) }
+    item(key = "header-theme") { SectionHeader("Theme") }
     item(key = "card-theme") {
         SettingsCard {
             ThemeMode.entries.forEachIndexed { index, mode ->
@@ -229,10 +302,38 @@ private fun LazyListScope.appearanceSection(settings: GlobalSettings, onUpdate: 
             )
         }
     }
+    item(key = "header-glass") { SectionHeader("Glass and colour") }
+    item(key = "card-glass") {
+        SettingsCard {
+            ChoiceRow(
+                title = "Glass style",
+                options = SettingsOptions.glassStyle.options,
+                selected = SettingsOptions.glassStyle.selected(settings),
+                onSelect = { v -> onUpdate { SettingsOptions.glassStyle.apply(it, v) } },
+                icon = Icons.Rounded.BlurOn,
+                enabled = !settings.reduceEffects,
+            )
+            ChoiceRow(
+                title = "Accent colour",
+                options = SettingsOptions.accentColor.options,
+                selected = SettingsOptions.accentColor.selected(settings),
+                onSelect = { v -> onUpdate { SettingsOptions.accentColor.apply(it, v) } },
+                icon = Icons.Rounded.ColorLens,
+                enabled = !settings.dynamicColor,
+            )
+            SwitchRow(
+                title = "Reduce visual effects",
+                icon = Icons.Rounded.Speed,
+                checked = settings.reduceEffects,
+                subtitle = "Simpler glass and no artwork glow, for better performance",
+                onChange = { v -> onUpdate { it.copy(reduceEffects = v) } },
+                divider = false,
+            )
+        }
+    }
 }
 
 private fun LazyListScope.downloadsSection(settings: GlobalSettings, onUpdate: ((GlobalSettings) -> GlobalSettings) -> Unit) {
-    item(key = "header-downloads") { SectionHeader("Downloads", Icons.Rounded.Download) }
     item(key = "card-downloads") {
         SettingsCard {
             SwitchRow(
@@ -273,7 +374,6 @@ private fun LazyListScope.downloadsSection(settings: GlobalSettings, onUpdate: (
 }
 
 private fun LazyListScope.autoDeleteSection(settings: GlobalSettings, onUpdate: ((GlobalSettings) -> GlobalSettings) -> Unit) {
-    item(key = "header-autodelete") { SectionHeader("Auto-delete", Icons.Rounded.AutoDelete) }
     item(key = "card-autodelete") {
         SettingsCard {
             ChoiceRow(
@@ -299,7 +399,6 @@ private fun LazyListScope.autoDeleteSection(settings: GlobalSettings, onUpdate: 
 }
 
 private fun LazyListScope.playbackSection(settings: GlobalSettings, onUpdate: ((GlobalSettings) -> GlobalSettings) -> Unit) {
-    item(key = "header-playback") { SectionHeader("Playback", Icons.Rounded.PlayCircle) }
     item(key = "card-playback") {
         SettingsCard {
             ChoiceRow(
@@ -329,8 +428,21 @@ private fun LazyListScope.playbackSection(settings: GlobalSettings, onUpdate: ((
             SwitchRow(
                 title = "Rewind after a long pause",
                 checked = settings.resumeRewind,
-                subtitle = "Back 3 seconds after a pause of 5+ minutes",
                 onChange = { v -> onUpdate { it.copy(resumeRewind = v) } },
+            )
+            ChoiceRow(
+                title = "Rewind by",
+                options = SettingsOptions.resumeRewindSec.options,
+                selected = SettingsOptions.resumeRewindSec.selected(settings),
+                onSelect = { v -> onUpdate { SettingsOptions.resumeRewindSec.apply(it, v) } },
+                enabled = settings.resumeRewind,
+            )
+            ChoiceRow(
+                title = "Long pause",
+                options = SettingsOptions.longPause.options,
+                selected = SettingsOptions.longPause.selected(settings),
+                onSelect = { v -> onUpdate { SettingsOptions.longPause.apply(it, v) } },
+                enabled = settings.resumeRewind,
             )
             ChoiceRow(
                 title = "Mark as played at",
@@ -354,7 +466,6 @@ private fun LazyListScope.playbackSection(settings: GlobalSettings, onUpdate: ((
 }
 
 private fun LazyListScope.refreshSection(settings: GlobalSettings, onUpdate: ((GlobalSettings) -> GlobalSettings) -> Unit) {
-    item(key = "header-refresh") { SectionHeader("Refresh", Icons.Rounded.Refresh) }
     item(key = "card-refresh") {
         SettingsCard {
             ChoiceRow(
@@ -379,7 +490,6 @@ private fun LazyListScope.archiveSection(
     archive: ArchiveOverview,
     onBackfillNow: () -> Unit,
 ) {
-    item(key = "header-archive") { SectionHeader("Search & archive", Icons.Rounded.ManageSearch) }
     item(key = "card-archive") {
         val archiveOn = settings.backfillEnabled
         SettingsCard {
@@ -444,7 +554,6 @@ private fun LazyListScope.backupSection(
     onExportAll: () -> Unit,
     onImportAll: () -> Unit,
 ) {
-    item(key = "header-backup") { SectionHeader("Backup and transfer", Icons.Rounded.ImportExport) }
     item(key = "card-backup") {
         SettingsCard {
             ActionRow(title = "Import OPML", onClick = onImportOpml)
@@ -456,7 +565,6 @@ private fun LazyListScope.backupSection(
 }
 
 private fun LazyListScope.batterySection(batteryUnrestricted: Boolean, onOpenBatterySettings: () -> Unit) {
-    item(key = "header-battery") { SectionHeader("Battery", Icons.Rounded.BatteryChargingFull) }
     item(key = "card-battery") {
         SettingsCard {
             ActionRow(
@@ -485,7 +593,6 @@ private fun LazyListScope.batterySection(batteryUnrestricted: Boolean, onOpenBat
 }
 
 private fun LazyListScope.aboutSection() {
-    item(key = "header-about") { SectionHeader("About", Icons.Rounded.Info) }
     item(key = "card-about") {
         SettingsCard {
             SettingsRow(
@@ -540,6 +647,38 @@ private fun SettingsPreview() {
                 batteryUnrestricted = false,
                 onBack = {},
                 onUpdate = {},
+            )
+        }
+    }
+}
+
+@ThemePreviews
+@Composable
+private fun SettingsAppearancePreview() {
+    AppTheme {
+        Surface {
+            SettingsContent(
+                settings = GlobalSettings(),
+                batteryUnrestricted = true,
+                onBack = {},
+                onUpdate = {},
+                section = SettingsSection.APPEARANCE,
+            )
+        }
+    }
+}
+
+@ThemePreviews
+@Composable
+private fun SettingsPlaybackPreview() {
+    AppTheme {
+        Surface {
+            SettingsContent(
+                settings = GlobalSettings(),
+                batteryUnrestricted = true,
+                onBack = {},
+                onUpdate = {},
+                section = SettingsSection.PLAYBACK,
             )
         }
     }

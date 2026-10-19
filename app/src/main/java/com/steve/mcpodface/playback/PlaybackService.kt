@@ -217,6 +217,8 @@ class PlaybackService : MediaLibraryService() {
             lastPlayedAt = e.lastPlayedAt,
             now = clock.now(),
             resumeRewind = s.resumeRewind,
+            rewindSec = s.resumeRewindSec,
+            longPauseMinutes = s.longPauseMinutes,
             skipIntroSec = podcastSettingsDao.get(e.podcastId)?.skipIntroSec ?: 0,
             durationMs = e.durationSec?.times(1_000L),
         )
