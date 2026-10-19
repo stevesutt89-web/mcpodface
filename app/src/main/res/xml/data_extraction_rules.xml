@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Back up only the Room DB and DataStore. Downloads live in external app storage, which is
-     not included, so audio is never backed up (PLAN.md §9). -->
+<!-- Back up only the Room DB and DataStore (PLAN.md §9 "Bonus"). Downloaded audio lives in
+     getExternalFilesDir(Podcasts), which is the "external" domain's Podcasts/ folder (DownloadPaths).
+     It is excluded explicitly in both cloud backup and device transfer (Smart Switch) so the two
+     stay consistent. -->
 <data-extraction-rules>
     <cloud-backup>
         <include domain="database" path="." />
         <include domain="file" path="datastore/" />
+        <exclude domain="external" path="Podcasts/" />
     </cloud-backup>
     <device-transfer>
         <include domain="database" path="." />
         <include domain="file" path="datastore/" />
+        <exclude domain="external" path="Podcasts/" />
     </device-transfer>
 </data-extraction-rules>
