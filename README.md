@@ -22,7 +22,8 @@ Player.fm.
 - **Discover**: searches Podcast Index and iTunes together, with Listen Notes as a fallback. Also
   trending and categories, add-by-URL (including password-protected feeds) and OPML import/export.
 - **Latest**: new episodes from all your subscriptions, with All / Unplayed / Downloaded filters.
-- **Library**: subscriptions in a grid or list, with Starred and unplayed badges.
+- **Library**: subscriptions in a grid or list, with unplayed badges, Starred, and a History of what
+  you've played.
 - **Playback** through Media3: works from the lock screen, notification, Bluetooth and Galaxy Buds.
   - Per-podcast speed, skip intro/outro, trim silence, voice boost and resume rewind.
   - Sleep timer that fades out, adds 5 minutes when you shake the phone, or stops at the end of
@@ -35,12 +36,13 @@ Player.fm.
   - delete played episodes after a delay.
   - Downloads resume where they left off and retry on failure.
 - **Background refresh** with grouped new-episode notifications.
+- **Archive backfill**: slowly fetches older episodes a feed no longer lists (RSS paging, then
+  Podcast Index), within a daily API budget.
 - **Settings** for theme (light / dark / system / pure black), downloads, playback, notifications
   and backup.
 
 **Planned**: full-text search of your
-episodes, slow archive backfill for long-running shows, full backup and restore between phones, a
-history screen, chapters, a widget and Android Auto.
+episodes, full backup and restore between phones, chapters, a widget and Android Auto.
 
 ## Design
 
