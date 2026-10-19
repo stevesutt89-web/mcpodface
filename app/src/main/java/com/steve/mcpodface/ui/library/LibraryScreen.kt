@@ -85,6 +85,7 @@ import com.steve.mcpodface.ui.components.glass.GlassPage
 import com.steve.mcpodface.ui.components.glass.GlassPressSpring
 import com.steve.mcpodface.ui.components.glass.GlassStyle
 import com.steve.mcpodface.ui.components.glass.glass
+import com.steve.mcpodface.ui.components.glass.glassCard
 import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
 import com.steve.mcpodface.ui.theme.ThemePreviews
@@ -274,7 +275,7 @@ private fun NavCard(onOpenStarred: () -> Unit, onOpenHistory: () -> Unit) {
     Column(
         Modifier
             .fillMaxWidth()
-            .glass(shape, GlassStyle.Regular)
+            .glassCard(shape)
             .clip(shape),
     ) {
         NavRow(Icons.Outlined.StarOutline, "Starred", onClick = onOpenStarred)

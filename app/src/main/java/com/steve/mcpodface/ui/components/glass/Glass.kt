@@ -139,6 +139,14 @@ fun Modifier.glass(
 }
 
 /**
+ * Large content surfaces (show notes, descriptions, settings groups). Same frosted look and rim
+ * as [glass], but it does not re-sample the backdrop: a big live-glass card re-blurs most of the
+ * screen on every scroll frame, which made scrolling jerky. Keep live glass for small controls.
+ */
+@Composable
+fun Modifier.glassCard(shape: Shape): Modifier = glass(shape, GlassStyle.Regular, backdrop = null)
+
+/**
  * A screen whose glass controls refract [background] (default: the plain page colour; pass
  * [ArtworkAmbience] for artwork-washed pages). Content draws on top.
  */

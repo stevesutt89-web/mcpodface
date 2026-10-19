@@ -66,6 +66,7 @@ import com.steve.mcpodface.ui.components.glass.GlassIconButton
 import com.steve.mcpodface.ui.components.glass.GlassPage
 import com.steve.mcpodface.ui.components.glass.GlassStyle
 import com.steve.mcpodface.ui.components.glass.glass
+import com.steve.mcpodface.ui.components.glass.glassCard
 import com.steve.mcpodface.ui.components.glass.rememberArtworkAccent
 import com.steve.mcpodface.ui.podcast.ShadowedArtwork
 import com.steve.mcpodface.ui.theme.AppTheme
@@ -324,7 +325,7 @@ private fun EpisodeBody(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = Spacing.m)
-                .glass(notesShape, GlassStyle.Regular)
+                .glassCard(notesShape)
                 .padding(20.dp),
         ) {
             Text(

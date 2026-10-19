@@ -45,6 +45,7 @@ import com.steve.mcpodface.ui.components.glass.GlassButton
 import com.steve.mcpodface.ui.components.glass.GlassIconButton
 import com.steve.mcpodface.ui.components.glass.GlassStyle
 import com.steve.mcpodface.ui.components.glass.glass
+import com.steve.mcpodface.ui.components.glass.glassCard
 import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
 import com.steve.mcpodface.ui.theme.ThemePreviews
@@ -170,7 +171,7 @@ private fun Description(html: String?, accent: Color, modifier: Modifier = Modif
     val cardShape = remember { RoundedRectangle(24.dp) }
     Column(
         modifier = modifier
-            .glass(cardShape, GlassStyle.Regular)
+            .glassCard(cardShape)
             .padding(Spacing.m),
     ) {
         Text(

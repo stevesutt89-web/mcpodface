@@ -53,6 +53,7 @@ import com.steve.mcpodface.ui.components.LargeTitleScaffold
 import com.steve.mcpodface.ui.components.glass.GlassPage
 import com.steve.mcpodface.ui.components.glass.GlassStyle
 import com.steve.mcpodface.ui.components.glass.glass
+import com.steve.mcpodface.ui.components.glass.glassCard
 import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
 import com.steve.mcpodface.ui.theme.ThemePreviews
@@ -185,7 +186,7 @@ private fun SettingsCard(content: @Composable ColumnScope.() -> Unit) {
     Column(
         Modifier
             .fillMaxWidth()
-            .glass(shape, GlassStyle.Regular)
+            .glassCard(shape)
             .clip(shape),
         content = content,
     )

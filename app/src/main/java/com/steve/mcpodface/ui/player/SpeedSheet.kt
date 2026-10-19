@@ -39,6 +39,7 @@ import com.steve.mcpodface.ui.components.glass.GlassButton
 import com.steve.mcpodface.ui.components.glass.GlassChip
 import com.steve.mcpodface.ui.components.glass.GlassStyle
 import com.steve.mcpodface.ui.components.glass.glass
+import com.steve.mcpodface.ui.components.glass.glassCard
 import com.steve.mcpodface.ui.settings.appSwitchColors
 import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
@@ -128,7 +129,7 @@ internal fun SpeedSheetContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(cardShape)
-                .glass(cardShape, GlassStyle.Regular)
+                .glassCard(cardShape)
                 .toggleable(
                     value = rememberForPodcast,
                     role = Role.Switch,

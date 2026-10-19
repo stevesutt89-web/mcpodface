@@ -65,6 +65,7 @@ import com.steve.mcpodface.ui.components.glass.GlassIconButton
 import com.steve.mcpodface.ui.components.glass.GlassPage
 import com.steve.mcpodface.ui.components.glass.GlassStyle
 import com.steve.mcpodface.ui.components.glass.glass
+import com.steve.mcpodface.ui.components.glass.glassCard
 import com.steve.mcpodface.ui.components.glass.rememberArtworkAccent
 import com.steve.mcpodface.ui.episode.ShowNotes
 import com.steve.mcpodface.ui.theme.AppTheme
@@ -254,7 +255,7 @@ fun FullPlayerContent(
                 Column(
                     Modifier
                         .fillMaxWidth()
-                        .glass(remember { RoundedRectangle(28.dp) }, GlassStyle.Regular)
+                        .glassCard(remember { RoundedRectangle(28.dp) })
                         .padding(20.dp),
                 ) {
                     Text(
