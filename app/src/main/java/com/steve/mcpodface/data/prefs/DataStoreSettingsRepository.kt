@@ -64,6 +64,7 @@ class DataStoreSettingsRepository @Inject constructor(
         val apiRequestsToday = intPreferencesKey("apiRequestsToday")
         val apiBudgetDay = longPreferencesKey("apiBudgetDay")
         val apiPausedUntil = longPreferencesKey("apiPausedUntil")
+        val notificationPermissionAsked = booleanPreferencesKey("notificationPermissionAsked")
     }
 
     private fun Preferences.toSettings(): GlobalSettings {
@@ -104,6 +105,7 @@ class DataStoreSettingsRepository @Inject constructor(
             apiRequestsToday = this[K.apiRequestsToday] ?: d.apiRequestsToday,
             apiBudgetDay = this[K.apiBudgetDay] ?: d.apiBudgetDay,
             apiPausedUntil = this[K.apiPausedUntil] ?: d.apiPausedUntil,
+            notificationPermissionAsked = this[K.notificationPermissionAsked] ?: d.notificationPermissionAsked,
         )
     }
 
@@ -143,6 +145,7 @@ class DataStoreSettingsRepository @Inject constructor(
         this[K.apiRequestsToday] = s.apiRequestsToday
         this[K.apiBudgetDay] = s.apiBudgetDay
         this[K.apiPausedUntil] = s.apiPausedUntil
+        this[K.notificationPermissionAsked] = s.notificationPermissionAsked
     }
 
     private inline fun <reified E : Enum<E>> enumOr(name: String?, default: E): E =

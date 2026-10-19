@@ -1,17 +1,23 @@
 package com.steve.mcpodface
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -22,6 +28,7 @@ import com.steve.mcpodface.data.prefs.SettingsRepository
 import com.steve.mcpodface.data.prefs.ThemeMode
 import com.steve.mcpodface.ui.navigation.AppShell
 import com.steve.mcpodface.ui.theme.AppTheme
+import com.steve.mcpodface.ui.theme.ThemePreviews
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -40,6 +47,37 @@ class MainViewModel @Inject constructor(
 
     fun onTabSelected(tab: AppTab) {
         viewModelScope.launch { settingsRepository.update { it.copy(lastTab = tab) } }
+    }
+
+    fun onNotificationPermissionAsked() {
+        viewModelScope.launch { settingsRepository.update { it.copy(notificationPermissionAsked = true) } }
+    }
+}
+
+/**
+ * Asks for POST_NOTIFICATIONS once, on first run (PLAN.md §12). The "asked" flag is written to
+ * DataStore before the system dialog opens, so it is never shown again, whatever the answer.
+ */
+@Composable
+private fun NotificationPermissionPrompt(alreadyAsked: Boolean, onAsked: () -> Unit) {
+    val context = LocalContext.current
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+        // Granted or refused: nothing else depends on the answer, and the prompt is not repeated.
+    }
+    LaunchedEffect(alreadyAsked) {
+        if (alreadyAsked) return@LaunchedEffect
+        onAsked()
+        if (context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+}
+
+@ThemePreviews
+@Composable
+private fun NotificationPermissionPromptPreview() {
+    AppTheme {
+        NotificationPermissionPrompt(alreadyAsked = true, onAsked = {})
     }
 }
 
@@ -65,6 +103,10 @@ class MainActivity : ComponentActivity() {
             }
             EdgeToEdge(dark)
             AppTheme(themeMode = s.theme, pureBlack = s.pureBlack, dynamicColor = s.dynamicColor) {
+                NotificationPermissionPrompt(
+                    alreadyAsked = s.notificationPermissionAsked,
+                    onAsked = viewModel::onNotificationPermissionAsked,
+                )
                 AppShell(startTab = startTab, onTabSelected = viewModel::onTabSelected)
             }
         }

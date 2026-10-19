@@ -12,6 +12,7 @@ import com.steve.mcpodface.data.backup.OpmlImporter
 import com.steve.mcpodface.data.backup.OpmlParseException
 import com.steve.mcpodface.data.prefs.GlobalSettings
 import com.steve.mcpodface.data.prefs.SettingsRepository
+import com.steve.mcpodface.refresh.PolicyRunner
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
@@ -20,6 +21,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -32,6 +35,7 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val settingsRepository: SettingsRepository,
+    private val policyRunner: PolicyRunner,
     private val importer: OpmlImporter,
     private val exporter: OpmlExporter,
     @IoDispatcher private val io: CoroutineDispatcher,
@@ -51,8 +55,53 @@ class SettingsViewModel @Inject constructor(
     private val _messages = Channel<String>(Channel.BUFFERED)
     val messages: Flow<String> = _messages.receiveAsFlow()
 
+    /**
+     * A global change that would delete downloads, waiting for the user to confirm (PLAN.md §6.5).
+     * [count] and [bytes] come from [PolicyRunner.previewCleanup]; nothing is deleted until confirmed.
+     */
+    data class PendingCleanup(
+        val transform: (GlobalSettings) -> GlobalSettings,
+        val count: Int,
+        val bytes: Long,
+    )
+
+    private val _pendingCleanup = MutableStateFlow<PendingCleanup?>(null)
+    val pendingCleanup: StateFlow<PendingCleanup?> = _pendingCleanup.asStateFlow()
+
+    /**
+     * Applies a global setting change. Changes that keep at least as many downloads as before apply
+     * at once. Ones that would delete files are previewed first: with nothing to delete they apply
+     * straight away, otherwise they wait in [pendingCleanup] until [confirmCleanup] or [cancelCleanup].
+     */
     fun update(transform: (GlobalSettings) -> GlobalSettings) {
-        viewModelScope.launch { settingsRepository.update(transform) }
+        viewModelScope.launch {
+            val before = settingsRepository.settings.first()
+            if (!CleanupChange.reducesRetention(before, transform(before))) {
+                settingsRepository.update(transform)
+                return@launch
+            }
+            val (count, bytes) = policyRunner.previewCleanup(transform)
+            if (count == 0) {
+                settingsRepository.update(transform)
+            } else {
+                _pendingCleanup.value = PendingCleanup(transform, count, bytes)
+            }
+        }
+    }
+
+    /** The user confirmed the preview: apply the setting, then delete the files now. */
+    fun confirmCleanup() {
+        val pending = _pendingCleanup.value ?: return
+        _pendingCleanup.value = null
+        viewModelScope.launch {
+            settingsRepository.update(pending.transform)
+            policyRunner.runCleanup()
+        }
+    }
+
+    /** The user cancelled the preview: the setting stays as it was. */
+    fun cancelCleanup() {
+        _pendingCleanup.value = null
     }
 
     /** Reads an OPML file chosen with the Storage Access Framework and starts the background import. */
