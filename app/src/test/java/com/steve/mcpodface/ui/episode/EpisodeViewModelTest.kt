@@ -203,7 +203,7 @@ class EpisodeViewModelTest {
     }
 
     @Test fun shareTextIsTitleDashPodcastThenUrl() {
-        assertThat(shareText("Bridges", "Sample Show", "https://example.com/a.mp3"))
+        assertThat(buildEpisodeShareText("Bridges", "Sample Show", "https://example.com/a.mp3", positionMs = null))
             .isEqualTo("Bridges — Sample Show\nhttps://example.com/a.mp3")
     }
 

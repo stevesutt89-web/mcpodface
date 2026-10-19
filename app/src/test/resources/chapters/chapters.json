@@ -1,0 +1,15 @@
+{
+  "version": "1.2.0",
+  "chapters": [
+    {"startTime": 412, "title": "Steel, rivets and a storm", "img": "https://example.com/storm.jpg", "url": "https://example.com/storm"},
+    {"startTime": 0, "title": "Cold open", "toc": true},
+    {"startTime": 95.5, "title": "The first survey"},
+    {"startTime": 200, "title": "Sponsor break", "toc": false},
+    {"title": "No start time"},
+    {"startTime": 300},
+    {"startTime": 310, "title": "   "},
+    {"startTime": "not a number", "title": "Bad start"},
+    {"startTime": -5, "title": "Negative start"},
+    {"startTime": 3723, "title": "Closing thoughts", "toc": "true"}
+  ]
+}

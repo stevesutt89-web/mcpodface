@@ -1,6 +1,5 @@
 package com.steve.mcpodface.ui.episode
 
-import android.content.Intent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,6 +18,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.automirrored.rounded.PlaylistAddCheck
+import androidx.compose.material.icons.outlined.Subject
 import androidx.compose.material.icons.rounded.LibraryAdd
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Pause
@@ -65,6 +65,7 @@ import com.steve.mcpodface.ui.components.formatTimeLeft
 import com.steve.mcpodface.ui.components.glass.ArtworkAmbience
 import com.steve.mcpodface.ui.components.glass.GlassButton
 import com.steve.mcpodface.ui.components.glass.GlassIconButton
+import com.steve.mcpodface.ui.components.glass.GlassChip
 import com.steve.mcpodface.ui.components.glass.GlassPage
 import com.steve.mcpodface.ui.components.glass.GlassStyle
 import com.steve.mcpodface.ui.components.glass.glass
@@ -75,6 +76,7 @@ import com.steve.mcpodface.ui.podcast.ShadowedArtwork
 import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
 import com.steve.mcpodface.ui.theme.ThemePreviews
+import com.steve.mcpodface.ui.transcript.TranscriptSheet
 
 @Composable
 fun EpisodeScreen(episodeId: Long, onBack: () -> Unit, onOpenPodcast: (Long) -> Unit) {
@@ -90,14 +92,9 @@ fun EpisodeScreen(episodeId: Long, onBack: () -> Unit, onOpenPodcast: (Long) -> 
         onTogglePlayed = viewModel::togglePlayed,
         onShare = {
             val episode = state.episode ?: return@EpisodeContent
-            val intent = Intent(Intent.ACTION_SEND).apply {
-                type = "text/plain"
-                putExtra(
-                    Intent.EXTRA_TEXT,
-                    shareText(episode.title, state.podcast?.title.orEmpty(), episode.enclosureUrl),
-                )
-            }
-            context.startActivity(Intent.createChooser(intent, null))
+            context.shareEpisodeText(
+                buildEpisodeShareText(episode.title, state.podcast?.title.orEmpty(), episode.enclosureUrl, positionMs = null),
+            )
         },
         onToggleQueue = viewModel::toggleQueue,
         onToggleStarred = viewModel::toggleStarred,
@@ -141,6 +138,7 @@ private fun EpisodeContent(
     val accent: Color = artworkAccent ?: AppTheme.colors.accent
     var menuOpen by remember { mutableStateOf(false) }
     var showPlaylistSheet by rememberSaveable { mutableStateOf(false) }
+    var showTranscript by rememberSaveable { mutableStateOf(false) }
 
     GlassPage(background = { ArtworkAmbience(artworkUrl, fadeTo = 0.6f) }) {
         GlassTopBarScaffold(
@@ -216,6 +214,7 @@ private fun EpisodeContent(
                     onDeleteDownload = onDeleteDownload,
                     onRetryDownload = onRetryDownload,
                     onAddToPlaylist = { showPlaylistSheet = true },
+                    onOpenTranscript = { showTranscript = true },
                 )
             }
         }
@@ -223,6 +222,9 @@ private fun EpisodeContent(
 
     if (showPlaylistSheet && episode != null) {
         AddToPlaylistSheet(episodeId = episode.id, onDismiss = { showPlaylistSheet = false })
+    }
+    if (showTranscript && episode != null) {
+        TranscriptSheet(episodeId = episode.id, onDismiss = { showTranscript = false })
     }
 }
 
@@ -243,6 +245,7 @@ private fun EpisodeBody(
     onDeleteDownload: () -> Unit,
     onRetryDownload: () -> Unit,
     onAddToPlaylist: () -> Unit,
+    onOpenTranscript: () -> Unit,
 ) {
     val colors = AppTheme.colors
     val inProgress = state.isInProgress
@@ -356,6 +359,17 @@ private fun EpisodeBody(
                 icon = Icons.Rounded.LibraryAdd,
                 contentDescription = "Add to playlist",
                 onClick = onAddToPlaylist,
+            )
+        }
+
+        if (episode.transcriptUrl != null) {
+            GlassChip(
+                label = "Transcript",
+                selected = false,
+                onClick = onOpenTranscript,
+                leadingIcon = Icons.Outlined.Subject,
+                accent = accent,
+                modifier = Modifier.padding(top = Spacing.m),
             )
         }
 

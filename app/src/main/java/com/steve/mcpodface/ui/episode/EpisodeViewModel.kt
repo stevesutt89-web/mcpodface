@@ -71,10 +71,6 @@ data class EpisodeUiState(
         get() = if (isCurrent) nowPlaying?.positionMs ?: 0L else episode?.positionMs ?: 0L
 }
 
-/** The text the Share action sends (PLAN.md §8.5): "<title> — <podcast>" then the enclosure URL. */
-internal fun shareText(title: String, podcastTitle: String, enclosureUrl: String): String =
-    "$title — $podcastTitle\n$enclosureUrl"
-
 @HiltViewModel
 class EpisodeViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,

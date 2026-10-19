@@ -1,16 +1,20 @@
 package com.steve.mcpodface.ui.player
 
+import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.steve.mcpodface.core.Clock
+import com.steve.mcpodface.data.chapters.ChaptersRepository
 import com.steve.mcpodface.data.db.AppDatabase
 import com.steve.mcpodface.data.db.EpisodeEntity
 import com.steve.mcpodface.data.db.PlayState
 import com.steve.mcpodface.data.db.PodcastEntity
 import com.steve.mcpodface.data.db.PodcastSettingsEntity
 import com.steve.mcpodface.data.episodes.EpisodeRepository
+import okhttp3.OkHttpClient
+import java.io.File
 import com.steve.mcpodface.data.prefs.GlobalSettings
 import com.steve.mcpodface.data.prefs.SettingsRepository
 import com.steve.mcpodface.playback.NoOpPlayerController
@@ -59,6 +63,12 @@ class PlayerViewModelTest {
         settingsRepository = settings,
         sleepTimer = SleepTimer(ApplicationProvider.getApplicationContext(), CoroutineScope(Dispatchers.Unconfined), clock),
         clock = clock,
+        // No episode in these tests has a chapters URL, so the network is never reached.
+        chaptersRepository = ChaptersRepository(
+            OkHttpClient(),
+            Dispatchers.Unconfined,
+            File(ApplicationProvider.getApplicationContext<Context>().cacheDir, "chapters-test"),
+        ),
     )
 
     /** Inserts a subscribed podcast and one episode in it. Returns (podcastId, episodeId). */
