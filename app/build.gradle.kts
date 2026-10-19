@@ -28,6 +28,7 @@ android {
 
         buildConfigField("String", "PODCASTINDEX_KEY", "\"${localProp("PODCASTINDEX_KEY")}\"")
         buildConfigField("String", "PODCASTINDEX_SECRET", "\"${localProp("PODCASTINDEX_SECRET")}\"")
+        buildConfigField("String", "LISTENNOTES_KEY", "\"${localProp("LISTENNOTES_KEY")}\"")
     }
 
     signingConfigs {

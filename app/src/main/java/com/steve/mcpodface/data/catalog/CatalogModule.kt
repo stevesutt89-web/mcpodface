@@ -4,6 +4,10 @@ import com.steve.mcpodface.BuildConfig
 import com.steve.mcpodface.core.Clock
 import com.steve.mcpodface.data.network.ITUNES_BASE_URL
 import com.steve.mcpodface.data.network.ITunesApi
+import com.steve.mcpodface.data.network.LISTEN_NOTES_BASE_URL
+import com.steve.mcpodface.data.network.ListenNotesApi
+import com.steve.mcpodface.data.network.ListenNotesAuthInterceptor
+import com.steve.mcpodface.data.network.ListenNotesKey
 import com.steve.mcpodface.data.network.PODCAST_INDEX_BASE_URL
 import com.steve.mcpodface.data.network.PodcastIndexApi
 import com.steve.mcpodface.data.network.PodcastIndexAuthInterceptor
@@ -42,6 +46,17 @@ abstract class CatalogModule {
             .addConverterFactory(podcastIndexJson.asConverterFactory("application/json".toMediaType()))
             .build()
             .create(PodcastIndexApi::class.java)
+
+        @Provides @Singleton
+        fun listenNotesKey(): ListenNotesKey = ListenNotesKey(BuildConfig.LISTENNOTES_KEY)
+
+        @Provides @Singleton
+        fun listenNotesApi(client: OkHttpClient, key: ListenNotesKey): ListenNotesApi = Retrofit.Builder()
+            .baseUrl(LISTEN_NOTES_BASE_URL)
+            .client(client.newBuilder().addInterceptor(ListenNotesAuthInterceptor(key)).build())
+            .addConverterFactory(podcastIndexJson.asConverterFactory("application/json".toMediaType()))
+            .build()
+            .create(ListenNotesApi::class.java)
 
         @Provides @Singleton
         fun iTunesApi(client: OkHttpClient): ITunesApi = Retrofit.Builder()

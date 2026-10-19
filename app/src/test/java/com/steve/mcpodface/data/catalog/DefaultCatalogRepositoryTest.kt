@@ -2,6 +2,7 @@ package com.steve.mcpodface.data.catalog
 
 import com.google.common.truth.Truth.assertThat
 import com.steve.mcpodface.data.network.ApiPurpose
+import com.steve.mcpodface.data.network.ListenNotesKey
 import com.steve.mcpodface.data.network.PodcastIndexCredentials
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
@@ -46,6 +47,7 @@ private const val EMPTY_INDEX = """{"status": "true", "feeds": []}"""
 class DefaultCatalogRepositoryTest {
     private val index = MockWebServer()
     private val itunes = MockWebServer()
+    private val listen = MockWebServer()
     private val limiter = FakeRateLimiter()
     private val dao = FakeCatalogCacheDao()
     private val clock = FakeClock(NOW)
@@ -53,16 +55,23 @@ class DefaultCatalogRepositoryTest {
     @Before fun startServers() {
         index.start()
         itunes.start()
+        listen.start()
     }
 
     @After fun stopServers() {
         index.shutdown()
         itunes.shutdown()
+        listen.shutdown()
     }
 
-    private fun repo(credentials: PodcastIndexCredentials = CREDS) = DefaultCatalogRepository(
+    private fun repo(
+        credentials: PodcastIndexCredentials = CREDS,
+        listenNotesKey: ListenNotesKey = ListenNotesKey(""),
+    ) = DefaultCatalogRepository(
         podcastIndexApi = testPodcastIndexApi(index, credentials, clock),
         iTunesApi = testITunesApi(itunes),
+        listenNotesApi = testListenNotesApi(listen, listenNotesKey),
+        listenNotesKey = listenNotesKey,
         credentials = credentials,
         rateLimiter = limiter,
         cacheDao = dao,
@@ -385,5 +394,83 @@ class DefaultCatalogRepositoryTest {
         repo.lookupByFeedUrl("https://a.example/feed.xml")
 
         assertThat(index.requestCount).isEqualTo(2)
+    }
+
+    // ---- Listen Notes ----
+
+    private val lnKey = ListenNotesKey("ln-key")
+    private val noIndex = PodcastIndexCredentials("", "")
+
+    private val lnSearchBody = """{"results": [
+      {"id": "a", "rss": "https://feeds.example.com/ln-radiolab.xml", "title_original": "Radiolab",
+       "publisher_original": "WNYC", "image": "https://img/ln.jpg", "itunes_id": 152249110, "total_episodes": 300},
+      {"id": "b", "rss": "Please upgrade to see this field", "title_original": "Hidden Feed", "itunes_id": 42},
+      {"id": "c", "title_original": "No Feed Anywhere"}
+    ]}"""
+
+    @Test fun listenNotesUsedWhenIndexUnavailableAndSendsKey() = runTest {
+        listen.respond(lnSearchBody)
+        itunes.respond("""{"results": [{"collectionId": 42, "feedUrl": "https://feeds.example.com/hidden.xml"}]}""")
+
+        val results = repo(credentials = noIndex, listenNotesKey = lnKey).search("radiolab")
+
+        assertThat(results.map { it.feedUrl }).containsExactly(
+            "https://feeds.example.com/ln-radiolab.xml",
+            "https://feeds.example.com/hidden.xml",
+        ).inOrder()
+        assertThat(results[0].author).isEqualTo("WNYC")
+        assertThat(results[0].episodeCount).isEqualTo(300)
+        val req = listen.takeRequest()
+        assertThat(req.getHeader("X-ListenAPI-Key")).isEqualTo("ln-key")
+        assertThat(req.requestUrl!!.queryParameter("q")).isEqualTo("radiolab")
+        assertThat(itunes.takeRequest().requestUrl!!.queryParameter("id")).isEqualTo("42")
+    }
+
+    @Test fun indexResultsWinOverListenNotes() = runTest {
+        index.respond(INDEX_SEARCH_BODY)
+        repo(listenNotesKey = lnKey).search("radiolab")
+        assertThat(listen.requestCount).isEqualTo(0)
+    }
+
+    @Test fun listenNotesFailureFallsBackToITunes() = runTest {
+        listen.respond("""{"error": "quota"}""", code = 429)
+        itunes.respond(ITUNES_BODY)
+        val results = repo(credentials = noIndex, listenNotesKey = lnKey).search("radiolab")
+        assertThat(results.map { it.feedUrl }).containsExactly("https://feeds.example.com/itunes-radiolab.xml")
+    }
+
+    @Test fun blankListenNotesKeyMakesNoRequest() = runTest {
+        itunes.respond(ITUNES_BODY)
+        repo(credentials = noIndex).search("radiolab")
+        assertThat(listen.requestCount).isEqualTo(0)
+    }
+
+    @Test fun listenNotesResultsAreCached() = runTest {
+        listen.respond(lnSearchBody)
+        itunes.respond("""{"results": []}""")
+        val r = repo(credentials = noIndex, listenNotesKey = lnKey)
+        r.search("radiolab")
+        r.search("radiolab")
+        assertThat(listen.requestCount).isEqualTo(1)
+    }
+
+    @Test fun trendingAndCategoriesFallBackToListenNotes() = runTest {
+        listen.respond("""{"genres": [{"id": 68, "name": "TV & Film", "parent_id": 67}, {"id": 99, "name": "Arts", "parent_id": 67}]}""")
+        val cats = repo(credentials = noIndex, listenNotesKey = lnKey).categories()
+        assertThat(cats.map { it.name }).containsExactly("Arts", "TV & Film").inOrder()
+
+        listen.respond("""{"podcasts": [{"id": "x", "rss": "https://feeds.example.com/best.xml", "title": "Best", "publisher": "Pub"}]}""")
+        val trending = repo(credentials = noIndex, listenNotesKey = lnKey).trending(null)
+        assertThat(trending.single().title).isEqualTo("Best")
+        assertThat(trending.single().author).isEqualTo("Pub")
+    }
+
+    @Test fun listenNotesTrendingByCategoryUsesGenreId() = runTest {
+        listen.respond("""{"genres": [{"id": 68, "name": "TV & Film"}]}""")
+        listen.respond("""{"podcasts": [{"rss": "https://feeds.example.com/tv.xml", "title": "TV Show"}]}""")
+        val r = repo(credentials = noIndex, listenNotesKey = lnKey).trending("TV & Film")
+        assertThat(r.single().feedUrl).isEqualTo("https://feeds.example.com/tv.xml")
+        listen.takeRequest()
+        assertThat(listen.takeRequest().requestUrl!!.queryParameter("genre_id")).isEqualTo("68")
     }
 }

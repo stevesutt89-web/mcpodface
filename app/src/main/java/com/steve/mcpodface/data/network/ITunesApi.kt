@@ -10,6 +10,10 @@ const val ITUNES_BASE_URL = "https://itunes.apple.com/"
 interface ITunesApi {
     @GET("search?media=podcast&entity=podcast&limit=40")
     suspend fun search(@Query("term") term: String): ITunesSearchResponse
+
+    /** Look up podcasts by iTunes id; [ids] is comma-separated. Used to find feed URLs. */
+    @GET("lookup?entity=podcast")
+    suspend fun lookup(@Query("id") ids: String): ITunesSearchResponse
 }
 
 @Serializable

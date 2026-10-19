@@ -5,6 +5,9 @@ import com.steve.mcpodface.data.db.CatalogCacheDao
 import com.steve.mcpodface.data.db.CatalogCacheEntity
 import com.steve.mcpodface.data.network.ApiPurpose
 import com.steve.mcpodface.data.network.ITunesApi
+import com.steve.mcpodface.data.network.ListenNotesApi
+import com.steve.mcpodface.data.network.ListenNotesAuthInterceptor
+import com.steve.mcpodface.data.network.ListenNotesKey
 import com.steve.mcpodface.data.network.PodcastIndexApi
 import com.steve.mcpodface.data.network.PodcastIndexAuthInterceptor
 import com.steve.mcpodface.data.network.PodcastIndexCredentials
@@ -60,6 +63,13 @@ fun testPodcastIndexApi(
     .addConverterFactory(podcastIndexJson.asConverterFactory("application/json".toMediaType()))
     .build()
     .create(PodcastIndexApi::class.java)
+
+fun testListenNotesApi(server: MockWebServer, key: ListenNotesKey): ListenNotesApi = Retrofit.Builder()
+    .baseUrl(server.url("/api/v2/"))
+    .client(OkHttpClient.Builder().addInterceptor(ListenNotesAuthInterceptor(key)).build())
+    .addConverterFactory(podcastIndexJson.asConverterFactory("application/json".toMediaType()))
+    .build()
+    .create(ListenNotesApi::class.java)
 
 fun testITunesApi(server: MockWebServer): ITunesApi = Retrofit.Builder()
     .baseUrl(server.url("/"))
