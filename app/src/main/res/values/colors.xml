@@ -2,5 +2,5 @@
 <resources>
     <!-- Only used before Compose draws (window + splash). UI colours live in ui/theme. -->
     <color name="window_background">#FFFFFF</color>
-    <color name="launcher_background">#18181B</color>
+    <color name="launcher_background">#EEEAFF</color>
 </resources>
