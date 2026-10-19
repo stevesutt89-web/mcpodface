@@ -56,6 +56,7 @@ import com.steve.mcpodface.data.db.PlayState
 import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
 import com.steve.mcpodface.ui.theme.ThemePreviews
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -114,17 +115,23 @@ fun SwipeableEpisodeRow(
     var frozenInUpNext by remember { mutableStateOf<Boolean?>(null) }
     var frozenPlayedLabel by remember { mutableStateOf<String?>(null) }
 
+    // Where the finger has dragged the row, updated synchronously so the release always sees the
+    // full drag (a launched update could still be queued when the drag stops on a slow frame).
+    var dragOffset by remember { mutableFloatStateOf(0f) }
     val dragState = rememberDraggableState { delta ->
         if (phase == SwipePhase.IDLE) {
             val min = if (canSwipeLeft) -widthPx else 0f
-            scope.launch { offset.snapTo((offset.value + delta).coerceIn(min, widthPx)) }
+            dragOffset = (dragOffset + delta).coerceIn(min, widthPx)
+            val target = dragOffset
+            scope.launch(start = CoroutineStart.UNDISPATCHED) { offset.snapTo(target) }
         }
     }
 
     fun settle(velocity: Float) {
         if (phase != SwipePhase.IDLE) return
         scope.launch {
-            val value = offset.value
+            val value = dragOffset
+            offset.snapTo(value)
             val threshold = widthPx * SWIPE_THRESHOLD
             val fling = abs(velocity) > FLING_VELOCITY && sign(velocity) == sign(value)
             val toEnd = value > 0f && (value > threshold || fling)
@@ -170,6 +177,8 @@ fun SwipeableEpisodeRow(
                 state = dragState,
                 orientation = Orientation.Horizontal,
                 enabled = phase == SwipePhase.IDLE,
+                // Pick the row up where it is, even mid spring-back.
+                onDragStarted = { dragOffset = offset.value },
                 onDragStopped = { velocity -> settle(velocity) },
             ),
     ) {
