@@ -32,12 +32,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.FormatListBulleted
 import androidx.compose.material.icons.outlined.Bedtime
 import androidx.compose.material.icons.outlined.Replay
+import androidx.compose.material.icons.outlined.Subject
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Replay10
 import androidx.compose.material.icons.rounded.Replay30
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.SpeakerGroup
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -67,6 +70,7 @@ import com.kyant.shapes.Capsule
 import com.kyant.shapes.RoundedRectangle
 import com.steve.mcpodface.ui.components.Artwork
 import com.steve.mcpodface.ui.components.glass.ArtworkAmbience
+import com.steve.mcpodface.ui.components.glass.GlassChip
 import com.steve.mcpodface.ui.components.glass.GlassIconButton
 import com.steve.mcpodface.ui.components.glass.GlassPage
 import com.steve.mcpodface.ui.components.glass.GlassStyle
@@ -74,9 +78,12 @@ import com.steve.mcpodface.ui.components.glass.glass
 import com.steve.mcpodface.ui.components.glass.glassCard
 import com.steve.mcpodface.ui.components.glass.rememberArtworkAccent
 import com.steve.mcpodface.ui.episode.ShowNotes
+import com.steve.mcpodface.ui.episode.buildEpisodeShareText
+import com.steve.mcpodface.ui.episode.shareEpisodeText
 import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
 import com.steve.mcpodface.ui.theme.ThemePreviews
+import com.steve.mcpodface.ui.transcript.TranscriptSheet
 
 /**
  * Full player (PLAN.md §8.6, §11): a true full-screen layer (drawn by the shell over everything,
@@ -126,6 +133,12 @@ fun FullPlayer(
             onSkipForward = viewModel::skipForward,
             onSpeedChange = viewModel::setSpeed,
             onOpenOutputSwitcher = { openOutputSwitcher(context) },
+            onShare = {
+                val current = latest.value
+                context.shareEpisodeText(
+                    buildEpisodeShareText(current.title, current.podcastTitle, current.enclosureUrl, current.positionMs),
+                )
+            },
             dismissDrag = dismissDrag,
             sleepTimer = { sleep.value },
             onSleepChoice = viewModel::setSleepTimer,
@@ -143,6 +156,7 @@ fun FullPlayerContent(
     onSkipForward: () -> Unit,
     onSpeedChange: (speed: Float, rememberForPodcast: Boolean) -> Unit,
     onOpenOutputSwitcher: () -> Unit,
+    onShare: () -> Unit = {},
     dismissDrag: Modifier = Modifier,
     positionMs: () -> Long = { state.positionMs },
     sleepTimer: () -> SleepTimerUi = { SleepTimerUi.Off },
@@ -153,6 +167,8 @@ fun FullPlayerContent(
     val accent = artworkAccent ?: colors.accent
     var showSpeedSheet by rememberSaveable { mutableStateOf(false) }
     var showSleepSheet by rememberSaveable { mutableStateOf(false) }
+    var showChaptersSheet by rememberSaveable { mutableStateOf(false) }
+    var showTranscriptSheet by rememberSaveable { mutableStateOf(false) }
 
     // The artwork breathes: full size while playing, springs back a little when paused.
     val artScale by animateFloatAsState(
@@ -224,6 +240,10 @@ fun FullPlayerContent(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+            if (state.chapters.isNotEmpty()) {
+                Spacer(Modifier.height(4.dp))
+                ChapterLine(chapters = state.chapters, positionMs = positionMs)
+            }
 
             Spacer(Modifier.height(Spacing.m))
             Timeline(
@@ -293,8 +313,35 @@ fun FullPlayerContent(
                         }
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                 )
+                if (state.chapters.isNotEmpty()) {
+                    CapsuleIcon(Icons.AutoMirrored.Rounded.FormatListBulleted, "Chapters") { showChaptersSheet = true }
+                }
                 SleepButton(sleepTimer, accent) { showSleepSheet = true }
                 CapsuleIcon(Icons.Rounded.SpeakerGroup, "Output device", onClick = onOpenOutputSwitcher)
+            }
+
+            // Transcript and share sit under the capsule, so the capsule keeps its width on small phones.
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = Spacing.s),
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                if (state.transcriptUrl != null) {
+                    GlassChip(
+                        label = "Transcript",
+                        selected = false,
+                        onClick = { showTranscriptSheet = true },
+                        leadingIcon = Icons.Outlined.Subject,
+                        accent = accent,
+                    )
+                    Spacer(Modifier.width(Spacing.s))
+                }
+                GlassChip(
+                    label = "Share",
+                    selected = false,
+                    onClick = onShare,
+                    leadingIcon = Icons.Rounded.Share,
+                    accent = accent,
+                )
             }
 
             if (!state.descriptionHtml.isNullOrBlank()) {
@@ -326,6 +373,17 @@ fun FullPlayerContent(
     }
     if (showSleepSheet) {
         SleepTimerSheet(timer = sleepTimer(), onChoice = onSleepChoice, onDismiss = { showSleepSheet = false })
+    }
+    if (showChaptersSheet) {
+        ChaptersSheet(
+            chapters = state.chapters,
+            positionMs = positionMs,
+            onSeek = onSeek,
+            onDismiss = { showChaptersSheet = false },
+        )
+    }
+    if (showTranscriptSheet) {
+        TranscriptSheet(episodeId = state.episodeId, onDismiss = { showTranscriptSheet = false })
     }
 }
 

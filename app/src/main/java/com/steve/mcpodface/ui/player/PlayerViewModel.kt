@@ -6,6 +6,8 @@ import com.steve.mcpodface.data.db.EpisodeEntity
 import com.steve.mcpodface.data.db.PodcastEntity
 import com.steve.mcpodface.data.db.PodcastSettingsDao
 import com.steve.mcpodface.data.db.PodcastSettingsEntity
+import com.steve.mcpodface.data.chapters.Chapter
+import com.steve.mcpodface.data.chapters.ChaptersRepository
 import com.steve.mcpodface.data.episodes.EpisodeRepository
 import com.steve.mcpodface.data.prefs.SettingsRepository
 import com.steve.mcpodface.playback.NowPlaying
@@ -27,6 +29,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -50,6 +53,12 @@ data class PlayerUiState(
     val skipForwardSec: Int,
     /** Settings → Tint player from artwork. */
     val tintFromArtwork: Boolean = true,
+    /** Share link for the episode (its enclosure: the entity has no web link). */
+    val enclosureUrl: String = "",
+    /** Visible chapters in start order; empty when the episode has none. */
+    val chapters: List<Chapter> = emptyList(),
+    /** Set when the episode has a transcript (the full player shows its button). */
+    val transcriptUrl: String? = null,
 )
 
 /** What the sleep timer button shows. */
@@ -80,6 +89,7 @@ class PlayerViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val sleepTimer: SleepTimer,
     private val clock: Clock,
+    private val chaptersRepository: ChaptersRepository,
 ) : ViewModel() {
 
     /** Sleep timer for the full player's button; counts down once a second while running. */
@@ -118,13 +128,20 @@ class PlayerViewModel @Inject constructor(
         .distinctUntilChanged()
         .flatMapLatest { id -> if (id == null) flowOf(null) else episodeRepository.observePodcast(id) }
 
+    /** The loaded episode's chapters, loaded once per chapters URL (memory, disk, then network). */
+    private val chapters: Flow<List<Chapter>> = episode
+        .map { it?.chaptersUrl }
+        .distinctUntilChanged()
+        .mapLatest { url -> if (url.isNullOrBlank()) emptyList() else chaptersRepository.load(url) }
+
     /** Null when nothing is loaded. Keeps running while a screen collects it (5s grace). */
     val uiState: StateFlow<PlayerUiState?> = combine(
         playerController.nowPlaying,
         episode,
         podcast,
         settingsRepository.settings,
-    ) { nowPlaying, ep, pod, settings ->
+        chapters,
+    ) { nowPlaying, ep, pod, settings, episodeChapters ->
         if (nowPlaying == null || ep == null) {
             null
         } else {
@@ -143,6 +160,9 @@ class PlayerViewModel @Inject constructor(
                 skipBackSec = settings.skipBackSec,
                 skipForwardSec = settings.skipForwardSec,
                 tintFromArtwork = settings.tintPlayer,
+                enclosureUrl = ep.enclosureUrl,
+                chapters = episodeChapters,
+                transcriptUrl = ep.transcriptUrl,
             )
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)

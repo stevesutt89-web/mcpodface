@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "segments": [
+    {"speaker": "Host", "startTime": 0, "endTime": 4.5, "body": "Welcome back to the show."},
+    {"startTime": 4.5, "endTime": 9.25, "body": "Today   we follow\nthe bridge crew."},
+    {"speaker": "Guest", "startTime": "12.0", "body": "A string time."},
+    {"startTime": 20, "body": ""},
+    {"startTime": 25},
+    {"endTime": 30, "body": "Untimed, but kept."}
+  ]
+}
