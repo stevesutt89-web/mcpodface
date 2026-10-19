@@ -71,4 +71,38 @@ interface DownloadDao {
 
     @Query("SELECT * FROM downloads WHERE state = :state")
     suspend fun getByState(state: DownloadState): List<DownloadEntity>
+
+    /** Every downloads row with its episode and podcast, for the Downloads tab (PLAN.md §8.7). */
+    @Query(
+        """
+        SELECT d.episodeId AS episodeId,
+               d.state AS state,
+               d.source AS source,
+               d.filePath AS filePath,
+               d.bytesDownloaded AS bytesDownloaded,
+               d.totalBytes AS totalBytes,
+               d.downloadedAt AS downloadedAt,
+               d.workId AS workId,
+               d.error AS error,
+               d.attempts AS attempts,
+               e.title AS episodeTitle,
+               p.id AS podcastId,
+               p.title AS podcastTitle,
+               p.feedType AS feedType,
+               COALESCE(e.artworkUrl, p.artworkUrl) AS artworkUrl,
+               e.pubDate AS pubDate,
+               e.durationSec AS durationSec,
+               e.playState AS playState,
+               e.playedAt AS playedAt,
+               e.isStarred AS isStarred
+        FROM downloads d
+        INNER JOIN episodes e ON e.id = d.episodeId
+        INNER JOIN podcasts p ON p.id = e.podcastId
+        """,
+    )
+    fun observeDownloadItems(): Flow<List<DownloadListItem>>
+
+    /** Per-podcast overrides, observed so cleanup labels update when a podcast's settings change. */
+    @Query("SELECT * FROM podcast_settings")
+    fun observePodcastSettings(): Flow<List<PodcastSettingsEntity>>
 }
