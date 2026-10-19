@@ -31,7 +31,6 @@ import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material.icons.rounded.FilterList
 import androidx.compose.material.icons.rounded.PlaylistRemove
 import androidx.compose.material.icons.rounded.Podcasts
-import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -70,9 +69,10 @@ import com.steve.mcpodface.data.db.EpisodeListItem
 import com.steve.mcpodface.data.prefs.LatestFilter
 import com.steve.mcpodface.ui.components.CellularPromptDialog
 import com.steve.mcpodface.ui.components.LargeTitleScaffold
+import com.steve.mcpodface.ui.components.SearchButton
+import com.steve.mcpodface.ui.components.SettingsButton
 import com.steve.mcpodface.ui.components.SwipeableEpisodeRow
 import com.steve.mcpodface.ui.components.glass.GlassChip
-import com.steve.mcpodface.ui.components.glass.GlassIconButton
 import com.steve.mcpodface.ui.components.glass.GlassPage
 import com.steve.mcpodface.ui.components.glass.GlassStyle
 import com.steve.mcpodface.ui.components.glass.glass
@@ -86,7 +86,12 @@ private const val PREVIEW_NOW = 1_792_411_200_000L // 2026-10-19T12:00Z
 
 /** Latest tab (PLAN.md §8.2): recent episodes across subscriptions, with filters and swipe actions. */
 @Composable
-fun LatestScreen(onOpenSettings: () -> Unit, onOpenPodcast: (Long) -> Unit, onOpenEpisode: (Long) -> Unit) {
+fun LatestScreen(
+    onOpenSettings: () -> Unit,
+    onOpenSearch: () -> Unit,
+    onOpenPodcast: (Long) -> Unit,
+    onOpenEpisode: (Long) -> Unit,
+) {
     val viewModel: LatestViewModel = hiltViewModel()
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -119,6 +124,7 @@ fun LatestScreen(onOpenSettings: () -> Unit, onOpenPodcast: (Long) -> Unit, onOp
         state = state,
         snackbarHostState = snackbarHostState,
         onOpenSettings = onOpenSettings,
+        onOpenSearch = onOpenSearch,
         onOpenPodcast = onOpenPodcast,
         onOpenEpisode = onOpenEpisode,
         onFilterSelected = viewModel::setFilter,
@@ -145,6 +151,7 @@ private fun LatestContent(
     state: LatestUiState,
     snackbarHostState: SnackbarHostState,
     onOpenSettings: () -> Unit,
+    onOpenSearch: () -> Unit = {},
     onOpenPodcast: (Long) -> Unit,
     onOpenEpisode: (Long) -> Unit,
     onFilterSelected: (LatestFilter) -> Unit,
@@ -165,14 +172,8 @@ private fun LatestContent(
             title = "Latest",
             background = Color.Transparent,
             actions = {
-                GlassIconButton(
-                    icon = Icons.Rounded.Settings,
-                    contentDescription = "Settings",
-                    onClick = onOpenSettings,
-                    size = 40.dp,
-                    iconSize = 20.dp,
-                    modifier = Modifier.padding(end = Spacing.s),
-                )
+                SearchButton(onOpenSearch)
+                SettingsButton(onOpenSettings)
             },
         ) { padding ->
             val pullState = rememberPullToRefreshState()

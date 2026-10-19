@@ -4,27 +4,20 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
-import com.steve.mcpodface.core.Clock
 import com.steve.mcpodface.data.db.AppDatabase
 import com.steve.mcpodface.data.db.EpisodeEntity
 import com.steve.mcpodface.data.db.PlayState
-import com.steve.mcpodface.data.db.PlaylistKind
 import com.steve.mcpodface.data.db.PodcastEntity
 import com.steve.mcpodface.data.feed.FeedRepository
 import com.steve.mcpodface.data.feed.SubscriptionRepository
-import com.steve.mcpodface.data.playlist.PlaylistRepository
-import com.steve.mcpodface.data.playlist.SmartRules
 import com.steve.mcpodface.data.prefs.LibraryLayout
 import com.steve.mcpodface.data.prefs.LibrarySort
-import com.steve.mcpodface.data.search.SearchRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -39,7 +32,6 @@ class LibraryViewModelTest {
     private lateinit var settings: FakeLibrarySettings
     private lateinit var feeds: FeedRepository
     private lateinit var subscriptions: SubscriptionRepository
-    private lateinit var playlists: PlaylistRepository
 
     @Before fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
@@ -49,8 +41,6 @@ class LibraryViewModelTest {
         settings = FakeLibrarySettings()
         feeds = mockk(relaxed = true)
         subscriptions = mockk(relaxed = true)
-        val clock = Clock { LIBRARY_TEST_NOW }
-        playlists = PlaylistRepository(db, SearchRepository(db, clock, Dispatchers.Unconfined), clock)
     }
 
     @After fun tearDown() {
@@ -58,7 +48,7 @@ class LibraryViewModelTest {
         db.close()
     }
 
-    private fun viewModel() = LibraryViewModel(db, settings, feeds, subscriptions, playlists)
+    private fun viewModel() = LibraryViewModel(db, settings, feeds, subscriptions)
 
     /** Inserts a podcast with [unplayed] unplayed episodes plus one played episode. */
     private suspend fun seedPodcast(title: String, unplayed: Int = 0, subscribed: Boolean = true): Long {
@@ -128,45 +118,6 @@ class LibraryViewModelTest {
 
         coVerify(exactly = 1) { subscriptions.unsubscribe(7L, false) }
         coVerify(exactly = 1) { subscriptions.unsubscribe(8L, true) }
-    }
-
-    @Test fun playlistSectionListsManualAndSmartPlaylistsWithCounts() = runTest {
-        val mine = playlists.createManual("Mine")
-        playlists.createSmart("Fresh", SmartRules())
-        val episodeId = db.episodeDao().insertAll(
-            listOf(
-                EpisodeEntity(
-                    podcastId = seedPodcast("Alpha"),
-                    guid = "saved",
-                    title = "Saved",
-                    pubDate = LIBRARY_TEST_NOW,
-                    enclosureUrl = "https://example.com/saved.mp3",
-                    firstSeenAt = 0,
-                ),
-            ),
-        ).single()
-        playlists.add(mine, episodeId)
-        val vm = viewModel()
-
-        val state = vm.state.awaitValue { it.playlists.size == 2 }
-
-        assertThat(state.playlists.map { it.playlist.name to it.playlist.kind to it.itemCount })
-            .containsExactly(
-                "Mine" to PlaylistKind.MANUAL to 1,
-                "Fresh" to PlaylistKind.SMART to 0,
-            ).inOrder()
-    }
-
-    @Test fun createPlaylistMakesAManualPlaylistAndAsksToOpenIt() = runTest {
-        val vm = viewModel()
-        vm.state.awaitValue { it.loaded }
-
-        vm.createPlaylist("Road trip")
-
-        val event = withContext(Dispatchers.Default) { withTimeout(5_000) { vm.events.first() } } as LibraryEvent.OpenPlaylist
-        val created = playlists.observePlaylists().first().single { it.playlist.id == event.playlistId }
-        assertThat(created.playlist.name).isEqualTo("Road trip")
-        assertThat(created.playlist.kind).isEqualTo(PlaylistKind.MANUAL)
     }
 
     @Test fun refreshCallsRefreshAllAndClearsRefreshingFlag() = runTest {

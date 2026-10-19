@@ -4,7 +4,8 @@ package com.steve.mcpodface.data.prefs
 
 enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
-enum class AppTab { LATEST, LIBRARY, DOWNLOADS, UP_NEXT, SEARCH }
+/** SEARCH is no longer a tab. It stays so stored values parse, and restores as LATEST. */
+enum class AppTab { LATEST, LIBRARY, PLAYLISTS, DOWNLOADS, UP_NEXT, SEARCH }
 
 enum class SearchMode { YOUR_PODCASTS, DISCOVER }
 

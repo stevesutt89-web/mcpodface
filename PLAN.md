@@ -383,7 +383,7 @@ is older than 30 days. A manual download clears the tombstone.
 ### 7.1 What it does
 - **Search within a podcast:** a search icon on the podcast detail screen opens search already scoped
   to that podcast. The scope chip can be removed to widen the search.
-- **Search all subscriptions:** the Search tab's **"Your podcasts"** mode (§8.9).
+- **Search all subscriptions:** Search's **"Your podcasts"** mode (§8.9).
 - Both search **episode titles and full show notes** for every episode in the local database,
   including archived and backfilled ones. Search works fully **offline** and makes no API calls.
 
@@ -473,12 +473,14 @@ politely. It's **best effort**, because no source is guaranteed to hold a show's
 ## 8. Screens and navigation
 
 ### 8.1 Shell
-- A bottom navigation bar with 5 tabs: **Latest · Library · Downloads · Up Next · Search**.
+- A bottom navigation bar with 5 tabs: **Latest · Library · Playlists · Downloads · Up Next**. Search is
+  not a tab. It is opened from a search icon in the top bar of each tab (§8.9).
 - A **mini player** sits above the tab bar whenever something is loaded. Tap it to open the full player.
 - **Remembers the last tab.** Write `lastTab` to DataStore whenever the tab changes. On launch, hold
   the SplashScreen API (`setKeepOnScreenCondition`) until the value loads, so the app doesn't flash
   the wrong tab.
-- Settings is reached from a gear icon in the top bar of Library and Latest.
+- Settings is reached from a gear icon in the top bar of every tab. Search is a search icon just to the
+  left of it.
 - The app draws edge-to-edge (required at the current targetSdk) and supports predictive back.
 
 ### 8.2 Latest tab (recent episodes)
@@ -493,8 +495,8 @@ politely. It's **best effort**, because no source is guaranteed to hold a show's
 - Supports pull-to-refresh.
 
 ### 8.3 Library tab (subscriptions)
-- Uses a large collapsing title, "Library".
-- Top rows link to **Starred** and **History**.
+- Uses a large collapsing title, "Library". The top bar has Search, Sort, grid/list toggle and Settings.
+- Starred, History, Stats and the playlists are on the **Playlists** tab (§8.11), not here.
 - Below them is a 3-column **grid of podcast artwork**, with rounded corners and an unplayed-count badge.
 - Sort options: Recently updated (default), A–Z, Recently added. You can toggle between grid and list.
 - Long press a podcast to open its Settings or Unsubscribe. Unsubscribing asks whether to delete its
@@ -550,7 +552,11 @@ politely. It's **best effort**, because no source is guaranteed to hold a show's
   the setting "Autoplay next episode from same podcast" (default off) plays the next one in that
   podcast's sort order.
 
-### 8.9 Search tab
+### 8.9 Search
+- Search is not a tab. A glass search icon sits in the top-right action row of Latest, Library,
+  Playlists, Downloads and Up Next, to the left of the settings gear. It opens Search as a pushed
+  screen: a back button at the top left, and the "+" Add podcast button at the right. Back returns to
+  the tab that opened it, and no tab is highlighted while Search is open.
 - A segmented control switches between **Your podcasts** and **Discover**. It defaults to Your
   podcasts once you have any subscriptions, and remembers the last mode.
 - **Your podcasts:** local full-text search across all subscriptions, with the filters, sort, snippets
@@ -601,8 +607,9 @@ Two kinds (manual and smart), stored in the `playlists` and `playlist_items` tab
     duration, optional words, newest or oldest first, and a size limit (default 50).
   - The editor shows a live preview of the matching episodes as you change the rules.
 
-**Library tab:** Under Starred and History sits a **Playlists** section: the user's playlists
-(manual with counts, smart marked as smart), then "New playlist" and "New smart playlist".
+**Playlists tab:** Top rows link to **Starred**, **History** and **Stats**. Under them sits the
+**Playlists** section: the user's playlists (manual with counts, smart marked as smart), then "New
+playlist" and "New smart playlist". The top bar has Search and Settings.
 
 **Playlist page:**
 - Large title and episode count, then **Play all**, which replaces Up Next with the playlist's
@@ -913,7 +920,7 @@ Report back: files changed, test output summary, any open questions.
 ## 17. Decisions
 
 **Confirmed:**
-- 5 tabs: Latest · Library · Downloads · Up Next · Search.
+- 5 tabs: Latest · Library · Playlists · Downloads · Up Next. Search is opened from the top bar of each tab.
 - Keep the latest 5 episodes per podcast.
 - An episode counts as played at more than 95%, and is deleted 24h after being played.
 - Liquid Glass (iOS 26 style) design, chosen 2026-10-19 (see §11); replaced the earlier low-colour brief.

@@ -56,7 +56,7 @@ import com.kyant.shapes.Capsule
 import com.steve.mcpodface.data.catalog.CatalogPodcast
 import com.steve.mcpodface.data.prefs.SearchMode
 import com.steve.mcpodface.ui.addpodcast.AddPodcastMenu
-import com.steve.mcpodface.ui.components.SettingsButton
+import com.steve.mcpodface.ui.components.BackButton
 import com.steve.mcpodface.ui.components.LargeTitleScaffold
 import com.steve.mcpodface.ui.components.glass.GlassPage
 import com.steve.mcpodface.ui.components.glass.GlassStyle
@@ -66,14 +66,15 @@ import com.steve.mcpodface.ui.theme.Spacing
 import com.steve.mcpodface.ui.theme.ThemePreviews
 
 /**
- * Search tab (PLAN.md §8.9): "Your podcasts" (local episode search) or "Discover". One search field
- * serves both: its text goes to the Discover ViewModel and to the episode search ViewModel.
+ * Search, pushed from the top bar of each tab (PLAN.md §8.9): "Your podcasts" (local episode search)
+ * or "Discover". One search field serves both: its text goes to the Discover ViewModel and to the
+ * episode search ViewModel.
  */
 @Composable
 fun SearchScreen(
+    onBack: () -> Unit,
     onOpenPodcast: (Long) -> Unit,
     onOpenEpisode: (Long) -> Unit = {},
-    onOpenSettings: () -> Unit = {},
 ) {
     val viewModel: SearchViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -97,7 +98,7 @@ fun SearchScreen(
         episodeState = episodeState,
         episodeActions = episodeActions,
         snackbarHostState = snackbarHostState,
-        onOpenSettings = onOpenSettings,
+        onBack = onBack,
         onOpenPodcast = onOpenPodcast,
         onQueryChange = { text ->
             viewModel.onQueryChange(text)
@@ -117,7 +118,7 @@ private fun SearchContent(
     episodeState: EpisodeSearchUiState,
     episodeActions: EpisodeSearchActions,
     snackbarHostState: SnackbarHostState,
-    onOpenSettings: () -> Unit = {},
+    onBack: () -> Unit = {},
     onOpenPodcast: (Long) -> Unit,
     onQueryChange: (String) -> Unit,
     onModeChange: (SearchMode) -> Unit,
@@ -131,9 +132,9 @@ private fun SearchContent(
         LargeTitleScaffold(
             title = "Search",
             background = Color.Transparent,
+            navigationIcon = { BackButton(onBack) },
             actions = {
                 AddPodcastMenu(onOpenPodcast)
-                SettingsButton(onOpenSettings)
             },
         ) { padding ->
             // The search field and mode switch stay pinned under the large title; the results

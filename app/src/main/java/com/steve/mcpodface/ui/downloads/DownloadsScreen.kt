@@ -75,6 +75,7 @@ import com.steve.mcpodface.data.db.PlayState
 import com.steve.mcpodface.data.db.PodcastDownloadSize
 import com.steve.mcpodface.ui.components.Artwork
 import com.steve.mcpodface.ui.components.LargeTitleScaffold
+import com.steve.mcpodface.ui.components.SearchButton
 import com.steve.mcpodface.ui.components.SettingsButton
 import com.steve.mcpodface.ui.components.formatBytes
 import com.steve.mcpodface.ui.components.glass.GlassButton
@@ -92,12 +93,13 @@ private const val PREVIEW_NOW = 1_792_411_200_000L // 2026-10-19T12:00Z
 
 /** Downloads tab (PLAN.md §8.7). All changes go through DownloadManager via the view model. */
 @Composable
-fun DownloadsScreen(onOpenSettings: () -> Unit = {}) {
+fun DownloadsScreen(onOpenSettings: () -> Unit = {}, onOpenSearch: () -> Unit = {}) {
     val viewModel: DownloadsViewModel = hiltViewModel()
     val state by viewModel.state.collectAsStateWithLifecycle()
     DownloadsContent(
         state = state,
         onOpenSettings = onOpenSettings,
+        onOpenSearch = onOpenSearch,
         actions = DownloadsActions(
             onCancel = viewModel::cancel,
             onRetry = viewModel::retry,
@@ -132,6 +134,7 @@ private data class PendingDelete(val title: String, val message: String, val epi
 private fun DownloadsContent(
     state: DownloadsUiState,
     onOpenSettings: () -> Unit,
+    onOpenSearch: () -> Unit = {},
     actions: DownloadsActions,
 ) {
     val colors = AppTheme.colors
@@ -174,6 +177,7 @@ private fun DownloadsContent(
                         modifier = Modifier.padding(end = Spacing.s),
                     )
                 } else {
+                    SearchButton(onOpenSearch)
                     SettingsButton(onOpenSettings)
                     if (state.allDownloaded.isNotEmpty()) {
                         Box {

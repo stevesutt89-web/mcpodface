@@ -61,6 +61,7 @@ import com.steve.mcpodface.ui.library.HistoryScreen
 import com.steve.mcpodface.ui.stats.StatsScreen
 import com.steve.mcpodface.ui.playlist.PlaylistScreen
 import com.steve.mcpodface.ui.playlist.SmartPlaylistEditorScreen
+import com.steve.mcpodface.ui.playlists.PlaylistsScreen
 import androidx.navigation.NavDestination.Companion.hasRoute
 import com.steve.mcpodface.ui.library.LibraryScreen
 import com.steve.mcpodface.ui.library.StarredScreen
@@ -132,17 +133,31 @@ fun AppShell(
                 .layerBackdrop(chromeBackdrop),
         ) {
             val openSettings = { navController.navigate(SettingsRoute) }
+            // Search is pushed on whichever tab opened it, so back returns to that tab.
+            val openSearch = { navController.navigate(SearchRoute) }
             val openPodcast = { id: Long -> navController.navigate(PodcastRoute(id)) }
             val openEpisode = { id: Long -> navController.navigate(EpisodeRoute(id)) }
             val back: () -> Unit = { navController.popBackStack() }
 
             composable<LatestRoute> {
-                LatestScreen(onOpenSettings = openSettings, onOpenPodcast = openPodcast, onOpenEpisode = openEpisode)
+                LatestScreen(
+                    onOpenSettings = openSettings,
+                    onOpenSearch = openSearch,
+                    onOpenPodcast = openPodcast,
+                    onOpenEpisode = openEpisode,
+                )
             }
             composable<LibraryRoute> {
                 LibraryScreen(
                     onOpenSettings = openSettings,
+                    onOpenSearch = openSearch,
                     onOpenPodcast = openPodcast,
+                )
+            }
+            composable<PlaylistsRoute> {
+                PlaylistsScreen(
+                    onOpenSearch = openSearch,
+                    onOpenSettings = openSettings,
                     onOpenStarred = { navController.navigate(StarredRoute) },
                     onOpenHistory = { navController.navigate(HistoryRoute) },
                     onOpenStats = { navController.navigate(StatsRoute) },
@@ -172,10 +187,10 @@ fun AppShell(
                     },
                 )
             }
-            composable<DownloadsRoute> { DownloadsScreen(onOpenSettings = openSettings) }
-            composable<UpNextRoute> { UpNextScreen(onOpenSettings = openSettings) }
+            composable<DownloadsRoute> { DownloadsScreen(onOpenSettings = openSettings, onOpenSearch = openSearch) }
+            composable<UpNextRoute> { UpNextScreen(onOpenSettings = openSettings, onOpenSearch = openSearch) }
             composable<SearchRoute> {
-                SearchScreen(onOpenPodcast = openPodcast, onOpenEpisode = openEpisode, onOpenSettings = openSettings)
+                SearchScreen(onBack = back, onOpenPodcast = openPodcast, onOpenEpisode = openEpisode)
             }
             composable<SettingsRoute> { SettingsScreen(onBack = back) }
             composable<PodcastRoute> { entry ->
