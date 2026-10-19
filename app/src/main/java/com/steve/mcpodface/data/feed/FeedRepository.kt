@@ -4,6 +4,11 @@ import androidx.room.withTransaction
 import com.steve.mcpodface.core.Clock
 import com.steve.mcpodface.data.db.AppDatabase
 import com.steve.mcpodface.data.db.EpisodeOrigin
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -59,6 +64,15 @@ class FeedRepository @Inject constructor(
             is FetchResult.Failed -> RefreshResult.Failed(podcastId, result.message)
             is FetchResult.Success -> applyFeed(podcastId, result, now)
         }
+    }
+
+    /** Refreshes every subscribed podcast, at most 4 feeds at a time (PLAN.md §5). */
+    suspend fun refreshAll(): List<RefreshResult> = coroutineScope {
+        val gate = Semaphore(4)
+        podcastDao.getSubscribed()
+            .map { p -> async { gate.withPermit { refresh(p.id) } } }
+            .awaitAll()
+        // TODO(5.2): run DownloadPolicy per podcast, then one CleanupPolicy pass, then notify.
     }
 
     /**
