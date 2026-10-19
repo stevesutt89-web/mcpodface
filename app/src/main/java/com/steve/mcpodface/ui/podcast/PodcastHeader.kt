@@ -62,6 +62,7 @@ fun PodcastHeader(
     podcast: PodcastEntity,
     onSubscribe: () -> Unit,
     onSubscribedClick: () -> Unit,
+    onSettingsClick: () -> Unit = {},
     modifier: Modifier = Modifier,
     accent: Color = AppTheme.colors.accent,
 ) {
@@ -106,12 +107,10 @@ fun PodcastHeader(
                     Text("Subscribe")
                 }
             }
-            // TODO(7.2): open the per-podcast settings sheet.
             GlassIconButton(
                 icon = Icons.Rounded.Tune,
-                contentDescription = "Podcast settings (coming soon)",
-                onClick = {},
-                enabled = false,
+                contentDescription = "Podcast settings",
+                onClick = onSettingsClick,
             )
         }
         if (podcast.feedGone) {

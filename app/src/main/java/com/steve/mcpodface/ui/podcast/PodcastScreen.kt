@@ -60,6 +60,7 @@ import com.steve.mcpodface.ui.components.glass.rememberArtworkAccent
 import com.steve.mcpodface.ui.components.previewEpisodeItems
 import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
+import com.steve.mcpodface.ui.podcastsettings.PodcastSettingsSheet
 import com.steve.mcpodface.ui.theme.ThemePreviews
 
 @Composable
@@ -101,6 +102,7 @@ private fun PodcastContent(
     val accent: Color = artworkAccent ?: AppTheme.colors.accent
     var menuOpen by remember { mutableStateOf(false) }
     var showUnsubscribe by rememberSaveable { mutableStateOf(false) }
+    var showSettings by rememberSaveable { mutableStateOf(false) }
     val listState = rememberLazyListState()
     // The top bar shows the podcast title only once the header has scrolled away.
     val headerScrolledAway by remember { derivedStateOf { listState.firstVisibleItemIndex > 0 } }
@@ -183,6 +185,7 @@ private fun PodcastContent(
                                 podcast = podcast,
                                 onSubscribe = onSubscribe,
                                 onSubscribedClick = {},
+                                onSettingsClick = { showSettings = true },
                                 accent = accent,
                             )
                         }
@@ -257,6 +260,9 @@ private fun PodcastContent(
         }
     }
 
+    if (showSettings && podcast != null) {
+        PodcastSettingsSheet(podcastId = podcast.id, onDismiss = { showSettings = false })
+    }
     if (showUnsubscribe && podcast != null) {
         AlertDialog(
             onDismissRequest = { showUnsubscribe = false },
