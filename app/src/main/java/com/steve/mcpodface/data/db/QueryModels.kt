@@ -68,3 +68,23 @@ data class HistoryItem(
     val lastListenedAt: Long,
     val totalListenedMs: Long,
 )
+
+/** Listening time for one podcast, for the Stats top-podcasts list (PLAN.md §13). */
+data class PodcastListeningTotal(
+    val podcastId: Long,
+    val podcastTitle: String,
+    val artworkUrl: String?,
+    val listenedMs: Long,
+)
+
+/** One listening session's start and wall-clock listened time, for the Stats day buckets. */
+data class SessionTimeRow(
+    val startedAt: Long,
+    val listenedMs: Long,
+)
+
+/** Episodes finished (PLAYED with playedAt): [total] all time, [last30Days] since the window start. */
+data class FinishedCounts(
+    val total: Int,
+    val last30Days: Int,
+)

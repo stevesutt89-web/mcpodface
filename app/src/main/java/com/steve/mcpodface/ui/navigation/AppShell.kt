@@ -58,6 +58,7 @@ import com.steve.mcpodface.ui.downloads.DownloadsScreen
 import com.steve.mcpodface.ui.episode.EpisodeScreen
 import com.steve.mcpodface.ui.latest.LatestScreen
 import com.steve.mcpodface.ui.library.HistoryScreen
+import com.steve.mcpodface.ui.stats.StatsScreen
 import com.steve.mcpodface.ui.playlist.PlaylistScreen
 import com.steve.mcpodface.ui.playlist.SmartPlaylistEditorScreen
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -144,12 +145,14 @@ fun AppShell(
                     onOpenPodcast = openPodcast,
                     onOpenStarred = { navController.navigate(StarredRoute) },
                     onOpenHistory = { navController.navigate(HistoryRoute) },
+                    onOpenStats = { navController.navigate(StatsRoute) },
                     onOpenPlaylist = { id -> navController.navigate(PlaylistRoute(id)) },
                     onNewSmartPlaylist = { navController.navigate(SmartPlaylistEditorRoute()) },
                 )
             }
             composable<StarredRoute> { StarredScreen(onBack = back, onOpenEpisode = openEpisode) }
             composable<HistoryRoute> { HistoryScreen(onBack = back, onOpenEpisode = openEpisode) }
+            composable<StatsRoute> { StatsScreen(onBack = back) }
             composable<PlaylistRoute> {
                 PlaylistScreen(
                     onBack = back,

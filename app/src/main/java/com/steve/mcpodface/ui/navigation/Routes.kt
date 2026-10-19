@@ -22,6 +22,8 @@ import kotlinx.serialization.Serializable
 @Serializable data class EpisodeRoute(val episodeId: Long)
 @Serializable data object StarredRoute
 @Serializable data object HistoryRoute
+/** Listening stats: hero numbers, a 30-day chart and top podcasts (PLAN.md §13). */
+@Serializable data object StatsRoute
 /** Episode search scoped to one podcast (PLAN.md §7.1). The scope chip can widen it. */
 @Serializable data class EpisodeSearchRoute(val podcastId: Long)
 /** One playlist: Listen Later, a manual playlist or a smart playlist (PLAN.md §8.11). */
