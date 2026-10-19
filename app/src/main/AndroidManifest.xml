@@ -32,6 +32,17 @@
             </intent-filter>
         </activity>
 
+        <!-- Background playback (PLAN.md §12). -->
+        <service
+            android:name=".playback.PlaybackService"
+            android:exported="true"
+            android:foregroundServiceType="mediaPlayback">
+            <intent-filter>
+                <action android:name="androidx.media3.session.MediaLibraryService" />
+                <action android:name="android.media.browse.MediaBrowserService" />
+            </intent-filter>
+        </service>
+
         <!-- WorkManager initializes through Hilt's Configuration.Provider in App. -->
         <provider
             android:name="androidx.startup.InitializationProvider"

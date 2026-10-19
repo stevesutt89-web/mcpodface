@@ -25,6 +25,28 @@ interface EpisodeDao {
     @Query("SELECT * FROM episodes WHERE podcastId = :podcastId")
     suspend fun getForPodcast(podcastId: Long): List<EpisodeEntity>
 
+    /** Most recently played episode, for playback resumption (Bluetooth play, notification resume). */
+    @Query("SELECT * FROM episodes WHERE lastPlayedAt IS NOT NULL ORDER BY lastPlayedAt DESC LIMIT 1")
+    suspend fun getLastPlayed(): EpisodeEntity?
+
+    /**
+     * The next unplayed episode after (pubDate, id) in the podcast's sort order: older episodes for
+     * newest-first, newer ones for oldest-first. Used by "autoplay next from same podcast".
+     */
+    @Query(
+        """
+        SELECT * FROM episodes
+        WHERE podcastId = :podcastId AND playState != 'PLAYED' AND id != :afterId
+          AND ((:newestFirst = 1 AND (pubDate < :afterPubDate OR (pubDate = :afterPubDate AND id < :afterId)))
+            OR (:newestFirst = 0 AND (pubDate > :afterPubDate OR (pubDate = :afterPubDate AND id > :afterId))))
+        ORDER BY
+          CASE WHEN :newestFirst = 1 THEN pubDate ELSE -pubDate END DESC,
+          CASE WHEN :newestFirst = 1 THEN id ELSE -id END DESC
+        LIMIT 1
+        """,
+    )
+    suspend fun getNextUnplayedInPodcast(podcastId: Long, afterPubDate: Long, afterId: Long, newestFirst: Boolean): EpisodeEntity?
+
     /** positionMs = null keeps the current position. */
     @Query("UPDATE episodes SET playState = :playState, playedAt = :playedAt, positionMs = COALESCE(:positionMs, positionMs) WHERE id = :id")
     suspend fun setPlayState(id: Long, playState: PlayState, playedAt: Long?, positionMs: Long?)
