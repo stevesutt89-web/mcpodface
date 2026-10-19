@@ -202,7 +202,7 @@ data class PlaylistEntity(
     val createdAt: Long,
 )
 
-/** An episode in a LISTEN_LATER or MANUAL playlist, in [position] order. */
+/** An episode in a MANUAL playlist, in [position] order. */
 @Entity(
     tableName = "playlist_items",
     primaryKeys = ["playlistId", "episodeId"],

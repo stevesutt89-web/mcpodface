@@ -63,7 +63,7 @@ fun StarredScreen(onBack: () -> Unit, onOpenEpisode: (Long) -> Unit) {
         onOpenEpisode = onOpenEpisode,
         onTogglePlay = viewModel::togglePlay,
         onRemoveStar = viewModel::removeStar,
-        onToggleListenLater = viewModel::toggleListenLater,
+        onToggleUpNext = viewModel::toggleUpNext,
         onTogglePlayed = viewModel::togglePlayed,
     )
 }
@@ -76,7 +76,7 @@ private fun StarredContent(
     onOpenEpisode: (Long) -> Unit,
     onTogglePlay: (Long) -> Unit,
     onRemoveStar: (Long) -> Unit,
-    onToggleListenLater: (Long) -> Unit = {},
+    onToggleUpNext: (Long) -> Unit = {},
     onTogglePlayed: (EpisodeEntity) -> Unit = {},
 ) {
     var menuEpisodeId by rememberSaveable { mutableStateOf<Long?>(null) }
@@ -105,8 +105,8 @@ private fun StarredContent(
                                 onClick = { onOpenEpisode(episodeId) },
                                 onPlayClick = { onTogglePlay(episodeId) },
                                 isPlaying = state.nowPlaying?.let { it.episodeId == episodeId && it.isPlaying } ?: false,
-                                inListenLater = episodeId in state.listenLaterIds,
-                                onToggleListenLater = { onToggleListenLater(episodeId) },
+                                inUpNext = item.inQueue,
+                                onToggleUpNext = { onToggleUpNext(episodeId) },
                                 onTogglePlayed = { onTogglePlayed(item.episode) },
                                 showPodcastTitle = true,
                                 now = state.now,

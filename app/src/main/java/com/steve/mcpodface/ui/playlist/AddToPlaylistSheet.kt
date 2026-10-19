@@ -15,7 +15,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.WatchLater
 import androidx.compose.material.icons.automirrored.rounded.PlaylistPlay
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -50,7 +49,7 @@ import com.steve.mcpodface.ui.theme.Spacing
 import com.steve.mcpodface.ui.theme.ThemePreviews
 
 /**
- * "Add to playlist" sheet (PLAN.md §8.11): Listen Later and the manual playlists, each with a tick
+ * "Add to playlist" sheet (PLAN.md §8.11): the manual playlists, each with a tick
  * when the episode is in it, plus "New playlist". Tapping a row toggles membership.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -98,7 +97,7 @@ internal fun AddToPlaylistContent(
         )
         state.rows.forEach { row ->
             PlaylistRow(
-                icon = if (row.kind == PlaylistKind.LISTEN_LATER) Icons.Rounded.WatchLater else Icons.AutoMirrored.Rounded.PlaylistPlay,
+                icon = Icons.AutoMirrored.Rounded.PlaylistPlay,
                 name = row.name,
                 subtitle = episodeCountLabel(row.itemCount),
                 checked = row.contains,
@@ -193,7 +192,6 @@ private fun AddToPlaylistContentPreview() {
             AddToPlaylistContent(
                 state = AddToPlaylistUiState(
                     rows = listOf(
-                        AddToPlaylistRow(1L, "Listen Later", PlaylistKind.LISTEN_LATER, itemCount = 4, contains = true),
                         AddToPlaylistRow(2L, "Morning commute", PlaylistKind.MANUAL, itemCount = 12, contains = false),
                         AddToPlaylistRow(3L, "Science", PlaylistKind.MANUAL, itemCount = 1, contains = true),
                     ),

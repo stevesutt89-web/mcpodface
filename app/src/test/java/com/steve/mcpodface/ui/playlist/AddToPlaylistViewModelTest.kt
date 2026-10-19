@@ -75,18 +75,16 @@ class AddToPlaylistViewModelTest {
         withTimeout(5_000) { while (!condition()) delay(20) }
     }
 
-    private suspend fun listenLaterId(): Long = playlists.listenLaterId()
-
-    @Test fun listsListenLaterFirstThenManualPlaylistsAndNoSmartOnes() = runTest {
+    @Test fun listsManualPlaylistsAndNoSmartOnes() = runTest {
         val manual = playlists.createManual("Morning commute")
         playlists.createSmart("Unplayed", SmartRules())
         vm.bind(episodeId)
 
         val rows = vm.state.awaitValue { it.loaded }.rows
 
-        assertThat(rows.map { it.name }).containsExactly("Listen Later", "Morning commute").inOrder()
-        assertThat(rows.map { it.kind }).containsExactly(PlaylistKind.LISTEN_LATER, PlaylistKind.MANUAL).inOrder()
-        assertThat(rows.last().playlistId).isEqualTo(manual)
+        assertThat(rows.map { it.name }).containsExactly("Morning commute").inOrder()
+        assertThat(rows.map { it.kind }).containsExactly(PlaylistKind.MANUAL).inOrder()
+        assertThat(rows.single().playlistId).isEqualTo(manual)
     }
 
     @Test fun tickShowsWhereTheEpisodeIsAlready() = runTest {
@@ -97,7 +95,6 @@ class AddToPlaylistViewModelTest {
         val rows = vm.state.awaitValue { it.loaded && it.rows.any { r -> r.contains } }.rows
 
         assertThat(rows.single { it.name == "Science" }.contains).isTrue()
-        assertThat(rows.single { it.kind == PlaylistKind.LISTEN_LATER }.contains).isFalse()
     }
 
     @Test fun tappingManualRowAddsThenRemoves() = runTest {
@@ -114,22 +111,6 @@ class AddToPlaylistViewModelTest {
 
         eventually { db.playlistDao().getItems(manual).none { it.episodeId == episodeId } }
         assertThat(vm.state.awaitValue { row(it, manual)?.contains == false }).isNotNull()
-    }
-
-    @Test fun tappingListenLaterTogglesIt() = runTest {
-        val later = listenLaterId()
-        vm.bind(episodeId)
-        vm.state.awaitValue { it.loaded }
-
-        vm.toggle(later)
-
-        eventually { playlists.observeListenLaterIds().first().contains(episodeId) }
-        assertThat(vm.state.awaitValue { row(it, later)?.contains == true }).isNotNull()
-
-        vm.toggle(later)
-
-        eventually { !playlists.observeListenLaterIds().first().contains(episodeId) }
-        assertThat(playlists.observeListenLaterIds().first()).doesNotContain(episodeId)
     }
 
     @Test fun newPlaylistIsCreatedWithTheEpisodeInIt() = runTest {

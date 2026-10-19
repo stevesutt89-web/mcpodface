@@ -11,6 +11,7 @@ import com.steve.mcpodface.data.db.EpisodeEntity
 import com.steve.mcpodface.data.db.PlaylistKind
 import com.steve.mcpodface.data.db.PodcastEntity
 import com.steve.mcpodface.data.playlist.PlaylistRepository
+import com.steve.mcpodface.data.playlist.SmartRules
 import com.steve.mcpodface.data.queue.QueueRepository
 import com.steve.mcpodface.data.search.SearchRepository
 import com.steve.mcpodface.playback.NoOpPlayerController
@@ -183,13 +184,12 @@ class PlaylistViewModelTest {
         vm.state.awaitValue { state -> state.items.map { it.episode.id } == expected }
     }
 
-    @Test fun listenLaterAndManualPlaylistsAreEditable() = runTest {
+    @Test fun manualPlaylistsAreEditableAndSmartOnesAreNot() = runTest {
         val manualVm = viewModel(manual("a"))
-        val listenVm = viewModel(playlists.listenLaterId())
+        val smartVm = viewModel(playlists.createSmart("Smart", SmartRules()))
 
         assertThat(manualVm.state.awaitValue { it.loaded }.isEditable).isTrue()
-        assertThat(listenVm.state.awaitValue { it.loaded }.isEditable).isTrue()
-        assertThat(listenVm.state.value.isListenLater).isTrue()
+        assertThat(smartVm.state.awaitValue { it.loaded }.isEditable).isFalse()
     }
 
     @Test fun renameChangesTheName() = runTest {
@@ -213,17 +213,6 @@ class PlaylistViewModelTest {
         val event = withContext(Dispatchers.Default) { withTimeout(5_000) { vm.events.first() } }
         assertThat(event).isEqualTo(PlaylistEvent.Deleted)
         assertThat(playlists.observePlaylist(id).first()).isNull()
-    }
-
-    @Test fun deleteNeverRemovesListenLater() = runTest {
-        val listenLater = playlists.listenLaterId()
-        val vm = viewModel(listenLater)
-        vm.state.awaitValue { it.loaded }
-
-        vm.delete()
-
-        eventually { playlists.observePlaylist(listenLater).first()?.kind == PlaylistKind.LISTEN_LATER }
-        assertThat(playlists.observePlaylist(listenLater).first()).isNotNull()
     }
 
     private class RecordingPlayer : NoOpPlayerController() {

@@ -8,7 +8,7 @@ import com.steve.mcpodface.data.db.EpisodeListItem
 import com.steve.mcpodface.data.db.PodcastDao
 import com.steve.mcpodface.data.db.RecentSearchEntity
 import com.steve.mcpodface.data.episodes.EpisodeRepository
-import com.steve.mcpodface.data.playlist.PlaylistRepository
+import com.steve.mcpodface.data.queue.QueueRepository
 import com.steve.mcpodface.data.search.SearchFilters
 import com.steve.mcpodface.data.search.SearchRepository
 import com.steve.mcpodface.data.search.SearchResults
@@ -58,8 +58,6 @@ data class EpisodeSearchUiState(
     val nowPlaying: NowPlaying? = null,
     /** Wall-clock time for the relative dates in the rows. */
     val now: Long = 0L,
-    /** Episodes in Listen Later, for each row's swipe label (PLAN.md §8.11). */
-    val listenLaterIds: Set<Long> = emptySet(),
 )
 
 /**
@@ -74,7 +72,7 @@ class EpisodeSearchViewModel @Inject constructor(
     private val player: PlayerController,
     private val clock: Clock,
     private val episodes: EpisodeRepository,
-    private val playlists: PlaylistRepository,
+    private val queue: QueueRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -128,9 +126,8 @@ class EpisodeSearchViewModel @Inject constructor(
         )
     }
 
-    val uiState: StateFlow<EpisodeSearchUiState> = combine(core, playlists.observeListenLaterIds()) { state, listenLater ->
-        state.copy(listenLaterIds = listenLater)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), EpisodeSearchUiState())
+    val uiState: StateFlow<EpisodeSearchUiState> = core
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), EpisodeSearchUiState())
 
     fun onQueryChange(text: String) {
         form.update { it.copy(query = text) }
@@ -188,9 +185,9 @@ class EpisodeSearchViewModel @Inject constructor(
         player.togglePlayPause(episodeId)
     }
 
-    /** Swipe right: Listen Later add or remove (PLAN.md §8.11). */
-    fun onToggleListenLater(episodeId: Long) {
-        viewModelScope.launch { playlists.toggleListenLater(episodeId) }
+    /** Swipe right: Up Next add or remove (PLAN.md §8.11). */
+    fun onToggleUpNext(episodeId: Long) {
+        viewModelScope.launch { queue.toggle(episodeId) }
     }
 
     /** Swipe left: played or unplayed. */

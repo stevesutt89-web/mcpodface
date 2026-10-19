@@ -9,7 +9,7 @@ import com.steve.mcpodface.data.db.AppDatabase
 import com.steve.mcpodface.data.db.EpisodeEntity
 import com.steve.mcpodface.data.db.PodcastEntity
 import com.steve.mcpodface.data.episodes.EpisodeRepository
-import com.steve.mcpodface.data.playlist.PlaylistRepository
+import com.steve.mcpodface.data.queue.QueueRepository
 import com.steve.mcpodface.data.search.SearchRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -45,7 +45,7 @@ class StarredViewModelTest {
     private fun viewModel() = StarredViewModel(
         EpisodeRepository(db.episodeDao(), db.podcastDao(), clock),
         player,
-        PlaylistRepository(db, SearchRepository(db, clock, Dispatchers.Unconfined), clock),
+        QueueRepository(db),
         clock,
     )
 

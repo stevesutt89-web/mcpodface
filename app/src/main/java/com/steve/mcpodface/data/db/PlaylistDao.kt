@@ -16,12 +16,13 @@ data class PlaylistWithCount(
 
 @Dao
 interface PlaylistDao {
-    /** Listen Later first, then the user's playlists in their order. */
+    /** The MANUAL and SMART playlists in the user's order. The retired LISTEN_LATER kind is left out. */
     @Query(
         """
         SELECT pl.*, (SELECT COUNT(*) FROM playlist_items i WHERE i.playlistId = pl.id) AS itemCount
         FROM playlists pl
-        ORDER BY CASE pl.kind WHEN 'LISTEN_LATER' THEN 0 ELSE 1 END, pl.position, pl.id
+        WHERE pl.kind != 'LISTEN_LATER'
+        ORDER BY pl.position, pl.id
         """,
     )
     fun observeAll(): Flow<List<PlaylistWithCount>>
@@ -50,7 +51,7 @@ interface PlaylistDao {
     @Query("SELECT COALESCE(MAX(position), -1) FROM playlists")
     suspend fun maxPlaylistPosition(): Int
 
-    /** A LISTEN_LATER or MANUAL playlist's episodes, in playlist order. */
+    /** A MANUAL playlist's episodes, in playlist order. */
     @Query(
         """
         SELECT e.*, p.title AS podcastTitle, p.artworkUrl AS podcastArtworkUrl,
@@ -70,17 +71,7 @@ interface PlaylistDao {
     @Query("SELECT * FROM playlist_items WHERE playlistId = :playlistId ORDER BY position, addedAt")
     suspend fun getItems(playlistId: Long): List<PlaylistItemEntity>
 
-    /** Episode ids in any playlist of [kind] (Listen Later: for the swipe label). */
-    @Query(
-        """
-        SELECT i.episodeId FROM playlist_items i
-        INNER JOIN playlists pl ON pl.id = i.playlistId
-        WHERE pl.kind = :kind
-        """,
-    )
-    fun observeEpisodeIdsOfKind(kind: PlaylistKind): Flow<List<Long>>
-
-    /** Ids of the manual playlists (and Listen Later) that contain [episodeId]. */
+    /** Ids of the playlists that contain [episodeId]. */
     @Query("SELECT playlistId FROM playlist_items WHERE episodeId = :episodeId")
     fun observePlaylistIdsFor(episodeId: Long): Flow<List<Long>>
 
@@ -98,13 +89,4 @@ interface PlaylistDao {
 
     @Query("SELECT COALESCE(MIN(position), 0) FROM playlist_items WHERE playlistId = :playlistId")
     suspend fun minItemPosition(playlistId: Long): Int
-
-    /** Drops [episodeId] from every playlist of [kind] (finished episodes leave Listen Later). */
-    @Query(
-        """
-        DELETE FROM playlist_items
-        WHERE episodeId = :episodeId AND playlistId IN (SELECT id FROM playlists WHERE kind = :kind)
-        """,
-    )
-    suspend fun removeFromKind(kind: PlaylistKind, episodeId: Long)
 }

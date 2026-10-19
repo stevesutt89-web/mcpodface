@@ -9,7 +9,6 @@ import com.steve.mcpodface.data.db.DownloadState
 import com.steve.mcpodface.data.db.EpisodeListItem
 import com.steve.mcpodface.data.db.PodcastSettingsEntity
 import com.steve.mcpodface.data.db.SortOrder
-import com.steve.mcpodface.data.playlist.PlaylistRepository
 import com.steve.mcpodface.data.search.SearchRepository
 import com.steve.mcpodface.domain.policy.defaultSortOrder
 import kotlinx.coroutines.flow.first
@@ -17,25 +16,22 @@ import javax.inject.Inject
 
 /**
  * The Android Auto (and other media browser) tree (PLAN.md §14, task 9.5):
- * root → Up Next, Listen Later, Latest, Downloads, Podcasts → episodes. Episode items carry only
+ * root → Up Next, Latest, Downloads, Podcasts → episodes. Episode items carry only
  * the episode id as mediaId; PlaybackService resolves the stream or file when one is played.
  */
 class BrowseTree @Inject constructor(
     private val db: AppDatabase,
-    private val playlists: PlaylistRepository,
     private val search: SearchRepository,
     private val clock: Clock,
 ) {
     suspend fun children(parentId: String): List<MediaItem> = when (parentId) {
         ROOT -> listOf(
             folder(UP_NEXT, "Up Next"),
-            folder(LISTEN_LATER, "Listen Later"),
             folder(LATEST, "Latest"),
             folder(DOWNLOADS, "Downloads"),
             folder(PODCASTS, "Podcasts"),
         )
         UP_NEXT -> db.queueDao().observeQueueItems().first().map(::episode)
-        LISTEN_LATER -> playlists.observeEpisodes(playlists.listenLaterId()).first().map(::episode)
         LATEST -> db.episodeDao()
             .observeLatest(since = clock.now() - LATEST_WINDOW_MS, limit = LIST_LIMIT, unplayedOnly = false, downloadedOnly = false)
             .first().map(::episode)
@@ -70,7 +66,6 @@ class BrowseTree @Inject constructor(
     companion object {
         const val ROOT = "root"
         const val UP_NEXT = "upnext"
-        const val LISTEN_LATER = "listenlater"
         const val LATEST = "latest"
         const val DOWNLOADS = "downloads"
         const val PODCASTS = "podcasts"

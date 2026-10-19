@@ -27,7 +27,7 @@ data class AddToPlaylistRow(
 )
 
 data class AddToPlaylistUiState(
-    /** Listen Later first, then the manual playlists. Smart playlists are not offered. */
+    /** The manual playlists. Smart playlists are not offered. */
     val rows: List<AddToPlaylistRow> = emptyList(),
     /** False until the first emission for the bound episode. */
     val loaded: Boolean = false,
@@ -75,13 +75,8 @@ class AddToPlaylistViewModel @Inject constructor(
     /** Adds the bound episode when it's missing from [playlistId], otherwise removes it. */
     fun toggle(playlistId: Long) {
         val episodeId = boundEpisodeId.value ?: return
-        val kind = state.value.rows.firstOrNull { it.playlistId == playlistId }?.kind ?: return
+        if (state.value.rows.none { it.playlistId == playlistId }) return
         viewModelScope.launch {
-            // Listen Later has its own toggle: it puts new saves on top.
-            if (kind == PlaylistKind.LISTEN_LATER) {
-                playlists.toggleListenLater(episodeId)
-                return@launch
-            }
             val inList = playlistId in playlists.observePlaylistIdsFor(episodeId).first()
             if (inList) playlists.remove(playlistId, episodeId) else playlists.add(playlistId, episodeId)
         }

@@ -160,7 +160,7 @@ data class ArchiveEpisodeLine(
 )
 
 /**
- * One playlist. Items are episode references in order (Listen Later and manual lists). For smart
+ * One playlist. Items are episode references in order (manual lists; a retired Listen Later list from an older backup is folded into Up Next on import). For smart
  * playlists [rulesJson] holds the rules with podcastIds cleared; the podcasts are [smartPodcastFeeds]
  * instead, because ids differ between phones.
  */

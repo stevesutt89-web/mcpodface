@@ -12,7 +12,6 @@ import com.steve.mcpodface.data.db.DownloadState
 import com.steve.mcpodface.data.db.EpisodeEntity
 import com.steve.mcpodface.data.db.FeedType
 import com.steve.mcpodface.data.db.PodcastEntity
-import com.steve.mcpodface.data.playlist.PlaylistRepository
 import com.steve.mcpodface.data.search.SearchRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -25,7 +24,6 @@ import org.junit.runner.RunWith
 class BrowseTreeTest {
     private lateinit var db: AppDatabase
     private lateinit var tree: BrowseTree
-    private lateinit var playlists: PlaylistRepository
     private val day = 86_400_000L
     private val now = 20_000 * day
     private val ids = mutableMapOf<String, Long>()
@@ -36,8 +34,7 @@ class BrowseTreeTest {
             .allowMainThreadQueries().build()
         val clock = Clock { now }
         val search = SearchRepository(db, clock, Dispatchers.Unconfined)
-        playlists = PlaylistRepository(db, search, clock)
-        tree = BrowseTree(db, playlists, search, clock)
+        tree = BrowseTree(db, search, clock)
         val news = db.podcastDao().insert(PodcastEntity(feedUrl = "https://n/feed", title = "News", isSubscribed = true, artworkUrl = "https://n/art.jpg"))
         serial = db.podcastDao().insert(PodcastEntity(feedUrl = "https://s/feed", title = "A Serial", isSubscribed = true, feedType = FeedType.SERIAL))
         db.podcastDao().insert(PodcastEntity(feedUrl = "https://x/feed", title = "Unsubscribed", isSubscribed = false))
@@ -54,7 +51,7 @@ class BrowseTreeTest {
 
     @Test fun rootListsTheFoldersInOrder() {
         val root = runBlocking { tree.children(BrowseTree.ROOT) }
-        assertThat(root.map { it.mediaMetadata.title.toString() }).containsExactly("Up Next", "Listen Later", "Latest", "Downloads", "Podcasts").inOrder()
+        assertThat(root.map { it.mediaMetadata.title.toString() }).containsExactly("Up Next", "Latest", "Downloads", "Podcasts").inOrder()
         assertThat(root.all { it.mediaMetadata.isBrowsable == true && it.mediaMetadata.isPlayable == false }).isTrue()
     }
 
@@ -68,14 +65,12 @@ class BrowseTreeTest {
         assertThat(first.mediaMetadata.artworkUri.toString()).isEqualTo("https://n/art.jpg")
     }
 
-    @Test fun upNextListenLaterAndDownloadsFollowTheirSources() = runBlocking<Unit> {
+    @Test fun upNextAndDownloadsFollowTheirSources() = runBlocking<Unit> {
         db.queueDao().replaceAll(listOf(ids.getValue("s2"), ids.getValue("n1")))
-        playlists.toggleListenLater(ids.getValue("n2"))
         db.downloadDao().upsert(DownloadEntity(ids.getValue("s1"), DownloadState.COMPLETED, DownloadSource.MANUAL, filePath = "/x", downloadedAt = 1))
         db.downloadDao().upsert(DownloadEntity(ids.getValue("n1"), DownloadState.DOWNLOADING, DownloadSource.MANUAL))
 
         assertThat(titles(BrowseTree.UP_NEXT)).containsExactly("Ep s2", "Ep n1").inOrder()
-        assertThat(titles(BrowseTree.LISTEN_LATER)).containsExactly("Ep n2")
         assertThat(titles(BrowseTree.DOWNLOADS)).containsExactly("Ep s1")
     }
 

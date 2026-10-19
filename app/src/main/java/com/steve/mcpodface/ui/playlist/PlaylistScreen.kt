@@ -22,7 +22,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.PlaylistPlay
 import androidx.compose.material.icons.outlined.AutoAwesome
-import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.PlayArrow
@@ -90,8 +89,7 @@ private const val PREVIEW_NOW = 1_792_411_200_000L // 2026-10-19T12:00Z
 
 /**
  * One playlist (PLAN.md §8.11). Large title, the count, Play all and Shuffle, then the episodes:
- * drag to reorder and swipe left to remove for Listen Later and manual lists; smart lists are
- * read-only. The overflow menu holds rename, edit rules and delete.
+ * drag to reorder and swipe left to remove for manual lists; smart lists are read-only. The overflow menu holds rename, edit rules and delete.
  */
 @Composable
 fun PlaylistScreen(onBack: () -> Unit, onOpenEpisode: (Long) -> Unit, onEditRules: (playlistId: Long) -> Unit) {
@@ -156,7 +154,7 @@ private fun PlaylistContent(
     }
     val playlist = state.playlist
     val playingId = state.nowPlaying?.takeIf { it.isPlaying }?.episodeId
-    val hasMenu = playlist != null && (!state.isListenLater || state.isSmart)
+    val hasMenu = playlist != null
 
     GlassPage {
         LargeTitleScaffold(
@@ -175,16 +173,14 @@ private fun PlaylistContent(
                             modifier = Modifier.padding(end = Spacing.s),
                         )
                         DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                            if (!state.isListenLater) {
-                                DropdownMenuItem(
-                                    text = { Text("Rename") },
-                                    leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
-                                    onClick = {
-                                        menuOpen = false
-                                        renameOpen = true
-                                    },
-                                )
-                            }
+                            DropdownMenuItem(
+                                text = { Text("Rename") },
+                                leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
+                                onClick = {
+                                    menuOpen = false
+                                    renameOpen = true
+                                },
+                            )
                             if (state.isSmart) {
                                 DropdownMenuItem(
                                     text = { Text("Edit rules") },
@@ -195,16 +191,14 @@ private fun PlaylistContent(
                                     },
                                 )
                             }
-                            if (!state.isListenLater) {
-                                DropdownMenuItem(
-                                    text = { Text("Delete") },
-                                    leadingIcon = { Icon(Icons.Outlined.Delete, contentDescription = null) },
-                                    onClick = {
-                                        menuOpen = false
-                                        deleteOpen = true
-                                    },
-                                )
-                            }
+                            DropdownMenuItem(
+                                text = { Text("Delete") },
+                                leadingIcon = { Icon(Icons.Outlined.Delete, contentDescription = null) },
+                                onClick = {
+                                    menuOpen = false
+                                    deleteOpen = true
+                                },
+                            )
                         }
                     }
                 }
@@ -334,7 +328,7 @@ private fun PlaylistHeader(
     }
 }
 
-/** A manual or Listen Later row: swipe left removes it, the handle at the end drags it. */
+/** A manual playlist row: swipe left removes it, the handle at the end drags it. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ReorderableCollectionItemScope.SwipeRemovableRow(
@@ -471,8 +465,8 @@ private fun RemoveBackground(direction: SwipeToDismissBoxValue) {
 @Composable
 private fun EmptyState(kind: PlaylistKind) {
     val (icon, message) = when (kind) {
-        PlaylistKind.LISTEN_LATER -> Icons.Outlined.BookmarkBorder to "Swipe right on any episode to save it here"
-        PlaylistKind.MANUAL -> Icons.AutoMirrored.Outlined.PlaylistPlay to "Add episodes from an episode's menu"
+        // LISTEN_LATER is retired and no longer opened from the Library; it shares the manual copy.
+        PlaylistKind.MANUAL, PlaylistKind.LISTEN_LATER -> Icons.AutoMirrored.Outlined.PlaylistPlay to "Add episodes from an episode's menu"
         PlaylistKind.SMART -> Icons.Outlined.AutoAwesome to "No episodes match these rules"
     }
     Column(
@@ -596,24 +590,6 @@ private fun PlaylistSmartPreview() {
                     playlist = previewPlaylist(PlaylistKind.SMART, "Unplayed tech"),
                     loaded = true,
                     items = previewEpisodeItems().take(3),
-                    now = PREVIEW_NOW,
-                ),
-                onBack = {}, onOpenEpisode = {}, onEditRules = {}, onTogglePlay = {},
-                onPlayAll = {}, onShuffle = {}, onConfirmReplace = {}, onDismissReplace = {}, onRemove = {},
-            )
-        }
-    }
-}
-
-@ThemePreviews
-@Composable
-private fun PlaylistListenLaterEmptyPreview() {
-    AppTheme {
-        Surface {
-            PlaylistContent(
-                state = PlaylistUiState(
-                    playlist = previewPlaylist(PlaylistKind.LISTEN_LATER, "Listen Later"),
-                    loaded = true,
                     now = PREVIEW_NOW,
                 ),
                 onBack = {}, onOpenEpisode = {}, onEditRules = {}, onTogglePlay = {},

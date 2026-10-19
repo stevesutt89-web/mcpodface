@@ -285,15 +285,20 @@ class BackupImporter @Inject constructor(
     }
 
     /**
-     * Playlists are matched by kind and name: Listen Later merges into this phone's, and a manual
-     * playlist with the same name gets the backup's episodes appended. Smart playlists that already
-     * exist by name are left alone.
+     * Playlists are matched by kind and name: a manual playlist with the same name gets the backup's
+     * episodes appended. Smart playlists that already exist by name are left alone. A retired Listen
+     * Later playlist from an older backup has no playlist to merge into: its episodes are appended to
+     * Up Next instead (skipping ones already queued).
      */
     private suspend fun restorePlaylists(playlists: List<PlaylistBackup>, ids: Ids) {
         val dao = db.playlistDao()
         for (b in playlists) {
             val kind = enumOr(b.kind, PlaylistKind.MANUAL)
-            val existing = dao.getAll().firstOrNull { it.kind == kind && (kind == PlaylistKind.LISTEN_LATER || it.name == b.name) }
+            if (kind == PlaylistKind.LISTEN_LATER) {
+                appendToUpNext(b.items, ids)
+                continue
+            }
+            val existing = dao.getAll().firstOrNull { it.kind == kind && it.name == b.name }
             when (kind) {
                 PlaylistKind.SMART -> if (existing == null) {
                     val rules = SmartRules.fromJson(b.rulesJson)
@@ -301,7 +306,7 @@ class BackupImporter @Inject constructor(
                     playlistRepository.createSmart(b.name, rules.copy(podcastIds = podcastIds))
                 }
                 else -> {
-                    val id = existing?.id ?: if (kind == PlaylistKind.LISTEN_LATER) playlistRepository.listenLaterId() else playlistRepository.createManual(b.name)
+                    val id = existing?.id ?: playlistRepository.createManual(b.name)
                     for (item in b.items) {
                         val episodeId = episodeFor(item.feedUrl, item.guid, null, ids)?.id ?: continue
                         playlistRepository.add(id, episodeId)
@@ -309,6 +314,17 @@ class BackupImporter @Inject constructor(
                 }
             }
         }
+    }
+
+    /** Appends the backup's Listen Later items to the end of Up Next, in order, skipping queued ones. */
+    private suspend fun appendToUpNext(items: List<QueueBackup>, ids: Ids) {
+        val queue = db.queueDao()
+        val upNext = queue.getAll().map { it.episodeId }.toMutableList()
+        for (item in items) {
+            val episodeId = episodeFor(item.feedUrl, item.guid, null, ids)?.id ?: continue
+            if (episodeId !in upNext) upNext += episodeId
+        }
+        queue.replaceAll(upNext)
     }
 
     /** The podcast for [feedUrl]; an unsubscribed stub if the backup only has its episodes. */
