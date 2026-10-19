@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="2.0">
+  <head>
+    <title>Player FM Export</title>
+    <dateCreated>Fri, 17 Oct 2026 20:03:11 GMT</dateCreated>
+  </head>
+  <body>
+    <outline text="News" title="News">
+      <outline type="rss" text="Morning Wire" title="Morning Wire" xmlUrl="https://feeds.example.net/morning-wire.xml" htmlUrl="https://example.net/morning"/>
+      <outline text="Local">
+        <outline type="rss" text="City Council Live" xmlUrl="https://civic.example.org/council.rss"/>
+      </outline>
+    </outline>
+    <outline text="Comedy">
+      <outline text="Deep">
+        <outline text="Sketches">
+          <outline type="rss" text="Ten Minute Sketch" xmlUrl="https://comedy.example.com/sketch.xml"/>
+        </outline>
+      </outline>
+    </outline>
+    <outline type="rss" text="Loose Feed" xmlUrl="https://loose.example.com/feed"/>
+  </body>
+</opml>
