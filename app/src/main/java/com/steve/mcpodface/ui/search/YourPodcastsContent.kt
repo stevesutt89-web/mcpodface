@@ -472,7 +472,7 @@ internal fun statusLabel(status: StatusFilter): String = when (status) {
     StatusFilter.UNPLAYED -> "Unplayed"
     StatusFilter.IN_PROGRESS -> "In progress"
     StatusFilter.PLAYED -> "Played"
-    StatusFilter.NOT_PLAYED -> "Not played"
+    StatusFilter.NOT_PLAYED -> "Unplayed or in progress"
 }
 
 internal fun durationLabel(duration: DurationFilter): String = when (duration) {

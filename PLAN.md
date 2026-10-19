@@ -595,7 +595,7 @@ Three kinds, stored in the `playlists` and `playlist_items` tables (DB v2), with
   - Drag to reorder, swipe left to remove. Rename and delete.
 - **Smart playlists**
   - Saved `SmartRules`, evaluated live by the search engine (§7.3): podcasts (all or chosen),
-    status (default "not played"), downloaded only, starred only, published in the last N days,
+    status (default "unplayed or in progress"), downloaded only, starred only, published in the last N days,
     duration, optional words, newest or oldest first, and a size limit (default 50).
   - The editor shows a live preview of the matching episodes as you change the rules.
 
