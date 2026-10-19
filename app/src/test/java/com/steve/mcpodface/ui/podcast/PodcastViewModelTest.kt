@@ -18,6 +18,7 @@ import com.steve.mcpodface.data.episodes.EpisodeRepository
 import com.steve.mcpodface.data.feed.FeedRepository
 import com.steve.mcpodface.data.feed.SubscriptionRepository
 import com.steve.mcpodface.playback.NowPlaying
+import com.steve.mcpodface.playback.NoOpPlayerController
 import com.steve.mcpodface.playback.PlayerController
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -263,12 +264,8 @@ class PodcastViewModelTest {
         }
     }
 
-    private class FakePlayerController : PlayerController {
+    private class FakePlayerController : NoOpPlayerController() {
         override val nowPlaying = MutableStateFlow<NowPlaying?>(null)
-        override fun play(episodeId: Long) = Unit
-        override fun togglePlayPause(episodeId: Long) = Unit
-        override fun pause() = Unit
-        override fun seekTo(positionMs: Long) = Unit
     }
 
     private companion object {

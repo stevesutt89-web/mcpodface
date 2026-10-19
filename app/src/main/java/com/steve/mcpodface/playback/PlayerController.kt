@@ -45,8 +45,8 @@ interface PlayerController {
     fun setSpeed(speed: Float)
 }
 
-/** Does nothing. For previews and tests. */
-class NoOpPlayerController @Inject constructor() : PlayerController {
+/** Does nothing. For previews, and as a base for test fakes that override only what they need. */
+open class NoOpPlayerController @Inject constructor() : PlayerController {
     override val nowPlaying: StateFlow<NowPlaying?> = MutableStateFlow(null)
     override val messages: SharedFlow<String> = MutableSharedFlow()
     override fun play(episodeId: Long) = Unit

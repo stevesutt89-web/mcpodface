@@ -19,6 +19,7 @@ import com.steve.mcpodface.data.prefs.LatestFilter
 import com.steve.mcpodface.data.prefs.SettingsRepository
 import com.steve.mcpodface.data.queue.QueueRepository
 import com.steve.mcpodface.playback.NowPlaying
+import com.steve.mcpodface.playback.NoOpPlayerController
 import com.steve.mcpodface.playback.PlayerController
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -229,12 +230,8 @@ class LatestViewModelTest {
             transform(state.value).also { state.value = it }
     }
 
-    private class RecordingPlayer : PlayerController {
-        override val nowPlaying: StateFlow<NowPlaying?> = MutableStateFlow(null)
+    private class RecordingPlayer : NoOpPlayerController() {
         val toggled = mutableListOf<Long>()
-        override fun play(episodeId: Long) = Unit
         override fun togglePlayPause(episodeId: Long) { toggled += episodeId }
-        override fun pause() = Unit
-        override fun seekTo(positionMs: Long) = Unit
     }
 }
