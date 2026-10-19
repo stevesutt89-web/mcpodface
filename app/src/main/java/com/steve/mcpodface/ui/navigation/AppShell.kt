@@ -193,10 +193,18 @@ fun AppShell(
                     onSelect = { index ->
                         val dest = TopLevelDestination.entries[index]
                         onTabSelected(dest.tab)
-                        navController.navigate(dest.route) {
-                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
+                        // Settings is app-wide, not part of a tab: close it before switching so the
+                        // tab doesn't reopen on it later.
+                        navController.popBackStack<SettingsRoute>(inclusive = true)
+                        if (dest == currentTop) {
+                            // Tapping the current tab again returns to its top screen (iOS style).
+                            navController.popBackStack(dest.route, inclusive = false)
+                        } else {
+                            navController.navigate(dest.route) {
+                                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
                         }
                     },
                 )
