@@ -7,6 +7,7 @@ import okhttp3.Credentials
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import android.util.Log
 import java.io.IOException
 import javax.inject.Inject
 
@@ -56,14 +57,17 @@ class FeedFetcher @Inject constructor(
             return@withContext FetchResult.Failed("Invalid feed URL: ${request.url}")
         }
 
+        val started = System.nanoTime()
         try {
             client.newCall(httpRequest).execute().use { response ->
+                Log.d(TAG, "fetch ${request.url}: HTTP ${response.code} headers after ${(System.nanoTime() - started) / 1_000_000}ms")
                 when {
                     response.code == 304 -> FetchResult.NotModified
                     response.code == 410 -> FetchResult.Gone
                     !response.isSuccessful -> FetchResult.Failed("HTTP ${response.code}", response.code)
                     else -> {
                         val feed = response.body.byteStream().use { parser.parse(it, request.url) }
+                        Log.d(TAG, "fetch+parse ${feed.episodes.size} episodes in ${(System.nanoTime() - started) / 1_000_000}ms")
                         FetchResult.Success(
                             feed = feed,
                             etag = response.header("ETag"),
@@ -91,3 +95,5 @@ class FeedFetcher @Inject constructor(
         return finalUrl.takeIf { it != originalUrl }
     }
 }
+
+private const val TAG = "McPodface.Feed"

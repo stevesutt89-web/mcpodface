@@ -45,6 +45,10 @@ data class PodcastUiState(
     val isPlaying: Boolean = false,
     val isRefreshing: Boolean = false,
     val now: Long = 0L,
+    /** First fetch after opening from search is still running: show "Loading episodes…". */
+    val feedLoading: Boolean = false,
+    /** First fetch failed: show the message with a retry. */
+    val feedError: String? = null,
 ) {
     val isLoading: Boolean get() = !loaded
     val notFound: Boolean get() = loaded && podcast == null
@@ -98,8 +102,13 @@ class PodcastViewModel @Inject constructor(
     }
 
     /** Emits only once the podcast, settings and episode lists have all emitted, so `loaded` is true from then on. */
-    val uiState: StateFlow<PodcastUiState> = combine(data, isRefreshing, playerController.nowPlaying) { d, refreshing, np ->
-        d.toState(refreshing, np, clock.now())
+    private val firstFetch = subscriptionRepository.firstFetch.map { it[podcastId] }.distinctUntilChanged()
+
+    val uiState: StateFlow<PodcastUiState> = combine(data, isRefreshing, playerController.nowPlaying, firstFetch) { d, refreshing, np, ff ->
+        d.toState(refreshing, np, clock.now()).copy(
+            feedLoading = ff == SubscriptionRepository.FirstFetch.Loading,
+            feedError = (ff as? SubscriptionRepository.FirstFetch.Failed)?.message,
+        )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), PodcastUiState())
 
     private data class Data(
@@ -153,6 +162,10 @@ class PodcastViewModel @Inject constructor(
     }
 
     fun refresh() {
+        if (subscriptionRepository.firstFetch.value[podcastId] is SubscriptionRepository.FirstFetch.Failed) {
+            subscriptionRepository.startFirstFetch(podcastId)
+            return
+        }
         if (isRefreshing.value) return
         viewModelScope.launch {
             isRefreshing.value = true

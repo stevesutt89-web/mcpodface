@@ -221,7 +221,7 @@ class SearchViewModelTest {
 
     @Test
     fun `tapping a result opens the podcast and emits its id`() = runTest(dispatcher) {
-        coEvery { subscriptions.open(any(), any(), any(), any()) } returns
+        coEvery { subscriptions.open(any(), any(), any(), any(), any()) } returns
             SubscriptionRepository.OpenResult.Ok(42L)
         catalog.searchResult = { listOf(podcast(1)) }
         val vm = createViewModel()
@@ -233,13 +233,13 @@ class SearchViewModelTest {
         advanceUntilIdle()
 
         assertThat(events).containsExactly(SearchEvent.OpenPodcast(42L))
-        coVerify { subscriptions.open(podcast(1).feedUrl, podcast(1), null, null) }
+        coVerify { subscriptions.open(podcast(1).feedUrl, podcast(1), null, null, waitForFeed = false) }
         assertThat(vm.uiState.value.openingFeedUrl).isNull()
     }
 
     @Test
     fun `a failed open emits a message and clears the progress state`() = runTest(dispatcher) {
-        coEvery { subscriptions.open(any(), any(), any(), any()) } returns
+        coEvery { subscriptions.open(any(), any(), any(), any(), any()) } returns
             SubscriptionRepository.OpenResult.Failed("This feed is down")
         val vm = createViewModel()
         val events = mutableListOf<SearchEvent>()

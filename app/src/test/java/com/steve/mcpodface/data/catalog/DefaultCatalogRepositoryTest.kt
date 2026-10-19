@@ -6,7 +6,9 @@ import com.steve.mcpodface.data.network.ListenNotesKey
 import com.steve.mcpodface.data.network.PodcastIndexCredentials
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
+import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
+import okhttp3.mockwebserver.QueueDispatcher
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -53,9 +55,11 @@ class DefaultCatalogRepositoryTest {
     private val clock = FakeClock(NOW)
 
     @Before fun startServers() {
-        index.start()
-        itunes.start()
-        listen.start()
+        // A server with nothing queued answers 404 at once instead of hanging until a timeout.
+        for (server in listOf(index, itunes, listen)) {
+            server.dispatcher = QueueDispatcher().apply { setFailFast(MockResponse().setResponseCode(404)) }
+            server.start()
+        }
     }
 
     @After fun stopServers() {
@@ -101,7 +105,8 @@ class DefaultCatalogRepositoryTest {
         assertThat(request.requestUrl!!.queryParameter("q")).isEqualTo("Radiolab")
         assertThat(request.requestUrl!!.queryParameter("max")).isEqualTo("40")
         assertThat(request.headers["X-Auth-Key"]).isEqualTo("key")
-        assertThat(itunes.requestCount).isEqualTo(0)
+        // iTunes is always asked too (in parallel) and merged; here it had nothing.
+        assertThat(itunes.requestCount).isEqualTo(1)
     }
 
     @Test fun artworkFallsBackToImageAndEmptyCategoryArrayIsTolerated() = runTest {
@@ -242,7 +247,7 @@ class DefaultCatalogRepositoryTest {
 
         assertThat(second).isEqualTo(first)
         assertThat(index.requestCount).isEqualTo(1)
-        assertThat(itunes.requestCount).isEqualTo(0)
+        assertThat(itunes.requestCount).isEqualTo(1)
     }
 
     @Test fun cacheKeyIsTrimmedAndCaseInsensitive() = runTest {
@@ -409,6 +414,7 @@ class DefaultCatalogRepositoryTest {
     ]}"""
 
     @Test fun listenNotesUsedWhenIndexUnavailableAndSendsKey() = runTest {
+        itunes.respond("""{"results": []}""") // the iTunes search itself finds nothing
         listen.respond(lnSearchBody)
         itunes.respond("""{"results": [{"collectionId": 42, "feedUrl": "https://feeds.example.com/hidden.xml"}]}""")
 
@@ -423,6 +429,7 @@ class DefaultCatalogRepositoryTest {
         val req = listen.takeRequest()
         assertThat(req.getHeader("X-ListenAPI-Key")).isEqualTo("ln-key")
         assertThat(req.requestUrl!!.queryParameter("q")).isEqualTo("radiolab")
+        itunes.takeRequest() // the search
         assertThat(itunes.takeRequest().requestUrl!!.queryParameter("id")).isEqualTo("42")
     }
 
@@ -472,5 +479,28 @@ class DefaultCatalogRepositoryTest {
         assertThat(r.single().feedUrl).isEqualTo("https://feeds.example.com/tv.xml")
         listen.takeRequest()
         assertThat(listen.takeRequest().requestUrl!!.queryParameter("genre_id")).isEqualTo("68")
+    }
+
+    // ---- merged sources ----
+
+    @Test fun indexAndItunesAreMergedWithItunesOrderFirstAndNoDuplicates() = runTest {
+        index.respond(INDEX_SEARCH_BODY)
+        itunes.respond("""{"results": [
+          {"collectionId": 1, "collectionName": "Popular Show", "feedUrl": "https://feeds.example.com/popular.xml"},
+          {"collectionId": 2, "collectionName": "Radiolab", "feedUrl": "http://feeds.example.com/radiolab.xml?src=itunes"}
+        ]}""")
+
+        val results = repo().search("show")
+
+        assertThat(results.map { it.title }).containsExactly("Popular Show", "Radiolab", "Image Only").inOrder()
+        val radiolab = results.single { it.title == "Radiolab" }
+        assertThat(radiolab.podcastIndexId).isEqualTo(75075L) // enriched from the Index entry
+        assertThat(radiolab.episodeCount).isEqualTo(300)
+    }
+
+    @Test fun listenNotesNotAskedWhenFreeSourcesHaveResults() = runTest {
+        itunes.respond(ITUNES_BODY)
+        repo(credentials = noIndex, listenNotesKey = lnKey).search("radiolab")
+        assertThat(listen.requestCount).isEqualTo(0)
     }
 }

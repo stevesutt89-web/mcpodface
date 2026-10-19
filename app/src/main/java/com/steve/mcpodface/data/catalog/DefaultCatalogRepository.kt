@@ -4,6 +4,7 @@ import com.steve.mcpodface.core.Clock
 import com.steve.mcpodface.core.di.IoDispatcher
 import com.steve.mcpodface.data.db.CatalogCacheDao
 import com.steve.mcpodface.data.db.CatalogCacheEntity
+import com.steve.mcpodface.data.feed.EnclosureUrls
 import com.steve.mcpodface.data.network.ApiPurpose
 import com.steve.mcpodface.data.network.ITunesApi
 import com.steve.mcpodface.data.network.ITunesPodcast
@@ -17,6 +18,8 @@ import com.steve.mcpodface.data.network.RateLimiter
 import com.steve.mcpodface.data.network.podcastIndexJson
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -73,40 +76,36 @@ class DefaultCatalogRepository @Inject constructor(
     override suspend fun search(term: String): List<CatalogPodcast> = withContext(ioDispatcher) {
         val query = term.trim()
         if (query.isEmpty()) return@withContext emptyList()
-        val key = "search:" + query.lowercase()
-        readPodcasts(key)?.let { return@withContext it }
+        val key = "search2:" + query.lowercase() // v2: merged Index + iTunes results
+        readPodcasts(key)?.let { return@withContext rankByTitle(it, query) }
 
-        val index: List<CatalogPodcast>? = if (indexAllowed(ApiPurpose.DISCOVERY)) {
-            indexCall { podcastIndexApi.searchByTerm(query, MAX_RESULTS).feeds.toIndexCatalog() }
-        } else {
-            null
+        // Podcast Index and iTunes in parallel, merged: iTunes ranks mainstream shows by popularity
+        // (Index alone misses e.g. NYT "The Daily"), Index adds niche and new shows plus its ids.
+        val (index, itunes) = coroutineScope {
+            val index = async {
+                if (indexAllowed(ApiPurpose.DISCOVERY)) {
+                    indexCall { podcastIndexApi.searchByTerm(query, MAX_RESULTS).feeds.toIndexCatalog() }
+                } else {
+                    null
+                }
+            }
+            val itunes = async { optionalCall { iTunesApi.search(query).results.toITunesCatalog() } }
+            index.await() to itunes.await()
         }
-        if (!index.isNullOrEmpty()) {
-            writePodcasts(key, index)
-            return@withContext index
-        }
+        var results = mergeSources(primary = itunes.orEmpty(), secondary = index.orEmpty())
 
-        val listenNotes = if (listenNotesKey.isUsable) {
-            optionalCall { withFeedUrls(listenNotesApi.searchPodcasts(query).results) }
-        } else {
-            null
+        // Listen Notes only when both free sources came back empty: its monthly quota is small.
+        var listenNotes: List<CatalogPodcast>? = null
+        if (results.isEmpty() && listenNotesKey.isUsable) {
+            listenNotes = optionalCall { withFeedUrls(listenNotesApi.searchPodcasts(query).results) }
+            results = listenNotes.orEmpty()
         }
-        if (!listenNotes.isNullOrEmpty()) {
-            writePodcasts(key, listenNotes)
-            return@withContext listenNotes
+        if (index == null && itunes == null && listenNotes == null) {
+            throw CatalogException("Catalogue search failed for \"$query\"")
         }
-
-        val itunes = try {
-            iTunesApi.search(query).results.toITunesCatalog()
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            // A source answered, just with nothing: that is an empty result, not a failure.
-            if (index != null || listenNotes != null) return@withContext emptyList()
-            throw CatalogException("Catalogue search failed for \"$query\"", e)
-        }
-        if (itunes.isNotEmpty()) writePodcasts(key, itunes)
-        itunes
+        val ranked = rankByTitle(results, query)
+        if (ranked.isNotEmpty()) writePodcasts(key, ranked)
+        ranked
     }
 
     override suspend fun trending(category: String?): List<CatalogPodcast> = withContext(ioDispatcher) {
@@ -305,4 +304,50 @@ class DefaultCatalogRepository @Inject constructor(
     }
 
     private fun List<ITunesPodcast>.toITunesCatalog(): List<CatalogPodcast> = mapNotNull { it.toCatalog() }
+}
+
+/**
+ * Re-ranks catalogue results so titles matching the query win: exact title, then title starting
+ * with the query, then the query as a whole phrase in the title, then the source's own order.
+ * Podcast Index otherwise ranks e.g. a dozen "Locked On … Daily Podcast" shows above "The Daily".
+ */
+internal fun rankByTitle(results: List<CatalogPodcast>, query: String): List<CatalogPodcast> {
+    val q = normalizeTitle(query)
+    if (q.isEmpty()) return results
+    return results.withIndex().sortedWith(
+        compareBy<IndexedValue<CatalogPodcast>> { (_, p) ->
+            val t = normalizeTitle(p.title)
+            when {
+                t == q -> 0
+                t.startsWith("$q ") || t.startsWith("$q:") -> 1
+                " $t ".contains(" $q ") -> 2
+                else -> 3
+            }
+        }.thenBy { it.index },
+    ).map { it.value }
+}
+
+private fun normalizeTitle(s: String): String =
+    s.lowercase().replace(Regex("""[^\p{L}\p{N}: ]"""), " ").replace(Regex("""\s+"""), " ").trim()
+
+/**
+ * Merges two result lists: [primary] order first, then [secondary] entries it lacks. A podcast in
+ * both (same feed URL, ignoring scheme/query/tracking prefixes) keeps its primary position but
+ * gains the secondary entry's Podcast Index id, episode count and description.
+ */
+internal fun mergeSources(primary: List<CatalogPodcast>, secondary: List<CatalogPodcast>): List<CatalogPodcast> {
+    val byUrl = LinkedHashMap<String, CatalogPodcast>()
+    for (p in primary) byUrl.putIfAbsent(EnclosureUrls.normalize(p.feedUrl), p)
+    for (s in secondary) {
+        val k = EnclosureUrls.normalize(s.feedUrl)
+        val existing = byUrl[k]
+        byUrl[k] = if (existing == null) s else existing.copy(
+            podcastIndexId = existing.podcastIndexId ?: s.podcastIndexId,
+            episodeCount = existing.episodeCount ?: s.episodeCount,
+            description = existing.description ?: s.description,
+            author = existing.author ?: s.author,
+            artworkUrl = existing.artworkUrl ?: s.artworkUrl,
+        )
+    }
+    return byUrl.values.toList().take(MAX_RESULTS)
 }

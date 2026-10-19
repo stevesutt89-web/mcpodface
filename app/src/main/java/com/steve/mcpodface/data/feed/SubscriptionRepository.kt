@@ -9,6 +9,9 @@ import com.steve.mcpodface.data.db.AppDatabase
 import com.steve.mcpodface.data.db.BackfillStateEntity
 import com.steve.mcpodface.data.db.PodcastEntity
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -32,6 +35,17 @@ class SubscriptionRepository @Inject constructor(
         data class Failed(val message: String) : OpenResult
     }
 
+    /** First fetch of a podcast opened from search, running in the background (see [open]). */
+    sealed interface FirstFetch {
+        data object Loading : FirstFetch
+        data class Failed(val message: String) : FirstFetch
+    }
+
+    private val _firstFetch = MutableStateFlow<Map<Long, FirstFetch>>(emptyMap())
+
+    /** Podcasts whose first fetch is still running or has failed. Absent = fetched (or not started). */
+    val firstFetch: StateFlow<Map<Long, FirstFetch>> = _firstFetch
+
     /**
      * Makes sure a row exists for [feedUrl] (filled from [hint] while the feed loads) and fetches the
      * feed if it has never been fetched. Returns the podcast id to open the detail screen with.
@@ -41,6 +55,7 @@ class SubscriptionRepository @Inject constructor(
         hint: CatalogPodcast? = null,
         authUser: String? = null,
         authPassword: String? = null,
+        waitForFeed: Boolean = true,
     ): OpenResult {
         val url = feedUrl.trim()
         val existing = podcastDao.getByFeedUrl(url)
@@ -59,6 +74,13 @@ class SubscriptionRepository @Inject constructor(
         }
         if (existing?.lastRefreshAt != null) return OpenResult.Ok(id)
 
+        // From search, open the page at once (the placeholder already has the catalogue's title,
+        // artwork and description) and let episodes stream in. Big feeds take a while.
+        if (!waitForFeed) {
+            startFirstFetch(id)
+            return OpenResult.Ok(id)
+        }
+
         return when (val r = feedRepository.refresh(id)) {
             is RefreshResult.Failed -> {
                 if (existing == null) podcastDao.deleteIfUnsubscribed(id) // don't leave a broken placeholder
@@ -66,6 +88,20 @@ class SubscriptionRepository @Inject constructor(
             }
             is RefreshResult.Gone -> OpenResult.Failed("This feed no longer exists")
             else -> OpenResult.Ok(id)
+        }
+    }
+
+    /** Runs (or re-runs after a failure) the background first fetch started by [open]. */
+    fun startFirstFetch(podcastId: Long) {
+        if (_firstFetch.value[podcastId] == FirstFetch.Loading) return
+        _firstFetch.update { it + (podcastId to FirstFetch.Loading) }
+        appScope.launch {
+            val outcome = when (val r = feedRepository.refresh(podcastId)) {
+                is RefreshResult.Failed -> FirstFetch.Failed(r.message)
+                is RefreshResult.Gone -> FirstFetch.Failed("This feed no longer exists")
+                else -> null
+            }
+            _firstFetch.update { if (outcome == null) it - podcastId else it + (podcastId to outcome) }
         }
     }
 

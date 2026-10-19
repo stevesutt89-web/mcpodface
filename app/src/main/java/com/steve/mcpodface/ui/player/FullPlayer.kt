@@ -35,8 +35,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -187,18 +185,13 @@ fun FullPlayerContent(
             )
 
             Spacer(Modifier.height(Spacing.m))
-            Slider(
-                value = shownFraction,
-                onValueChange = { dragFraction = it },
-                onValueChangeFinished = {
+            Scrubber(
+                fraction = shownFraction,
+                onScrub = { dragFraction = it },
+                onScrubEnd = {
                     dragFraction?.let { onSeek((it * state.durationMs).toLong()) }
                     dragFraction = null
                 },
-                colors = SliderDefaults.colors(
-                    thumbColor = colors.textPrimary,
-                    activeTrackColor = colors.textPrimary.copy(alpha = 0.85f),
-                    inactiveTrackColor = colors.textPrimary.copy(alpha = 0.18f),
-                ),
             )
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(

@@ -45,7 +45,9 @@ import org.junit.runner.RunWith
 class PodcastViewModelTest {
     private lateinit var db: AppDatabase
     private lateinit var observerScope: CoroutineScope
-    private val subscriptions = mockk<SubscriptionRepository>(relaxed = true)
+    private val subscriptions = mockk<SubscriptionRepository>(relaxed = true) {
+        io.mockk.every { firstFetch } returns kotlinx.coroutines.flow.MutableStateFlow(emptyMap())
+    }
     private val feeds = mockk<FeedRepository>(relaxed = true)
     private val player = FakePlayerController()
     private val clock = Clock { NOW }

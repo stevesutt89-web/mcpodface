@@ -90,6 +90,7 @@ class FeedRepository @Inject constructor(
 
     private suspend fun applyFeed(podcastId: Long, fetched: FetchResult.Success, now: Long): RefreshResult {
         val feed = fetched.feed
+        val started = System.nanoTime()
         return db.withTransaction {
             // Re-read inside the transaction: the user may have (un)subscribed or changed the podcast
             // while the fetch was in flight, and writing back a stale copy would undo that.
@@ -132,6 +133,7 @@ class FeedRepository @Inject constructor(
                     feedGone = false,
                 ),
             )
+            android.util.Log.d("McPodface.Feed", "merge+save ${merge.toInsert.size} new, ${merge.toUpdate.size} updated in ${(System.nanoTime() - started) / 1_000_000}ms")
             RefreshResult.Updated(podcast.id, newIds, insertedIds.count { it > 0 })
         }
     }

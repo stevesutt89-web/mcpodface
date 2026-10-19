@@ -223,7 +223,6 @@ class RssParser @Inject constructor() {
         val TRANSCRIPT_PREFERENCE = listOf("text/vtt", "application/x-subrip", "application/srt", "application/json")
 
         /** Matches `&name;` where name is not one of the five XML predefined entities. */
-        val NAMED_ENTITY = Regex("&([A-Za-z][A-Za-z0-9]*);")
         val XML_ENTITIES = setOf("amp", "lt", "gt", "quot", "apos")
 
         /** Named HTML entities that XmlPullParser rejects, mapped to code points. */
@@ -257,15 +256,52 @@ class RssParser @Inject constructor() {
          * Rewrites HTML-only named entities to numeric references so the XML parser can read real-world
          * feeds. Works byte-for-byte through ISO-8859-1, so the document's own encoding is untouched.
          */
+        /**
+         * Rewrites HTML-only named entities (&eacute;, &nbsp;…) to numeric references so the XML
+         * parser accepts them; the five XML entities are left alone. A single pass over the raw
+         * bytes: entity names are ASCII, so this is safe for UTF-8 and any ASCII-compatible charset.
+         * (A regex over the whole feed took ~3ms/KB on device: 15s for a 5MB feed.)
+         */
         fun decodeHtmlEntities(bytes: ByteArray): ByteArray {
-            val latin1 = String(bytes, Charsets.ISO_8859_1)
-            if (!latin1.contains('&')) return bytes
-            val rewritten = NAMED_ENTITY.replace(latin1) { m ->
-                val name = m.groupValues[1]
+            var out: java.io.ByteArrayOutputStream? = null
+            var copiedUpTo = 0
+            var i = 0
+            val n = bytes.size
+            while (i < n) {
+                if (bytes[i] != AMP) {
+                    i++
+                    continue
+                }
+                // Read an entity name: a letter, then letters/digits, up to MAX_ENTITY_NAME, then ';'.
+                var j = i + 1
+                while (j < n && j - i - 1 < MAX_ENTITY_NAME && isAsciiAlnum(bytes[j], first = j == i + 1)) j++
+                if (j == i + 1 || j >= n || bytes[j] != SEMI) {
+                    i++
+                    continue
+                }
+                val name = String(bytes, i + 1, j - i - 1, Charsets.US_ASCII)
                 val codePoint = if (name in XML_ENTITIES) null else HTML_ENTITIES[name]
-                if (codePoint == null) m.value else "&#$codePoint;"
+                if (codePoint != null) {
+                    val o = out ?: java.io.ByteArrayOutputStream(n + 64).also { out = it }
+                    o.write(bytes, copiedUpTo, i - copiedUpTo)
+                    o.write("&#$codePoint;".toByteArray(Charsets.US_ASCII))
+                    copiedUpTo = j + 1
+                }
+                i = j + 1
             }
-            return rewritten.toByteArray(Charsets.ISO_8859_1)
+            val o = out ?: return bytes
+            o.write(bytes, copiedUpTo, n - copiedUpTo)
+            return o.toByteArray()
+        }
+
+        private const val AMP = '&'.code.toByte()
+        private const val SEMI = ';'.code.toByte()
+        private const val MAX_ENTITY_NAME = 31
+
+        private fun isAsciiAlnum(b: Byte, first: Boolean): Boolean {
+            val c = b.toInt()
+            val letter = c in 'a'.code..'z'.code || c in 'A'.code..'Z'.code
+            return if (first) letter else letter || c in '0'.code..'9'.code
         }
 
         /** Normalises a namespace URI so that common variants compare equal. */

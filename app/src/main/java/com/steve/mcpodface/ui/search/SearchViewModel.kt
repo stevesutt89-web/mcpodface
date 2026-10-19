@@ -152,7 +152,7 @@ class SearchViewModel @Inject constructor(
         _state.update { it.copy(openingFeedUrl = podcast.feedUrl) }
         viewModelScope.launch {
             val result = try {
-                subscriptionRepository.open(podcast.feedUrl, podcast)
+                subscriptionRepository.open(podcast.feedUrl, podcast, waitForFeed = false)
             } finally {
                 _state.update { it.copy(openingFeedUrl = null) }
             }

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -195,7 +196,38 @@ private fun PodcastContent(
                                 onHidePlayedChange = onHidePlayedChange,
                             )
                         }
-                        if (state.episodes.isEmpty()) {
+                        if (state.episodes.isEmpty() && state.feedLoading) {
+                            item(key = "loading") {
+                                Row(
+                                    Modifier.fillMaxWidth().padding(horizontal = Spacing.m, vertical = Spacing.l),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center,
+                                ) {
+                                    CircularProgressIndicator(Modifier.size(20.dp), color = accent, strokeWidth = 2.dp)
+                                    Spacer(Modifier.width(Spacing.s))
+                                    Text(
+                                        "Loading episodes…",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = AppTheme.colors.textSecondary,
+                                    )
+                                }
+                            }
+                        } else if (state.episodes.isEmpty() && state.feedError != null) {
+                            item(key = "error") {
+                                Column(
+                                    Modifier.fillMaxWidth().padding(horizontal = Spacing.m, vertical = Spacing.l),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                ) {
+                                    Text(
+                                        "Couldn't load episodes: ${state.feedError}",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.error,
+                                    )
+                                    Spacer(Modifier.height(Spacing.s))
+                                    GlassButton(onClick = onRefresh) { Text("Try again") }
+                                }
+                            }
+                        } else if (state.episodes.isEmpty()) {
                             item(key = "empty") {
                                 Text(
                                     text = if (state.hidePlayed) "Every episode is played" else "No episodes yet",
@@ -302,7 +334,12 @@ private fun EpisodeControls(
     }
 }
 
-private fun episodeCountLabel(count: Int): String = if (count == 1) "1 episode" else "$count episodes"
+/** Empty while there is nothing to count yet (a feed that is still loading shows its own message). */
+private fun episodeCountLabel(count: Int): String = when (count) {
+    0 -> ""
+    1 -> "1 episode"
+    else -> "$count episodes"
+}
 
 // ---- Previews -------------------------------------------------------------------------------
 

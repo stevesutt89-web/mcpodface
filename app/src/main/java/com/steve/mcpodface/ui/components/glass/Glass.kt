@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
@@ -24,6 +25,7 @@ import com.kyant.backdrop.effects.lens
 import com.kyant.backdrop.effects.vibrancy
 import com.kyant.backdrop.highlight.Highlight
 import com.kyant.backdrop.shadow.Shadow
+import com.kyant.shapes.RoundedRectangularShape
 import com.steve.mcpodface.ui.theme.AppTheme
 
 /*
@@ -69,8 +71,9 @@ enum class GlassStyle {
 fun glassTint(style: GlassStyle, accent: Color = AppTheme.colors.accent): Color {
     val dark = AppTheme.colors.isDark
     return when (style) {
-        GlassStyle.Regular -> if (dark) Color(0xFF1C1C1E).copy(alpha = 0.55f) else Color.White.copy(alpha = 0.62f)
-        GlassStyle.Clear -> if (dark) Color.Black.copy(alpha = 0.18f) else Color.White.copy(alpha = 0.22f)
+        // Light glass is a faint cool grey rather than pure white, so it still reads over white pages.
+        GlassStyle.Regular -> if (dark) Color(0xFF1C1C1E).copy(alpha = 0.55f) else Color(0xFFF2F2F7).copy(alpha = 0.72f)
+        GlassStyle.Clear -> if (dark) Color.Black.copy(alpha = 0.18f) else Color(0xFFF2F2F7).copy(alpha = 0.3f)
         GlassStyle.Prominent -> accent.copy(alpha = if (dark) 0.78f else 0.86f)
     }
 }
@@ -105,24 +108,31 @@ fun Modifier.glass(
         GlassStyle.Clear -> 20.dp
         else -> 14.dp
     }
+    val supportsLens = shape is RoundedRectangularShape || shape is CornerBasedShape
     return this.drawBackdrop(
         backdrop = backdrop,
         shape = { shape },
         effects = {
             vibrancy()
             blur(blurDp.toPx())
-            val p = pressed()
-            lens(
-                refractionHeight = (lensHeight * (1f + 0.5f * p)).toPx(),
-                refractionAmount = (lensHeight * 2f * (1f + 0.6f * p)).toPx(),
-                depthEffect = style != GlassStyle.Regular,
-            )
+            // The lens needs a rounded shape (it refracts along the corner curve). Rectangular glass,
+            // like a full-width top bar, is frosted only.
+            if (supportsLens) {
+                val p = pressed()
+                lens(
+                    refractionHeight = (lensHeight * (1f + 0.5f * p)).toPx(),
+                    refractionAmount = (lensHeight * 2f * (1f + 0.6f * p)).toPx(),
+                    depthEffect = style != GlassStyle.Regular,
+                )
+            }
         },
         highlight = { Highlight.Default.copy(alpha = (if (dark) 0.55f else 0.9f) + 0.1f * pressed()) },
-        shadow = if (shadow) {
-            { Shadow(radius = 20.dp, color = Color.Black.copy(alpha = if (dark) 0.35f else 0.12f)) }
-        } else {
-            { null }
+        // Floating chrome gets a deep soft shadow; every other rounded control a faint one, which is
+        // what keeps glass legible over plain backgrounds. Rectangular bars get none.
+        shadow = when {
+            shadow -> { { Shadow(radius = 20.dp, color = Color.Black.copy(alpha = if (dark) 0.35f else 0.12f)) } }
+            supportsLens -> { { Shadow(radius = 10.dp, color = Color.Black.copy(alpha = if (dark) 0.25f else 0.07f)) } }
+            else -> { { null } }
         },
         onDrawSurface = { drawRect(tint) },
     )
