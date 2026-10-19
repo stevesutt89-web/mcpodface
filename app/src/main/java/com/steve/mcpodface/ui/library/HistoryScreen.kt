@@ -45,6 +45,7 @@ import com.steve.mcpodface.data.db.EpisodeListItem
 import com.steve.mcpodface.data.db.HistoryItem
 import com.steve.mcpodface.ui.components.BackButton
 import com.steve.mcpodface.ui.components.EpisodeRow
+import com.steve.mcpodface.ui.components.formatRelativeDate
 import com.steve.mcpodface.ui.components.GlassTopBarScaffold
 import com.steve.mcpodface.ui.components.glass.GlassIconButton
 import com.steve.mcpodface.ui.components.glass.GlassPage
@@ -132,6 +133,7 @@ private fun HistoryContent(
                                 isPlaying = state.nowPlaying?.let { it.episodeId == episodeId && it.isPlaying } ?: false,
                                 showPodcastTitle = true,
                                 now = state.now,
+                                dateLabel = "Played " + formatRelativeDate(item.lastListenedAt, state.now).replaceFirstChar { it.lowercase() },
                             )
                             if (index < section.items.lastIndex) {
                                 HorizontalDivider(
@@ -200,13 +202,9 @@ private fun HistoryOverflowMenu(enabled: Boolean, onClearHistory: () -> Unit) {
     }
 }
 
-/**
- * Maps a history row onto the shared [EpisodeRow]. The row's meta line shows the feed's publish
- * date, so the copy carries the last-listened time as its date: the row then reads
- * "Podcast · 3h ago" for when the episode was played.
- */
+/** Maps a history row onto the shared [EpisodeRow]. */
 private fun HistoryItem.toRowItem(): EpisodeListItem = EpisodeListItem(
-    episode = episode.copy(pubDate = lastListenedAt),
+    episode = episode,
     podcastTitle = podcastTitle,
     podcastArtworkUrl = podcastArtworkUrl,
     downloadState = downloadState,

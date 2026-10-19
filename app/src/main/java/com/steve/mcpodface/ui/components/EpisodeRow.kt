@@ -60,6 +60,8 @@ fun EpisodeRow(
     snippet: AnnotatedString? = null,
     now: Long = System.currentTimeMillis(),
     onLongClick: (() -> Unit)? = null,
+    /** Replaces the publish date in the meta line, e.g. "Played 3h ago" in History. */
+    dateLabel: String? = null,
 ) {
     val colors = AppTheme.colors
     val episode = item.episode
@@ -70,7 +72,7 @@ fun EpisodeRow(
     val title = episode.title.ifBlank { "Untitled episode" }
     val meta = buildList {
         if (showPodcastTitle && item.podcastTitle.isNotBlank()) add(item.podcastTitle)
-        add(formatRelativeDate(episode.pubDate, now))
+        add(dateLabel ?: formatRelativeDate(episode.pubDate, now))
         if (!episode.inCurrentFeed) add("Archived")
     }.joinToString(" · ")
     val summary: AnnotatedString? = snippet?.takeIf { it.text.isNotBlank() }
