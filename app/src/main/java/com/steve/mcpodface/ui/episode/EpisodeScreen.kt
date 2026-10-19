@@ -2,11 +2,12 @@ package com.steve.mcpodface.ui.episode
 
 import android.content.Intent
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,30 +17,24 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.PlaylistAdd
-import androidx.compose.material.icons.automirrored.outlined.PlaylistAddCheck
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.Download
-import androidx.compose.material.icons.outlined.DownloadDone
-import androidx.compose.material.icons.outlined.MoreVert
-import androidx.compose.material.icons.outlined.Pause
-import androidx.compose.material.icons.outlined.PlayArrow
-import androidx.compose.material.icons.outlined.StarOutline
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
+import androidx.compose.material.icons.automirrored.rounded.PlaylistAddCheck
+import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.DownloadDone
+import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material.icons.rounded.Pause
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.StarBorder
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,21 +42,32 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kyant.shapes.RoundedRectangle
 import com.steve.mcpodface.data.db.EpisodeEntity
 import com.steve.mcpodface.data.db.PlayState
 import com.steve.mcpodface.data.db.PodcastEntity
-import com.steve.mcpodface.ui.components.Artwork
 import com.steve.mcpodface.ui.components.BackButton
+import com.steve.mcpodface.ui.components.GlassTopBarScaffold
 import com.steve.mcpodface.ui.components.formatDuration
 import com.steve.mcpodface.ui.components.formatRelativeDate
 import com.steve.mcpodface.ui.components.formatTimeLeft
-import com.steve.mcpodface.ui.theme.AppButtonDefaults
+import com.steve.mcpodface.ui.components.glass.ArtworkAmbience
+import com.steve.mcpodface.ui.components.glass.GlassButton
+import com.steve.mcpodface.ui.components.glass.GlassIconButton
+import com.steve.mcpodface.ui.components.glass.GlassPage
+import com.steve.mcpodface.ui.components.glass.GlassStyle
+import com.steve.mcpodface.ui.components.glass.glass
+import com.steve.mcpodface.ui.components.glass.rememberArtworkAccent
+import com.steve.mcpodface.ui.podcast.ShadowedArtwork
 import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
 import com.steve.mcpodface.ui.theme.ThemePreviews
@@ -110,65 +116,76 @@ private fun EpisodeContent(
 ) {
     val episode = state.episode
     val podcast = state.podcast
+    // The episode artwork (or the podcast's) washes the page and tints the Play button and accents.
+    val artworkUrl = episode?.artworkUrl ?: podcast?.artworkUrl
+    val artworkAccent by rememberArtworkAccent(artworkUrl)
+    val accent: Color = artworkAccent ?: AppTheme.colors.accent
     var menuOpen by remember { mutableStateOf(false) }
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        contentWindowInsets = WindowInsets(0),
-        topBar = {
-            TopAppBar(
-                title = {},
-                navigationIcon = { BackButton(onClick = onBack) },
-                actions = {
-                    if (episode != null) {
-                        Box {
-                            IconButton(onClick = { menuOpen = true }) {
-                                Icon(Icons.Outlined.MoreVert, contentDescription = "More")
-                            }
-                            DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                                DropdownMenuItem(
-                                    text = { Text(if (state.isPlayed) "Mark as unplayed" else "Mark as played") },
-                                    onClick = {
-                                        menuOpen = false
-                                        onTogglePlayed()
-                                    },
-                                )
-                                DropdownMenuItem(
-                                    text = { Text("Share") },
-                                    onClick = {
-                                        menuOpen = false
-                                        onShare()
-                                    },
-                                )
-                                DropdownMenuItem(
-                                    text = { Text("Go to podcast") },
-                                    enabled = podcast != null,
-                                    onClick = {
-                                        menuOpen = false
-                                        onOpenPodcast()
-                                    },
-                                )
-                            }
+    GlassPage(background = { ArtworkAmbience(artworkUrl, fadeTo = 0.6f) }) {
+        GlassTopBarScaffold(
+            background = Color.Transparent,
+            navigationIcon = { BackButton(onClick = onBack) },
+            actions = {
+                if (episode != null) {
+                    Box {
+                        GlassIconButton(
+                            icon = Icons.Rounded.MoreVert,
+                            contentDescription = "More",
+                            onClick = { menuOpen = true },
+                            size = 40.dp,
+                            iconSize = 20.dp,
+                        )
+                        DropdownMenu(
+                            expanded = menuOpen,
+                            onDismissRequest = { menuOpen = false },
+                            shape = RoundedRectangle(20.dp),
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(if (state.isPlayed) "Mark as unplayed" else "Mark as played") },
+                                onClick = {
+                                    menuOpen = false
+                                    onTogglePlayed()
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Share") },
+                                onClick = {
+                                    menuOpen = false
+                                    onShare()
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Go to podcast") },
+                                enabled = podcast != null,
+                                onClick = {
+                                    menuOpen = false
+                                    onOpenPodcast()
+                                },
+                            )
                         }
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
-            )
-        },
-    ) { padding ->
-        Box(Modifier.padding(padding).fillMaxSize()) {
+                }
+                Spacer(Modifier.width(8.dp))
+            },
+        ) { padding ->
             when {
-                state.isLoading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
-                episode == null -> Text(
-                    text = "Episode not found",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = AppTheme.colors.textSecondary,
-                    modifier = Modifier.align(Alignment.Center),
-                )
+                state.isLoading -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+                episode == null -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "Episode not found",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = AppTheme.colors.textSecondary,
+                    )
+                }
                 else -> EpisodeBody(
                     state = state,
                     episode = episode,
                     podcast = podcast,
+                    accent = accent,
+                    contentPadding = padding,
                     onOpenPodcast = onOpenPodcast,
                     onPlayClick = onPlayClick,
                     onToggleQueue = onToggleQueue,
@@ -185,6 +202,8 @@ private fun EpisodeBody(
     state: EpisodeUiState,
     episode: EpisodeEntity,
     podcast: PodcastEntity?,
+    accent: Color,
+    contentPadding: PaddingValues,
     onOpenPodcast: () -> Unit,
     onPlayClick: () -> Unit,
     onToggleQueue: () -> Unit,
@@ -199,18 +218,21 @@ private fun EpisodeBody(
         formatRelativeDate(episode.pubDate, state.now),
         if (inProgress) formatTimeLeft(episode.durationSec, state.positionMs) else formatDuration(episode.durationSec),
     ).filter { it.isNotBlank() }.joinToString(" · ")
+    val notesShape = remember { RoundedRectangle(28.dp) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
+            // Content scrolls under the glass top bar and the floating chrome.
+            .padding(contentPadding)
             .padding(horizontal = Spacing.m)
             .padding(bottom = Spacing.l),
     ) {
-        Artwork(
+        ShadowedArtwork(
             url = episode.artworkUrl ?: podcast?.artworkUrl,
             contentDescription = episode.title,
-            size = 200.dp,
+            size = 220.dp,
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
                 .padding(top = Spacing.s),
@@ -219,32 +241,42 @@ private fun EpisodeBody(
         if (podcast != null) {
             Text(
                 text = podcast.title,
-                style = MaterialTheme.typography.bodyMedium,
-                color = colors.textSecondary,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = accent,
+                textAlign = TextAlign.Center,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.clickable(role = Role.Button, onClick = onOpenPodcast),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(role = Role.Button, onClick = onOpenPodcast),
             )
         }
         Text(
             text = episode.title.ifBlank { "Untitled episode" },
             style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
             color = colors.textPrimary,
+            modifier = Modifier.fillMaxWidth(),
         )
         Spacer(Modifier.height(Spacing.xs))
         Text(
             text = meta,
             style = MaterialTheme.typography.bodySmall,
             color = colors.textSecondary,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
         )
         if (inProgress && fraction != null) {
             LinearProgressIndicator(
                 progress = { fraction },
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .align(Alignment.CenterHorizontally)
+                    .fillMaxWidth(0.6f)
                     .padding(top = Spacing.s)
                     .height(2.dp),
-                color = colors.accent,
+                color = accent,
                 trackColor = colors.hairline,
             )
         }
@@ -252,53 +284,61 @@ private fun EpisodeBody(
         Row(
             modifier = Modifier.fillMaxWidth().padding(top = Spacing.m),
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s),
         ) {
-            Button(onClick = onPlayClick, colors = AppButtonDefaults.primaryColors()) {
+            GlassButton(
+                onClick = onPlayClick,
+                style = GlassStyle.Prominent,
+                accent = accent,
+                modifier = Modifier.weight(1f),
+            ) {
                 Icon(
-                    imageVector = if (state.isPlayingThis) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
+                    imageVector = if (state.isPlayingThis) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
                     contentDescription = null,
                     modifier = Modifier.size(18.dp),
                 )
-                Spacer(Modifier.width(Spacing.xs))
                 Text(state.playLabel)
             }
-            Spacer(Modifier.weight(1f))
             // Downloads arrive in task 5.4; the button is shown disabled until then.
-            IconButton(onClick = {}, enabled = false) {
-                Icon(
-                    imageVector = if (state.isDownloaded) Icons.Outlined.DownloadDone else Icons.Outlined.Download,
-                    contentDescription = if (state.isDownloaded) "Downloaded" else "Download (coming soon)",
-                )
-            }
-            IconButton(onClick = onToggleQueue) {
-                Icon(
-                    imageVector = if (state.inQueue) {
-                        Icons.AutoMirrored.Outlined.PlaylistAddCheck
-                    } else {
-                        Icons.AutoMirrored.Outlined.PlaylistAdd
-                    },
-                    contentDescription = if (state.inQueue) "Remove from Up Next" else "Add to Up Next",
-                    tint = if (state.inQueue) colors.accent else colors.textPrimary,
-                )
-            }
-            IconButton(onClick = onToggleStarred) {
-                Icon(
-                    imageVector = if (state.isStarred) Icons.Filled.Star else Icons.Outlined.StarOutline,
-                    contentDescription = if (state.isStarred) "Unstar" else "Star",
-                    tint = if (state.isStarred) colors.accent else colors.textPrimary,
-                )
-            }
+            GlassIconButton(
+                icon = if (state.isDownloaded) Icons.Rounded.DownloadDone else Icons.Rounded.Download,
+                contentDescription = if (state.isDownloaded) "Downloaded" else "Download (coming soon)",
+                onClick = {},
+                enabled = false,
+            )
+            GlassIconButton(
+                icon = if (state.inQueue) Icons.AutoMirrored.Rounded.PlaylistAddCheck else Icons.AutoMirrored.Rounded.PlaylistAdd,
+                contentDescription = if (state.inQueue) "Remove from Up Next" else "Add to Up Next",
+                onClick = onToggleQueue,
+                tint = if (state.inQueue) accent else null,
+            )
+            GlassIconButton(
+                icon = if (state.isStarred) Icons.Rounded.Star else Icons.Rounded.StarBorder,
+                contentDescription = if (state.isStarred) "Unstar" else "Star",
+                onClick = onToggleStarred,
+                tint = if (state.isStarred) accent else null,
+            )
         }
 
-        HorizontalDivider(
-            modifier = Modifier.padding(top = Spacing.m),
-            color = colors.hairline,
-        )
-        ShowNotes(
-            html = episode.descriptionHtml ?: episode.descriptionText,
-            onTimestampClick = onTimestampClick,
-            modifier = Modifier.padding(top = Spacing.m),
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = Spacing.m)
+                .glass(notesShape, GlassStyle.Regular)
+                .padding(20.dp),
+        ) {
+            Text(
+                text = "Show notes",
+                style = MaterialTheme.typography.titleMedium,
+                color = colors.textPrimary,
+            )
+            Spacer(Modifier.height(Spacing.s))
+            ShowNotes(
+                html = episode.descriptionHtml ?: episode.descriptionText,
+                onTimestampClick = onTimestampClick,
+                accent = accent,
+            )
+        }
     }
 }
 

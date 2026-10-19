@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
@@ -77,12 +78,18 @@ internal fun notesToHtml(input: String?): String {
         .replace("\n", "<br>")
 }
 
+/** Link style: underlined, and in [accent] when one is given (the episode page's artwork accent). */
+private fun linkStyles(accent: Color?): TextLinkStyles = TextLinkStyles(
+    if (accent == null) UNDERLINE else SpanStyle(color = accent, textDecoration = TextDecoration.Underline),
+)
+
 /** Show notes as styled text: HTML links plus underlined, tappable timestamps (PLAN.md §8.5). */
-internal fun buildShowNotes(html: String?, onTimestamp: (Long) -> Unit): AnnotatedString {
+internal fun buildShowNotes(html: String?, accent: Color? = null, onTimestamp: (Long) -> Unit): AnnotatedString {
     if (html.isNullOrBlank()) return AnnotatedString("")
+    val styles = linkStyles(accent)
     val base = AnnotatedString.fromHtml(
         htmlString = notesToHtml(html),
-        linkStyles = TextLinkStyles(UNDERLINE),
+        linkStyles = styles,
     )
     val timestamps = findTimestamps(base.text)
     if (timestamps.isEmpty()) return base
@@ -93,7 +100,7 @@ internal fun buildShowNotes(html: String?, onTimestamp: (Long) -> Unit): Annotat
         for ((range, millis) in timestamps) {
             if (linkRanges.any { it.first <= range.last && range.first <= it.last }) continue
             addLink(
-                LinkAnnotation.Clickable(tag = "timestamp", styles = TextLinkStyles(UNDERLINE)) {
+                LinkAnnotation.Clickable(tag = "timestamp", styles = styles) {
                     onTimestamp(millis)
                 },
                 start = range.first,
@@ -109,9 +116,10 @@ fun ShowNotes(
     html: String?,
     onTimestampClick: (Long) -> Unit,
     modifier: Modifier = Modifier,
+    accent: Color? = null,
 ) {
     val currentOnClick = rememberUpdatedState(onTimestampClick)
-    val notes = remember(html) { buildShowNotes(html) { millis -> currentOnClick.value(millis) } }
+    val notes = remember(html, accent) { buildShowNotes(html, accent) { millis -> currentOnClick.value(millis) } }
     Text(
         text = notes,
         style = MaterialTheme.typography.bodyLarge,
