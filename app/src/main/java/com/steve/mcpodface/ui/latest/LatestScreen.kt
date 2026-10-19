@@ -19,9 +19,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.LibraryAdd
 import androidx.compose.material.icons.outlined.Podcasts
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.Star
@@ -67,12 +69,14 @@ import com.steve.mcpodface.data.db.EpisodeListItem
 import com.steve.mcpodface.data.prefs.LatestFilter
 import com.steve.mcpodface.ui.components.CellularPromptDialog
 import com.steve.mcpodface.ui.components.LargeTitleScaffold
+import com.steve.mcpodface.ui.components.SwipeableEpisodeRow
 import com.steve.mcpodface.ui.components.glass.GlassChip
 import com.steve.mcpodface.ui.components.glass.GlassIconButton
 import com.steve.mcpodface.ui.components.glass.GlassPage
 import com.steve.mcpodface.ui.components.glass.GlassStyle
 import com.steve.mcpodface.ui.components.glass.glass
 import com.steve.mcpodface.ui.components.previewEpisodeItems
+import com.steve.mcpodface.ui.playlist.AddToPlaylistSheet
 import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
 import com.steve.mcpodface.ui.theme.ThemePreviews
@@ -92,6 +96,11 @@ fun LatestScreen(onOpenSettings: () -> Unit, onOpenPodcast: (Long) -> Unit, onOp
             when (message) {
                 is LatestMessage.AddedToUpNext ->
                     snackbarHostState.showSnackbar("Added to Up Next", duration = SnackbarDuration.Short)
+                is LatestMessage.ListenLaterChanged ->
+                    snackbarHostState.showSnackbar(
+                        if (message.added) "Added to Listen Later" else "Removed from Listen Later",
+                        duration = SnackbarDuration.Short,
+                    )
                 is LatestMessage.PlayedChanged -> {
                     val text = if (message.nowPlayed) "Marked as played" else "Marked as unplayed"
                     val result = snackbarHostState.showSnackbar(
@@ -117,6 +126,7 @@ fun LatestScreen(onOpenSettings: () -> Unit, onOpenPodcast: (Long) -> Unit, onOp
         onRefresh = viewModel::refresh,
         onTogglePlay = viewModel::togglePlay,
         onAddToUpNext = viewModel::addToUpNext,
+        onToggleListenLater = viewModel::toggleListenLater,
         onTogglePlayed = viewModel::togglePlayed,
         onToggleStar = viewModel::toggleStar,
         onShare = { item -> context.startActivity(shareEpisodeIntent(item)) },
@@ -143,12 +153,14 @@ private fun LatestContent(
     onRefresh: () -> Unit,
     onTogglePlay: (Long) -> Unit,
     onAddToUpNext: (EpisodeListItem) -> Unit,
+    onToggleListenLater: (Long) -> Unit,
     onTogglePlayed: (EpisodeListItem) -> Unit,
     onToggleStar: (EpisodeListItem) -> Unit,
     onShare: (EpisodeListItem) -> Unit,
     onDownloadAction: (EpisodeListItem) -> Unit = {},
 ) {
     var menuEpisodeId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var playlistEpisodeId by rememberSaveable { mutableStateOf<Long?>(null) }
     val menuItem = menuEpisodeId?.let { id -> state.items.firstOrNull { it.episode.id == id } }
 
     GlassPage {
@@ -200,10 +212,11 @@ private fun LatestContent(
                                 item = item,
                                 now = state.now,
                                 isPlaying = state.nowPlaying?.let { it.episodeId == item.episode.id && it.isPlaying } ?: false,
+                                inListenLater = item.episode.id in state.listenLaterIds,
                                 onClick = { onOpenEpisode(item.episode.id) },
                                 onPlayClick = { onTogglePlay(item.episode.id) },
                                 onLongClick = { menuEpisodeId = item.episode.id },
-                                onAddToUpNext = { onAddToUpNext(item) },
+                                onToggleListenLater = { onToggleListenLater(item.episode.id) },
                                 onTogglePlayed = { onTogglePlayed(item) },
                             )
                             if (index < state.items.lastIndex) {
@@ -227,11 +240,16 @@ private fun LatestContent(
         EpisodeActionSheet(
             item = menuItem,
             onDismiss = { menuEpisodeId = null },
+            onAddToUpNext = { onAddToUpNext(menuItem) },
+            onAddToPlaylist = { playlistEpisodeId = menuItem.episode.id },
             onToggleStar = { onToggleStar(menuItem) },
             onShare = { onShare(menuItem) },
             onGoToPodcast = { onOpenPodcast(menuItem.episode.podcastId) },
             onDownload = { onDownloadAction(menuItem) },
         )
+    }
+    playlistEpisodeId?.let { episodeId ->
+        AddToPlaylistSheet(episodeId = episodeId, onDismiss = { playlistEpisodeId = null })
     }
 }
 
@@ -300,6 +318,8 @@ private fun EmptyState(filter: LatestFilter) {
 private fun EpisodeActionSheet(
     item: EpisodeListItem,
     onDismiss: () -> Unit,
+    onAddToUpNext: () -> Unit,
+    onAddToPlaylist: () -> Unit,
     onToggleStar: () -> Unit,
     onShare: () -> Unit,
     onGoToPodcast: () -> Unit,
@@ -317,6 +337,8 @@ private fun EpisodeActionSheet(
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(horizontal = Spacing.m, vertical = Spacing.s),
             )
+            SheetAction(Icons.AutoMirrored.Rounded.PlaylistAdd, "Add to Up Next") { onAddToUpNext(); onDismiss() }
+            SheetAction(Icons.Outlined.LibraryAdd, "Add to playlist…") { onAddToPlaylist(); onDismiss() }
             SheetAction(
                 icon = when (downloadAction) {
                     DownloadMenuAction.DOWNLOAD -> Icons.Outlined.Download
@@ -377,7 +399,7 @@ private fun LatestPreview() {
                 snackbarHostState = remember { SnackbarHostState() },
                 onOpenSettings = {}, onOpenPodcast = {}, onOpenEpisode = {},
                 onFilterSelected = {}, onRefresh = {}, onTogglePlay = {},
-                onAddToUpNext = {}, onTogglePlayed = {}, onToggleStar = {}, onShare = {},
+                onAddToUpNext = {}, onToggleListenLater = {}, onTogglePlayed = {}, onToggleStar = {}, onShare = {},
             )
         }
     }
@@ -393,7 +415,7 @@ private fun LatestEmptyPreview() {
                 snackbarHostState = remember { SnackbarHostState() },
                 onOpenSettings = {}, onOpenPodcast = {}, onOpenEpisode = {},
                 onFilterSelected = {}, onRefresh = {}, onTogglePlay = {},
-                onAddToUpNext = {}, onTogglePlayed = {}, onToggleStar = {}, onShare = {},
+                onAddToUpNext = {}, onToggleListenLater = {}, onTogglePlayed = {}, onToggleStar = {}, onShare = {},
             )
         }
     }
@@ -409,7 +431,7 @@ private fun LatestFilteredEmptyPreview() {
                 snackbarHostState = remember { SnackbarHostState() },
                 onOpenSettings = {}, onOpenPodcast = {}, onOpenEpisode = {},
                 onFilterSelected = {}, onRefresh = {}, onTogglePlay = {},
-                onAddToUpNext = {}, onTogglePlayed = {}, onToggleStar = {}, onShare = {},
+                onAddToUpNext = {}, onToggleListenLater = {}, onTogglePlayed = {}, onToggleStar = {}, onShare = {},
             )
         }
     }

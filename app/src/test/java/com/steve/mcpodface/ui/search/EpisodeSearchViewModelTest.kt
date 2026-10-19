@@ -9,6 +9,8 @@ import com.steve.mcpodface.core.Clock
 import com.steve.mcpodface.data.db.AppDatabase
 import com.steve.mcpodface.data.db.EpisodeEntity
 import com.steve.mcpodface.data.db.PodcastEntity
+import com.steve.mcpodface.data.episodes.EpisodeRepository
+import com.steve.mcpodface.data.playlist.PlaylistRepository
 import com.steve.mcpodface.data.search.SearchRepository
 import com.steve.mcpodface.data.search.SearchSort
 import com.steve.mcpodface.ui.library.RecordingPlayer
@@ -54,6 +56,8 @@ class EpisodeSearchViewModelTest {
         podcasts = db.podcastDao(),
         player = player,
         clock = clock,
+        episodes = EpisodeRepository(db.episodeDao(), db.podcastDao(), clock),
+        playlists = PlaylistRepository(db, SearchRepository(db, clock, Dispatchers.Unconfined), clock),
         savedStateHandle = SavedStateHandle(if (scope == null) emptyMap() else mapOf("podcastId" to scope)),
     )
 

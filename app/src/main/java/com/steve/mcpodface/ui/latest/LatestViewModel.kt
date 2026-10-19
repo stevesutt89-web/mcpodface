@@ -6,15 +6,16 @@ import com.steve.mcpodface.core.Clock
 import com.steve.mcpodface.data.db.DownloadSource
 import com.steve.mcpodface.data.db.DownloadState
 import com.steve.mcpodface.data.db.EpisodeListItem
-import com.steve.mcpodface.data.db.PlayState
 import com.steve.mcpodface.data.episodes.EpisodeRepository
 import com.steve.mcpodface.data.feed.FeedRepository
+import com.steve.mcpodface.data.playlist.PlaylistRepository
 import com.steve.mcpodface.data.prefs.LatestFilter
 import com.steve.mcpodface.data.prefs.SettingsRepository
 import com.steve.mcpodface.data.queue.QueueRepository
 import com.steve.mcpodface.download.DownloadManager
 import com.steve.mcpodface.playback.NowPlaying
 import com.steve.mcpodface.playback.PlayerController
+import com.steve.mcpodface.ui.components.playedToggleTarget
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -38,9 +39,6 @@ fun latestQueryFor(filter: LatestFilter): LatestQuery = when (filter) {
     LatestFilter.UNPLAYED -> LatestQuery(unplayedOnly = true, downloadedOnly = false)
     LatestFilter.DOWNLOADED -> LatestQuery(unplayedOnly = false, downloadedOnly = true)
 }
-
-/** Swipe left toggles: an episode that is played becomes unplayed, anything else becomes played. */
-fun playedToggleTarget(current: PlayState): Boolean = current != PlayState.PLAYED
 
 /** What the long-press menu's download item does for a row, chosen from its download state (PLAN.md §8.2). */
 enum class DownloadMenuAction { DOWNLOAD, REMOVE, CANCEL }
@@ -69,11 +67,15 @@ data class LatestUiState(
     val nowPlaying: NowPlaying? = null,
     /** The episode whose manual download is waiting on the mobile-data prompt, or null (PLAN.md §6.6). */
     val cellularPromptEpisodeId: Long? = null,
+    /** Episodes in Listen Later, for each row's swipe label (PLAN.md §8.11). */
+    val listenLaterIds: Set<Long> = emptySet(),
 )
 
 /** One-shot feedback for the screen to show as a Snackbar. */
 sealed interface LatestMessage {
     data class AddedToUpNext(val title: String) : LatestMessage
+
+    data class ListenLaterChanged(val episodeId: Long, val added: Boolean) : LatestMessage
 
     /** [nowPlayed] is the new state; undo restores the opposite. */
     data class PlayedChanged(val episodeId: Long, val nowPlayed: Boolean) : LatestMessage
@@ -87,6 +89,7 @@ class LatestViewModel @Inject constructor(
     private val settings: SettingsRepository,
     private val player: PlayerController,
     private val downloads: DownloadManager,
+    private val playlists: PlaylistRepository,
     private val clock: Clock,
 ) : ViewModel() {
 
@@ -104,7 +107,8 @@ class LatestViewModel @Inject constructor(
         player.nowPlaying,
         refreshing,
         cellularPromptEpisodeId,
-    ) { (filter, items), nowPlaying, isRefreshing, promptEpisodeId ->
+        playlists.observeListenLaterIds(),
+    ) { (filter, items), nowPlaying, isRefreshing, promptEpisodeId, listenLater ->
         LatestUiState(
             items = items,
             filter = filter,
@@ -113,6 +117,7 @@ class LatestViewModel @Inject constructor(
             refreshing = isRefreshing,
             nowPlaying = nowPlaying,
             cellularPromptEpisodeId = promptEpisodeId,
+            listenLaterIds = listenLater,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), LatestUiState())
 
@@ -122,6 +127,15 @@ class LatestViewModel @Inject constructor(
 
     fun togglePlay(episodeId: Long) = player.togglePlayPause(episodeId)
 
+    /** Swipe right: adds to Listen Later, or removes it when already there (PLAN.md §8.11). */
+    fun toggleListenLater(episodeId: Long) {
+        viewModelScope.launch {
+            val added = playlists.toggleListenLater(episodeId)
+            messageChannel.send(LatestMessage.ListenLaterChanged(episodeId, added))
+        }
+    }
+
+    /** The long-press menu's "Add to Up Next". */
     fun addToUpNext(item: EpisodeListItem) {
         viewModelScope.launch {
             queue.addLast(item.episode.id)

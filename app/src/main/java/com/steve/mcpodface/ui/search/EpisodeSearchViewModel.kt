@@ -4,14 +4,18 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.steve.mcpodface.core.Clock
+import com.steve.mcpodface.data.db.EpisodeListItem
 import com.steve.mcpodface.data.db.PodcastDao
 import com.steve.mcpodface.data.db.RecentSearchEntity
+import com.steve.mcpodface.data.episodes.EpisodeRepository
+import com.steve.mcpodface.data.playlist.PlaylistRepository
 import com.steve.mcpodface.data.search.SearchFilters
 import com.steve.mcpodface.data.search.SearchRepository
 import com.steve.mcpodface.data.search.SearchResults
 import com.steve.mcpodface.data.search.SearchSort
 import com.steve.mcpodface.playback.NowPlaying
 import com.steve.mcpodface.playback.PlayerController
+import com.steve.mcpodface.ui.components.playedToggleTarget
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -54,6 +58,8 @@ data class EpisodeSearchUiState(
     val nowPlaying: NowPlaying? = null,
     /** Wall-clock time for the relative dates in the rows. */
     val now: Long = 0L,
+    /** Episodes in Listen Later, for each row's swipe label (PLAN.md §8.11). */
+    val listenLaterIds: Set<Long> = emptySet(),
 )
 
 /**
@@ -67,6 +73,8 @@ class EpisodeSearchViewModel @Inject constructor(
     private val podcasts: PodcastDao,
     private val player: PlayerController,
     private val clock: Clock,
+    private val episodes: EpisodeRepository,
+    private val playlists: PlaylistRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -100,7 +108,7 @@ class EpisodeSearchViewModel @Inject constructor(
             if (id == null) flowOf(null) else podcasts.observeById(id).map { it?.title }
         }
 
-    val uiState: StateFlow<EpisodeSearchUiState> = combine(
+    private val core: Flow<EpisodeSearchUiState> = combine(
         form,
         scopeName,
         results,
@@ -118,6 +126,10 @@ class EpisodeSearchViewModel @Inject constructor(
             nowPlaying = playing,
             now = clock.now(),
         )
+    }
+
+    val uiState: StateFlow<EpisodeSearchUiState> = combine(core, playlists.observeListenLaterIds()) { state, listenLater ->
+        state.copy(listenLaterIds = listenLater)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), EpisodeSearchUiState())
 
     fun onQueryChange(text: String) {
@@ -174,6 +186,17 @@ class EpisodeSearchViewModel @Inject constructor(
 
     fun onTogglePlay(episodeId: Long) {
         player.togglePlayPause(episodeId)
+    }
+
+    /** Swipe right: Listen Later add or remove (PLAN.md §8.11). */
+    fun onToggleListenLater(episodeId: Long) {
+        viewModelScope.launch { playlists.toggleListenLater(episodeId) }
+    }
+
+    /** Swipe left: played or unplayed. */
+    fun onTogglePlayed(item: EpisodeListItem) {
+        val target = playedToggleTarget(item.episode.playState)
+        viewModelScope.launch { episodes.setPlayed(item.episode.id, target) }
     }
 
     private fun recordCurrent() {

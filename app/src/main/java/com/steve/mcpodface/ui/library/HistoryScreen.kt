@@ -41,10 +41,11 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kyant.shapes.Capsule
 import com.kyant.shapes.RoundedRectangle
+import com.steve.mcpodface.data.db.EpisodeEntity
 import com.steve.mcpodface.data.db.EpisodeListItem
 import com.steve.mcpodface.data.db.HistoryItem
 import com.steve.mcpodface.ui.components.BackButton
-import com.steve.mcpodface.ui.components.EpisodeRow
+import com.steve.mcpodface.ui.components.SwipeableEpisodeRow
 import com.steve.mcpodface.ui.components.formatRelativeDate
 import com.steve.mcpodface.ui.components.GlassTopBarScaffold
 import com.steve.mcpodface.ui.components.glass.GlassIconButton
@@ -72,6 +73,8 @@ fun HistoryScreen(onBack: () -> Unit, onOpenEpisode: (Long) -> Unit) {
         onOpenEpisode = onOpenEpisode,
         onTogglePlay = viewModel::togglePlay,
         onClearHistory = viewModel::clearHistory,
+        onToggleListenLater = viewModel::toggleListenLater,
+        onTogglePlayed = viewModel::togglePlayed,
     )
 }
 
@@ -83,6 +86,8 @@ private fun HistoryContent(
     onOpenEpisode: (Long) -> Unit,
     onTogglePlay: (Long) -> Unit,
     onClearHistory: () -> Unit,
+    onToggleListenLater: (Long) -> Unit = {},
+    onTogglePlayed: (EpisodeEntity) -> Unit = {},
 ) {
     var showClearDialog by rememberSaveable { mutableStateOf(false) }
     val hasHistory = state.sections.isNotEmpty()
@@ -126,11 +131,14 @@ private fun HistoryContent(
                         }
                         itemsIndexed(section.items, key = { _, item -> item.episode.id }) { index, item ->
                             val episodeId = item.episode.id
-                            EpisodeRow(
+                            SwipeableEpisodeRow(
                                 item = item.toRowItem(),
                                 onClick = { onOpenEpisode(episodeId) },
                                 onPlayClick = { onTogglePlay(episodeId) },
                                 isPlaying = state.nowPlaying?.let { it.episodeId == episodeId && it.isPlaying } ?: false,
+                                inListenLater = episodeId in state.listenLaterIds,
+                                onToggleListenLater = { onToggleListenLater(episodeId) },
+                                onTogglePlayed = { onTogglePlayed(item.episode) },
                                 showPodcastTitle = true,
                                 now = state.now,
                                 dateLabel = "Played " + formatRelativeDate(item.lastListenedAt, state.now).replaceFirstChar { it.lowercase() },

@@ -42,12 +42,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kyant.shapes.RoundedRectangle
+import com.steve.mcpodface.data.db.EpisodeListItem
 import com.steve.mcpodface.data.search.DurationFilter
 import com.steve.mcpodface.data.search.SearchFilters
 import com.steve.mcpodface.data.search.SearchResult
 import com.steve.mcpodface.data.search.SearchSort
 import com.steve.mcpodface.data.search.StatusFilter
-import com.steve.mcpodface.ui.components.EpisodeRow
+import com.steve.mcpodface.ui.components.SwipeableEpisodeRow
 import com.steve.mcpodface.ui.components.glass.GlassChip
 import com.steve.mcpodface.ui.components.glass.GlassIconButton
 import com.steve.mcpodface.ui.components.glass.LocalGlassBackdrop
@@ -73,6 +74,8 @@ data class EpisodeSearchActions(
     val onClearRecent: () -> Unit = {},
     val onOpenEpisode: (Long) -> Unit = {},
     val onTogglePlay: (Long) -> Unit = {},
+    val onToggleListenLater: (Long) -> Unit = {},
+    val onTogglePlayed: (EpisodeListItem) -> Unit = {},
 )
 
 @Composable
@@ -95,6 +98,8 @@ fun rememberEpisodeSearchActions(
             onOpenEpisode(id)
         },
         onTogglePlay = viewModel::onTogglePlay,
+        onToggleListenLater = viewModel::onToggleListenLater,
+        onTogglePlayed = viewModel::onTogglePlayed,
     )
 }
 
@@ -163,6 +168,7 @@ fun YourPodcastsContent(
                         result = result,
                         now = state.now,
                         nowPlaying = state.nowPlaying,
+                        listenLaterIds = state.listenLaterIds,
                         actions = actions,
                     )
                     if (index < results.items.lastIndex) {
@@ -363,17 +369,21 @@ private fun ResultRow(
     result: SearchResult,
     now: Long,
     nowPlaying: com.steve.mcpodface.playback.NowPlaying?,
+    listenLaterIds: Set<Long>,
     actions: EpisodeSearchActions,
 ) {
     val episodeId = result.item.episode.id
-    EpisodeRow(
+    SwipeableEpisodeRow(
         item = result.item,
+        now = now,
+        isPlaying = nowPlaying?.let { it.episodeId == episodeId && it.isPlaying } ?: false,
+        inListenLater = episodeId in listenLaterIds,
         onClick = { actions.onOpenEpisode(episodeId) },
         onPlayClick = { actions.onTogglePlay(episodeId) },
-        isPlaying = nowPlaying?.let { it.episodeId == episodeId && it.isPlaying } ?: false,
+        onToggleListenLater = { actions.onToggleListenLater(episodeId) },
+        onTogglePlayed = { actions.onTogglePlayed(result.item) },
         showPodcastTitle = true,
         snippet = result.snippet?.let { snippetToAnnotatedString(it) },
-        now = now,
     )
 }
 
