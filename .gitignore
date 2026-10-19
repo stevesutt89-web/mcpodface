@@ -10,3 +10,4 @@ build/
 .cxx
 *.jks
 *.keystore
+/.claude/worktrees/
