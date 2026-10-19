@@ -1,7 +1,12 @@
 # Next round: feedback from using the app (2026-10-20)
 
-Fourteen changes the user asked for after a day of using the app on the S25 Ultra. Nothing here is
-built yet. Each item has the request, then notes on where the code lives and how to approach it.
+Fourteen changes the user asked for after a day of using the app on the S25 Ultra.
+
+> **Status:** all 14 are written (branch `ccr-6ec0b98b-ma67wv`). They were written in a cloud
+> session with no access to Google's Maven, so they **haven't been compiled or tested yet**. Run
+> `compileDebugKotlin`, `testDebugUnitTest` and `lintDebug` locally first.
+
+Nothing below this line has been updated since the plan was written. Each item has the request, then notes on where the code lives and how to approach it.
 The work is grouped so parallel agents don't edit the same files (see "Suggested split").
 
 Before starting, read [`CLAUDE.md`](../CLAUDE.md) and `PLAN.md` §8 and §11.

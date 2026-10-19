@@ -23,11 +23,13 @@ Player.fm.
 - **Discover**: searches Podcast Index and iTunes together, with Listen Notes as a fallback. Also
   trending and categories, add-by-URL (including password-protected feeds) and OPML import/export.
 - **Latest**: new episodes from all your subscriptions, with All / Unplayed / Downloaded filters.
-- **Tabs**: Latest · Library · Playlists · Downloads · Up Next. Search and Settings are glass
-  buttons at the top right of every tab.
-- **Library**: subscriptions in a grid or list, with unplayed badges.
+- **Tabs**: Latest · Library · Playlists · Up Next · Search. Settings is a glass button at the top
+  right of every tab.
+- **Library**: subscriptions in a grid or list.
+- **Episode rows**: compact, with the podcast's artwork in mixed lists and the play button under it.
 - **Playback** through Media3: works from the lock screen, notification, Bluetooth and Galaxy Buds.
-  - Per-podcast speed, skip intro/outro, trim silence, voice boost and resume rewind.
+  - Per-podcast speed, skip intro/outro, trim silence, voice boost and resume rewind (choose how far
+    back, and how long a pause counts).
   - Sleep timer that fades out, adds 5 minutes when you shake the phone, or stops at the end of
     the episode.
   - Up Next queue with drag-to-reorder, and autoplay of the next episode.
@@ -39,10 +41,10 @@ Player.fm.
   - Downloads resume where they left off and retry on failure.
 - **Background refresh** with grouped new-episode notifications.
 - **Swipe actions**: swipe right on any episode to add it to (or remove it from) Up Next; swipe left
-  to mark it played or unplayed.
-- **Playlists tab**: Starred, History, listening Stats, manual playlists (drag to reorder) and
-  **smart playlists** built from rules (podcasts, unplayed, last N days, downloaded, length, words)
-  that update themselves.
+  to mark it played or unplayed. The row flies off and slides back in from the other side.
+- **Playlists tab**: a grid of artwork mosaics for Starred, Downloads, manual playlists (drag to
+  reorder) and **smart playlists** built from rules (podcasts, unplayed, last N days, downloaded,
+  length, words) that update themselves.
 - **Chapters and transcripts** (Podcasting 2.0): the current chapter under the title, a chapter
   list to jump around, and a transcript that follows along and seeks on tap.
 - **Share** an episode, from the player at the current time.
@@ -56,8 +58,9 @@ Player.fm.
   Podcast Index), within a daily API budget.
 - **Backup and restore** to move between phones: one zip with subscriptions, progress, queue,
   playlists, history, settings and (optionally) the episode archive. Feed passwords are left out. Merge or replace on import.
-- **Settings** for theme (light / dark / system / pure black), downloads, playback, notifications
-  and backup.
+- **Settings**, grouped into sections: theme (light / dark / system / pure black), glass style,
+  accent colour, a reduce-effects mode for slower phones, downloads, playback, notifications and
+  backup. Listening stats and History live here too.
 
 
 ## Design

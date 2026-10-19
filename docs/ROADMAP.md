@@ -18,12 +18,14 @@ Task IDs match the phases in [`PLAN.md` §14](../PLAN.md#14-phased-delivery).
 | 8.11 Playlists | Playlists tab (Starred, History, Stats, playlists), manual playlists, smart playlists from rules; swipe right adds to Up Next |
 | 9 Extras | Chapters, transcripts, share at timestamp, listening stats, home-screen widget, Android Auto browse tree and voice search, accessibility pass (TalkBack labels and actions, 48dp targets, large fonts), 200k-episode stress test |
 | Design | Liquid Glass pass across the app |
+| Next round | The 14 changes in [NEXT-ROUND.md](NEXT-ROUND.md): fly-off swipe, compact rows with podcast artwork, one snackbar host, playlist mosaic grid, Search back as a tab and Downloads under Playlists, neutral selected tab, white icon background, no Library badge, Settings sections, glass style / accent / reduce effects, customisable resume rewind |
 
 ## Next
 
-**Up next: a round of 14 changes from using the app. See [NEXT-ROUND.md](NEXT-ROUND.md)** (swipe
-animation, compact episode rows, playlist grid, tab changes, settings sub-screens, appearance options,
-customisable resume rewind, white icon background).
+**Check the next round on the phone.** It was written in a cloud session that couldn't reach
+Google's Maven, so it hasn't been compiled or tested yet. Run `compileDebugKotlin`,
+`testDebugUnitTest` and `lintDebug`, then try the swipe, the playlist grid, the settings sections and
+each glass style on both phones.
 
 Needs real phones:
 - Smoothness on the `fast` build, the first-run notification prompt on Samsung, and the widget's

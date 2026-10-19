@@ -144,6 +144,9 @@ and either crashes or renders garbage. In practice:
 - The lens effect only works on rounded-rectangle and capsule shapes.
 - Large surfaces (show notes, settings groups) use `glassCard()`. It looks like glass but doesn't
   sample anything, which keeps scrolling smooth.
+- `LocalGlassEffects` (from `AppTheme`) carries the user's Glass style and Reduce visual effects.
+  The style scales blur, tint and lens. Reduce effects makes every `glass()` take the `glassCard`
+  path, stops `GlassPage` recording its layer, and drops the artwork glow.
 
 **Performance.** Judge smoothness only on the `fast` build. Stock Material controls are preferred
 wherever a custom one costs frames; the timeline scrubber is a plain `Slider`. The full player

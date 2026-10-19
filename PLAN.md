@@ -473,31 +473,38 @@ politely. It's **best effort**, because no source is guaranteed to hold a show's
 ## 8. Screens and navigation
 
 ### 8.1 Shell
-- A bottom navigation bar with 5 tabs: **Latest · Library · Playlists · Downloads · Up Next**. Search is
-  not a tab. It is opened from a search icon in the top bar of each tab (§8.9).
+- A bottom navigation bar with 5 tabs: **Latest · Library · Playlists · Up Next · Search**. Downloads
+  is not a tab: it is a tile on the Playlists tab (§8.11). A stored `lastTab = DOWNLOADS` opens Latest.
 - A **mini player** sits above the tab bar whenever something is loaded. Tap it to open the full player.
 - **Remembers the last tab.** Write `lastTab` to DataStore whenever the tab changes. On launch, hold
   the SplashScreen API (`setKeepOnScreenCondition`) until the value loads, so the app doesn't flash
   the wrong tab.
-- Settings is reached from a gear icon in the top bar of every tab. Search is a search icon just to the
-  left of it.
+- Settings is reached from a gear icon in the top bar of every tab. Switching tabs closes Settings and
+  anything opened from it.
+- The selected tab's icon and label are the primary text colour (white in dark mode, black in light),
+  on a neutral frosted pill.
+- One snackbar host for the whole app, above the mini player and tab bar. A new message replaces the
+  one on screen; none is indefinite.
 - The app draws edge-to-edge (required at the current targetSdk) and supports predictive back.
 
 ### 8.2 Latest tab (recent episodes)
 - Shows episodes from all subscriptions, newest first, limited to the last 30 days or 300 rows.
-- Each row shows rounded artwork (56dp), the podcast name and relative date in small secondary text,
-  the **title** (bold, 2 lines max), the **first part of the show notes** (`summaryText`, 3 lines max,
-  secondary color), and a footer with a play/progress button, duration or time left, and download
-  state. A thin progress bar shows partial plays.
+- Each row shows rounded artwork (56dp) with the play/progress button under it. To the right: a meta
+  line ("Podcast · 15h ago · 45 min", or time left, then download / star / Up Next icons), a thin
+  progress bar for partial plays, the **title** (bold, 2 lines max) and the **first part of the show
+  notes** (`summaryText`, 3 lines max, secondary color). There is no footer row.
+- Mixed lists (Latest, Up Next, search, playlists, Starred, History) show the **podcast's** artwork;
+  the podcast page shows per-episode artwork (`EpisodeRow(preferPodcastArtwork = false)`).
 - Filter chips: All · Unplayed · Downloaded.
-- Swipe right to add to Up Next. Swipe left to mark played or unplayed. Long press opens a menu with
-  Download, Star, Share, and Go to podcast.
+- Swipe right to add to Up Next. Swipe left to mark played or unplayed. Past the threshold the row
+  flies off that side, and about 500 ms later slides back in from the other side. Long press opens a
+  menu with Download, Star, Share, and Go to podcast.
 - Supports pull-to-refresh.
 
 ### 8.3 Library tab (subscriptions)
-- Uses a large collapsing title, "Library". The top bar has Search, Sort, grid/list toggle and Settings.
-- Starred, History, Stats and the playlists are on the **Playlists** tab (§8.11), not here.
-- Below them is a 3-column **grid of podcast artwork**, with rounded corners and an unplayed-count badge.
+- Uses a large collapsing title, "Library". The top bar has Sort, grid/list toggle and Settings.
+- Starred, Downloads and the playlists are on the **Playlists** tab (§8.11), not here.
+- Below them is a 3-column **grid of podcast artwork**, with rounded corners (no unplayed badge).
 - Sort options: Recently updated (default), A–Z, Recently added. You can toggle between grid and list.
 - Long press a podcast to open its Settings or Unsubscribe. Unsubscribing asks whether to delete its
   downloads too.
@@ -530,7 +537,8 @@ politely. It's **best effort**, because no source is guaranteed to hold a show's
 - Toggles for trim silence (`ExoPlayer.skipSilenceEnabled`) and voice boost (`LoudnessEnhancer`).
 - Chapters, show notes, Up Next and an output device picker (system media output switcher).
 
-### 8.7 Downloads tab
+### 8.7 Downloads
+- Opened from the Downloads tile on the Playlists tab, with a back button.
 - **Storage header:** total size of all downloads (summed from the DB and checked against disk), how
   much free space the device has, and the episode count. Tap it to see **per-podcast sizes**, sorted
   largest first.
@@ -553,10 +561,7 @@ politely. It's **best effort**, because no source is guaranteed to hold a show's
   podcast's sort order.
 
 ### 8.9 Search
-- Search is not a tab. A glass search icon sits in the top-right action row of Latest, Library,
-  Playlists, Downloads and Up Next, to the left of the settings gear. It opens Search as a pushed
-  screen: a back button at the top left, and the "+" Add podcast button at the right. Back returns to
-  the tab that opened it, and no tab is highlighted while Search is open.
+- Search is the fifth tab. Its top bar has the "+" Add podcast button and the settings gear.
 - A segmented control switches between **Your podcasts** and **Discover**. It defaults to Your
   podcasts once you have any subscriptions, and remembers the last mode.
 - **Your podcasts:** local full-text search across all subscriptions, with the filters, sort, snippets
@@ -566,20 +571,25 @@ politely. It's **best effort**, because no source is guaranteed to hold a show's
 - "Add by URL" and "Import OPML" actions are available.
 
 ### 8.10 Settings
+The main Settings screen lists only the sections below, then **Listening stats** and **History**.
+Tapping a section opens a sub-screen (`SettingsSectionRoute`) with that section's rows.
+
 - **Appearance:** Theme (System / Light / Dark), Pure black dark mode (default on, good for OLED),
-  Tint player from artwork (default off), Use dynamic color (default off).
+  Tint player from artwork (default on), Use dynamic color (default off), **Glass style** (Clear /
+  **Balanced** / Frosted), **Accent colour** (**Violet** / Blue / Teal / Green / Orange / Pink /
+  Graphite; dynamic color overrides it), and **Reduce visual effects** (default off: no live backdrop
+  sampling, refraction or artwork glow, for slower phones and battery saver).
 - **Downloads:** Auto-download new episodes, Keep latest N (**default 5**), Download on (Wi-Fi only /
   Wi-Fi + mobile data), Only when charging (optional), Stream on mobile data.
 - **Auto-delete:** Delete played episodes (Immediately / **after 24 hours** / 3 days / 1 week),
   Delete episodes older than (1 week / 2 weeks / **1 month** / 3 months / Never), Count manual
   downloads toward limit.
-- **Playback:** Skip intervals, Default speed, Autoplay next, Rewind a few seconds when resuming
-  after a long pause (3s after more than 5 minutes), Mark as played at (90 / **95** / 98%),
-  Headset double/triple-press behaviour.
-- **Refresh:** Interval, New-episode notifications.
+- **Playback:** Skip intervals, Default speed, Autoplay next, Rewind after a long pause (on/off),
+  Rewind by (**5** / 10 / 15 / 30 / 60 s), Long pause (**1** / 5 / 15 / 30 min / 1 h),
+  Mark as played at (90 / **95** / 98%), Headset double/triple-press behaviour.
+- **Refresh & notifications:** Interval, New-episode notifications.
 - **Search & archive:** Archive backfill on or off, Wi-Fi only, Only while charging, Daily Podcast
   Index budget, archive progress, database size, and "Clear recent searches".
-- **Storage:** Opens the Downloads tab.
 - **Backup and transfer:** Export data, Import data, Export OPML, Import OPML (§9).
 - **Battery:** Shows whether the app is battery-restricted, with a button that opens the system
   setting (see §12).
@@ -607,9 +617,11 @@ Two kinds (manual and smart), stored in the `playlists` and `playlist_items` tab
     duration, optional words, newest or oldest first, and a size limit (default 50).
   - The editor shows a live preview of the matching episodes as you change the rules.
 
-**Playlists tab:** Top rows link to **Starred**, **History** and **Stats**. Under them sits the
-**Playlists** section: the user's playlists (manual with counts, smart marked as smart), then "New
-playlist" and "New smart playlist". The top bar has Search and Settings.
+**Playlists tab:** a two-column grid of square tiles, like Spotify: **Starred**, **Downloads**, then
+the user's playlists (manual and smart). Each tile is a 2×2 mosaic of the first four distinct podcast
+artworks in it (one artwork fills the square; two or three leave filled tiles; none shows an icon),
+with the title and episode count (or "Smart playlist") below. The top bar has a "+" menu (New
+playlist, New smart playlist) and Settings. Listening stats and History are in Settings.
 
 **Playlist page:**
 - Large title and episode count, then **Play all**, which replaces Up Next with the playlist's
@@ -674,7 +686,9 @@ Room DB and DataStore automatically, while excluding the downloads folder.
 `keepLatestCount` (5), `allowCellularDownload`, `downloadOnlyWhileCharging`, `streamOnCellular`,
 `deletePlayed`, `deletePlayedDelayHours` (24), `maxAgeDays` (30), `countManualTowardLimit`,
 `markPlayedPercent` (95), `refreshIntervalHours`, `notifyNewEpisodes`, `skipBackSec`,
-`skipForwardSec`, `defaultSpeed`, `autoplayNext`, `resumeRewind`, `trimSilence`, `voiceBoost`,
+`skipForwardSec`, `defaultSpeed`, `autoplayNext`, `resumeRewind`, `resumeRewindSec` (5),
+`longPauseMinutes` (1), `trimSilence`, `voiceBoost`, `glassStyle` (BALANCED), `accentColor` (VIOLET),
+`reduceEffects`,
 `librarySort`, `libraryLayout`, `latestFilter`, `backfillEnabled`, `backfillWifiOnly`,
 `backfillChargingOnly`, `apiDailyBudget` (100), `apiRequestsToday`, `apiBudgetDay`,
 `apiPausedUntil`.
@@ -701,9 +715,10 @@ in `ui/components/glass/` handle this; screens should only use them:
 | `GlassTabBar`, `MiniPlayer` | Floating capsules in the shell (already done). |
 | `rememberArtworkAccent(url)` | Vivid accent from the artwork for that page's Prominent glass and highlights. |
 
-- **Colour:** a vivid violet accent (`#6B4EFF` light / `#9B8CFF` dark) for selection, progress,
-  toggles and Prominent glass, overridden by the artwork's accent on podcast, episode and player
-  pages. Text and backgrounds stay neutral (white / true black) so the glass and artwork carry the colour.
+- **Colour:** a vivid accent for selection, progress, toggles and Prominent glass, overridden by the
+  artwork's accent on podcast, episode and player pages. The default is violet (`#6B4EFF` light /
+  `#9B8CFF` dark); Settings → Appearance offers Blue, Teal, Green, Orange, Pink and Graphite presets
+  (`accentPair` in `ui/theme/Color.kt`). The selected tab uses the text colour, not the accent. Text and backgrounds stay neutral (white / true black) so the glass and artwork carry the colour.
 - **Shapes:** continuous-corner ("squircle") shapes from `com.kyant.shapes`: `Capsule()` for
   buttons, chips and bars; `RoundedRectangle(28.dp)` for cards and sheets; 12–28dp on artwork.
   Prefer them over Material's `RoundedCornerShape`.
@@ -714,6 +729,10 @@ in `ui/components/glass/` handle this; screens should only use them:
 - **Motion:** springs everywhere (`GlassPressSpring`: damping ~0.55). Controls swell and their lens
   bulges while pressed; the tab-bar lens slides between tabs; the full player's artwork shrinks a
   little when paused. Haptics on play/pause, tab changes and toggles.
+- **User options:** `LocalGlassEffects` (provided by `AppTheme`) carries the Glass style, which scales
+  blur, tint alpha and lens strength, and Reduce visual effects, which sends every `glass()` down the
+  `glassCard` path (no `drawBackdrop`), stops `GlassPage` recording its layer, and drops the
+  `ArtworkAmbience` glow.
 - **Tokens:** all colours come from `MaterialTheme.colorScheme`, `AppTheme.colors` or `glassTint()`.
   No hard-coded colours in screens. Every screen gets light and dark `@ThemePreviews` (previews show
   the translucent fallback, because previews can't render the real glass).
