@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.kyant.shapes.RoundedRectangle
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -45,7 +45,7 @@ fun PodcastSettingsSheet(podcastId: Long, onDismiss: () -> Unit) {
             key = "podcast-settings-$podcastId",
         ) { it.create(podcastId) }
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val shape = remember { RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp) }
+    val shape = remember { RoundedRectangle(32.dp) }
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         shape = shape,
