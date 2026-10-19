@@ -25,6 +25,13 @@ interface EpisodeDao {
     @Query("SELECT * FROM episodes WHERE podcastId = :podcastId")
     suspend fun getForPodcast(podcastId: Long): List<EpisodeEntity>
 
+    /** positionMs = null keeps the current position. */
+    @Query("UPDATE episodes SET playState = :playState, playedAt = :playedAt, positionMs = COALESCE(:positionMs, positionMs) WHERE id = :id")
+    suspend fun setPlayState(id: Long, playState: PlayState, playedAt: Long?, positionMs: Long?)
+
+    @Query("UPDATE episodes SET isStarred = :starred WHERE id = :id")
+    suspend fun setStarred(id: Long, starred: Boolean)
+
     @Query("UPDATE episodes SET positionMs = :positionMs, playState = :playState, lastPlayedAt = :at WHERE id = :id")
     suspend fun updatePosition(id: Long, positionMs: Long, playState: PlayState, at: Long)
 
