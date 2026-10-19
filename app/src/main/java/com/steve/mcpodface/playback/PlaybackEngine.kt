@@ -6,6 +6,7 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.steve.mcpodface.core.Clock
 import com.steve.mcpodface.data.db.EpisodeDao
+import com.steve.mcpodface.data.db.ListeningSessionDao
 import com.steve.mcpodface.data.db.PlayState
 import com.steve.mcpodface.data.db.PodcastDao
 import com.steve.mcpodface.data.db.PodcastSettingsDao
@@ -38,7 +39,10 @@ class PlaybackEngine @Inject constructor(
     private val queue: QueueRepository,
     private val resolver: EpisodeMediaResolver,
     private val clock: Clock,
+    private val listeningSessionDao: ListeningSessionDao,
 ) {
+    private val sessions = ListeningSessionRecorder(clock)
+
     private lateinit var player: ExoPlayer
     private lateinit var skipPlayer: SkipForwardingPlayer
     private lateinit var scope: CoroutineScope
@@ -68,13 +72,20 @@ class PlaybackEngine @Inject constructor(
 
     private val listener = object : Player.Listener {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+            scope.launch { endSession() }
             onEpisodeStarted(mediaItem?.episodeId())
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
-            if (isPlaying) startTicker() else {
+            if (isPlaying) {
+                startTicker()
+                currentId?.let { sessions.start(it, player.playbackParameters.speed) }
+            } else {
                 ticker?.cancel()
-                scope.launch { savePosition() }
+                scope.launch {
+                    savePosition()
+                    endSession()
+                }
             }
         }
 
@@ -136,6 +147,11 @@ class PlaybackEngine @Inject constructor(
         lastSavedAt = clock.now()
         val state = if (markedPlayed) PlayState.PLAYED else PlayState.IN_PROGRESS
         episodeDao.updatePosition(id, pos, state, lastSavedAt)
+    }
+
+    /** Records the listening session in progress, if any. Also called when the service stops. */
+    suspend fun endSession() = withContext(NonCancellable) {
+        sessions.stop()?.let { listeningSessionDao.insert(it) }
     }
 
     /** End of episode (or outro reached): mark played, drop it from Up Next, play what's next. */

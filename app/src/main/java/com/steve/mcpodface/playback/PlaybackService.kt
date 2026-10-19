@@ -105,7 +105,10 @@ class PlaybackService : MediaLibraryService() {
 
     override fun onDestroy() {
         // Last chance to persist the position; the DB write is quick.
-        runBlocking { engine.savePosition() }
+        runBlocking {
+            engine.savePosition()
+            engine.endSession()
+        }
         session?.run {
             release()
             session = null
