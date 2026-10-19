@@ -3,8 +3,11 @@ package com.steve.mcpodface.ui.settings
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
+import com.steve.mcpodface.core.Clock
 import com.steve.mcpodface.data.backup.OpmlExporter
 import com.steve.mcpodface.data.backup.OpmlImporter
+import com.steve.mcpodface.data.db.BackfillStateDao
+import com.steve.mcpodface.data.db.PodcastDao
 import com.steve.mcpodface.data.prefs.GlobalSettings
 import com.steve.mcpodface.data.prefs.SettingsRepository
 import com.steve.mcpodface.refresh.PolicyRunner
@@ -37,6 +40,9 @@ class SettingsViewModelTest {
             policyRunner = policyRunner,
             importer = mockk(relaxed = true),
             exporter = mockk<OpmlExporter>(relaxed = true),
+            podcastDao = mockk<PodcastDao>(relaxed = true),
+            backfillStateDao = mockk<BackfillStateDao>(relaxed = true),
+            clock = Clock { 1_800_000_000_000L },
             io = Dispatchers.Unconfined,
         )
     }

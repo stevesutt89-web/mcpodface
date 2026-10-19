@@ -32,6 +32,10 @@ interface BackfillStateDao {
         """,
     )
     suspend fun backupRows(): List<BackfillBackupRow>
+
+    /** Every archive row, for the overall progress in Settings → Search & archive. */
+    @Query("SELECT * FROM backfill_state")
+    fun observeAll(): Flow<List<BackfillStateEntity>>
 }
 
 /** Backfill cursor for one podcast. Transient fields (retry timing, last error) are left out. */

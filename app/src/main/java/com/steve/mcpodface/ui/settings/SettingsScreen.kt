@@ -51,7 +51,10 @@ import com.steve.mcpodface.ui.addpodcast.ImportProgressDialog
 import com.steve.mcpodface.ui.addpodcast.ImportResultDialog
 import com.steve.mcpodface.ui.components.BackButton
 import com.steve.mcpodface.ui.components.LargeTitleScaffold
+import com.steve.mcpodface.ui.components.formatBytes
 import com.steve.mcpodface.ui.components.glass.GlassPage
+import com.steve.mcpodface.ui.podcastsettings.archiveProgressLine
+import com.steve.mcpodface.ui.podcastsettings.requestsLine
 import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
 import com.steve.mcpodface.ui.theme.ThemePreviews
@@ -66,8 +69,15 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
     val importProgress by viewModel.importProgress.collectAsStateWithLifecycle()
     val importHidden by viewModel.importHidden.collectAsStateWithLifecycle()
     val pendingCleanup by viewModel.pendingCleanup.collectAsStateWithLifecycle()
+    val archive by viewModel.archive.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val batteryUnrestricted = rememberBatteryUnrestricted()
+
+    // The database size changes as backfill and refresh write, so re-read it whenever Settings resumes.
+    LifecycleResumeEffect(viewModel) {
+        viewModel.refreshDatabaseSize()
+        onPauseOrDispose {}
+    }
 
     val importPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) viewModel.importOpml(uri)
@@ -88,6 +98,8 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
         onImportOpml = { importPicker.launch(IMPORT_MIME_TYPES) },
         onExportOpml = { exportPicker.launch(EXPORT_FILE_NAME) },
         onOpenBatterySettings = { openBatterySettings(context) },
+        archive = archive,
+        onBackfillNow = viewModel::backfillNow,
     )
 
     // A setting change that would delete downloads waits here until the user confirms (PLAN.md §6.5).
@@ -124,6 +136,8 @@ private fun SettingsContent(
     onImportOpml: () -> Unit = {},
     onExportOpml: () -> Unit = {},
     onOpenBatterySettings: () -> Unit = {},
+    archive: ArchiveOverview = ArchiveOverview(),
+    onBackfillNow: () -> Unit = {},
 ) {
     GlassPage {
         LargeTitleScaffold(
@@ -140,7 +154,7 @@ private fun SettingsContent(
                 autoDeleteSection(settings, onUpdate)
                 playbackSection(settings, onUpdate)
                 refreshSection(settings, onUpdate)
-                archiveSection(settings, onUpdate)
+                archiveSection(settings, onUpdate, archive, onBackfillNow)
                 backupSection(onImportOpml, onExportOpml)
                 batterySection(batteryUnrestricted, onOpenBatterySettings)
                 aboutSection()
@@ -330,7 +344,12 @@ private fun LazyListScope.refreshSection(settings: GlobalSettings, onUpdate: ((G
     }
 }
 
-private fun LazyListScope.archiveSection(settings: GlobalSettings, onUpdate: ((GlobalSettings) -> GlobalSettings) -> Unit) {
+private fun LazyListScope.archiveSection(
+    settings: GlobalSettings,
+    onUpdate: ((GlobalSettings) -> GlobalSettings) -> Unit,
+    archive: ArchiveOverview,
+    onBackfillNow: () -> Unit,
+) {
     item(key = "header-archive") { SectionHeader("Search & archive", Icons.Rounded.ManageSearch) }
     item(key = "card-archive") {
         val archiveOn = settings.backfillEnabled
@@ -360,9 +379,29 @@ private fun LazyListScope.archiveSection(settings: GlobalSettings, onUpdate: ((G
                 onSelect = { v -> onUpdate { SettingsOptions.apiDailyBudget.apply(it, v) } },
                 enabled = archiveOn,
             )
+            SettingsRow(
+                title = archiveProgressLine(archive.progress),
+                enabled = archiveOn,
+            )
             ValueRow(
-                title = "Requests used today",
-                value = settings.apiRequestsToday.toString(),
+                title = "Podcast Index requests today",
+                value = requestsLine(archive.usage),
+                enabled = archiveOn,
+            )
+            archive.pausedLabel?.let { label ->
+                SettingsRow(
+                    title = label,
+                    subtitle = "Podcast Index returned a rate limit. Backfill resumes after the pause.",
+                    enabled = archiveOn,
+                )
+            }
+            ValueRow(
+                title = "Database size",
+                value = formatBytes(archive.databaseBytes),
+            )
+            ActionRow(
+                title = "Backfill now",
+                onClick = onBackfillNow,
                 enabled = archiveOn,
                 divider = false,
             )

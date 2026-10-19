@@ -4,15 +4,26 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.WorkManager
+import com.steve.mcpodface.backfill.BackfillWorker
+import com.steve.mcpodface.core.Clock
 import com.steve.mcpodface.core.di.IoDispatcher
 import com.steve.mcpodface.data.backup.Opml
 import com.steve.mcpodface.data.backup.OpmlExporter
 import com.steve.mcpodface.data.backup.OpmlImportProgress
 import com.steve.mcpodface.data.backup.OpmlImporter
 import com.steve.mcpodface.data.backup.OpmlParseException
+import com.steve.mcpodface.data.db.AppDatabase
+import com.steve.mcpodface.data.db.BackfillStateDao
+import com.steve.mcpodface.data.db.PodcastDao
 import com.steve.mcpodface.data.prefs.GlobalSettings
 import com.steve.mcpodface.data.prefs.SettingsRepository
 import com.steve.mcpodface.refresh.PolicyRunner
+import com.steve.mcpodface.ui.podcastsettings.ApiUsage
+import com.steve.mcpodface.ui.podcastsettings.ArchiveProgress
+import com.steve.mcpodface.ui.podcastsettings.apiUsage
+import com.steve.mcpodface.ui.podcastsettings.archiveProgress
+import com.steve.mcpodface.ui.podcastsettings.pausedUntilLine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
@@ -22,14 +33,24 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.io.IOException
 import javax.inject.Inject
+
+/** Archive totals for Settings → Search & archive (PLAN.md §8.10). */
+data class ArchiveOverview(
+    val progress: ArchiveProgress = ArchiveProgress(complete = 0, total = 0),
+    val usage: ApiUsage = ApiUsage(requestsToday = 0, dailyBudget = GlobalSettings().apiDailyBudget, pausedUntil = 0L),
+    /** "Paused until 3:40 pm" while the Podcast Index 429 pause runs, otherwise null. */
+    val pausedLabel: String? = null,
+    val databaseBytes: Long = 0L,
+)
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
@@ -38,11 +59,56 @@ class SettingsViewModel @Inject constructor(
     private val policyRunner: PolicyRunner,
     private val importer: OpmlImporter,
     private val exporter: OpmlExporter,
+    private val podcastDao: PodcastDao,
+    private val backfillStateDao: BackfillStateDao,
+    private val clock: Clock,
     @IoDispatcher private val io: CoroutineDispatcher,
 ) : ViewModel() {
 
     val settings: StateFlow<GlobalSettings> = settingsRepository.settings
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), GlobalSettings())
+
+    /** Size of the database file plus its WAL, in bytes. Read off the main thread by [refreshDatabaseSize]. */
+    private val databaseBytes = MutableStateFlow(0L)
+
+    /** Archive progress, API requests today and the database size, for the "Search & archive" block. */
+    val archive: StateFlow<ArchiveOverview> = combine(
+        podcastDao.observeSubscribed(),
+        backfillStateDao.observeAll(),
+        settingsRepository.settings,
+        databaseBytes,
+    ) { subscribed, states, global, bytes ->
+        val now = clock.now()
+        val usage = apiUsage(global, now)
+        ArchiveOverview(
+            progress = archiveProgress(subscribed.map { it.id }, states),
+            usage = usage,
+            pausedLabel = pausedUntilLine(usage, now),
+            databaseBytes = bytes,
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ArchiveOverview())
+
+    init {
+        refreshDatabaseSize()
+    }
+
+    /** Re-reads the database size, e.g. when Settings resumes after a refresh or backfill has run. */
+    fun refreshDatabaseSize() {
+        viewModelScope.launch {
+            val bytes = withContext(io) {
+                val db = context.getDatabasePath(AppDatabase.NAME)
+                db.length() + File(db.path + "-wal").length()
+            }
+            databaseBytes.value = bytes
+        }
+    }
+
+    /** One backfill run as soon as the global constraints allow (PLAN.md §7.4). */
+    fun backfillNow() {
+        viewModelScope.launch {
+            BackfillWorker.runNow(WorkManager.getInstance(context), settingsRepository.settings.first())
+        }
+    }
 
     /** OPML import progress; null when there is nothing to show. */
     val importProgress: StateFlow<OpmlImportProgress?> = importer.progress
