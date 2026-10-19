@@ -99,6 +99,8 @@ class BackfillRunner @Inject constructor(
                     nextEligibleAt = clock.now() + nextBackoff(state),
                 )
             }
+            // The user may have paused this podcast while it ran: keep that.
+            if (db.backfillStateDao().get(podcast.id)?.status == BackfillStatus.PAUSED) s = s.copy(status = BackfillStatus.PAUSED)
             db.backfillStateDao().upsert(s)
             touched++
             if (added > before) policyRunner.runDownloadPolicy(podcast.id)
