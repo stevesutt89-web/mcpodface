@@ -69,6 +69,10 @@ interface EpisodeDao {
     @Query("UPDATE episodes SET playState = :playState, playedAt = :playedAt, positionMs = COALESCE(:positionMs, positionMs) WHERE id = :id")
     suspend fun setPlayState(id: Long, playState: PlayState, playedAt: Long?, positionMs: Long?)
 
+    /** Tombstone (PLAN.md §6.4): set when a download is deleted, cleared by a manual download. */
+    @Query("UPDATE episodes SET autoDownloadBlocked = :blocked WHERE id = :id")
+    suspend fun setAutoDownloadBlocked(id: Long, blocked: Boolean)
+
     @Query("UPDATE episodes SET isStarred = :starred WHERE id = :id")
     suspend fun setStarred(id: Long, starred: Boolean)
 

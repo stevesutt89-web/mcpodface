@@ -22,6 +22,16 @@ interface DownloadDao {
     @Query("DELETE FROM downloads WHERE episodeId = :episodeId")
     suspend fun delete(episodeId: Long)
 
+    /** Progress while downloading; also marks the row DOWNLOADING. */
+    @Query("UPDATE downloads SET bytesDownloaded = :bytes, totalBytes = COALESCE(:total, totalBytes), state = 'DOWNLOADING' WHERE episodeId = :episodeId")
+    suspend fun updateProgress(episodeId: Long, bytes: Long, total: Long?)
+
+    @Query("UPDATE downloads SET state = :state, error = :error, attempts = :attempts WHERE episodeId = :episodeId")
+    suspend fun updateState(episodeId: Long, state: DownloadState, error: String?, attempts: Int)
+
+    @Query("SELECT * FROM downloads WHERE state = 'COMPLETED'")
+    suspend fun getCompleted(): List<DownloadEntity>
+
     /** Downloads storage header, per-podcast sizes (PLAN.md §8.7), largest first. */
     @Query(
         """
