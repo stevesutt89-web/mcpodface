@@ -1,9 +1,348 @@
 package com.steve.mcpodface.ui.latest
 
+import android.content.Intent
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.Podcasts
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material.icons.outlined.StarBorder
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import com.steve.mcpodface.ui.components.PlaceholderScreen
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.steve.mcpodface.data.db.EpisodeListItem
+import com.steve.mcpodface.data.prefs.LatestFilter
+import com.steve.mcpodface.ui.components.LargeTitleScaffold
+import com.steve.mcpodface.ui.components.previewEpisodeItems
+import com.steve.mcpodface.ui.theme.AppTheme
+import com.steve.mcpodface.ui.theme.Spacing
+import com.steve.mcpodface.ui.theme.ThemePreviews
 
+private const val PREVIEW_NOW = 1_792_411_200_000L // 2026-10-19T12:00Z
+
+/** Latest tab (PLAN.md §8.2): recent episodes across subscriptions, with filters and swipe actions. */
 @Composable
 fun LatestScreen(onOpenSettings: () -> Unit, onOpenPodcast: (Long) -> Unit, onOpenEpisode: (Long) -> Unit) {
-    PlaceholderScreen(title = "Latest", onOpenSettings = onOpenSettings)
+    val viewModel: LatestViewModel = hiltViewModel()
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+
+    LaunchedEffect(viewModel) {
+        viewModel.messages.collect { message ->
+            when (message) {
+                is LatestMessage.AddedToUpNext ->
+                    snackbarHostState.showSnackbar("Added to Up Next", duration = SnackbarDuration.Short)
+                is LatestMessage.PlayedChanged -> {
+                    val text = if (message.nowPlayed) "Marked as played" else "Marked as unplayed"
+                    val result = snackbarHostState.showSnackbar(
+                        message = text,
+                        actionLabel = "Undo",
+                        duration = SnackbarDuration.Short,
+                    )
+                    if (result == SnackbarResult.ActionPerformed) {
+                        viewModel.undoPlayedChange(message.episodeId, message.nowPlayed)
+                    }
+                }
+            }
+        }
+    }
+
+    LatestContent(
+        state = state,
+        snackbarHostState = snackbarHostState,
+        onOpenSettings = onOpenSettings,
+        onOpenPodcast = onOpenPodcast,
+        onOpenEpisode = onOpenEpisode,
+        onFilterSelected = viewModel::setFilter,
+        onRefresh = viewModel::refresh,
+        onTogglePlay = viewModel::togglePlay,
+        onAddToUpNext = viewModel::addToUpNext,
+        onTogglePlayed = viewModel::togglePlayed,
+        onToggleStar = viewModel::toggleStar,
+        onShare = { item -> context.startActivity(shareEpisodeIntent(item)) },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LatestContent(
+    state: LatestUiState,
+    snackbarHostState: SnackbarHostState,
+    onOpenSettings: () -> Unit,
+    onOpenPodcast: (Long) -> Unit,
+    onOpenEpisode: (Long) -> Unit,
+    onFilterSelected: (LatestFilter) -> Unit,
+    onRefresh: () -> Unit,
+    onTogglePlay: (Long) -> Unit,
+    onAddToUpNext: (EpisodeListItem) -> Unit,
+    onTogglePlayed: (EpisodeListItem) -> Unit,
+    onToggleStar: (EpisodeListItem) -> Unit,
+    onShare: (EpisodeListItem) -> Unit,
+) {
+    var menuEpisodeId by rememberSaveable { mutableStateOf<Long?>(null) }
+    val menuItem = menuEpisodeId?.let { id -> state.items.firstOrNull { it.episode.id == id } }
+
+    LargeTitleScaffold(
+        title = "Latest",
+        actions = {
+            IconButton(onClick = onOpenSettings) {
+                Icon(Icons.Outlined.Settings, contentDescription = "Settings")
+            }
+        },
+    ) { padding ->
+        Box(Modifier.fillMaxSize().padding(padding)) {
+            PullToRefreshBox(
+                isRefreshing = state.refreshing,
+                onRefresh = onRefresh,
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                LazyColumn(contentPadding = PaddingValues(bottom = Spacing.xl)) {
+                    item(key = "filters") {
+                        FilterChipRow(selected = state.filter, onSelect = onFilterSelected)
+                    }
+                    if (state.loaded && state.items.isEmpty()) {
+                        item(key = "empty") { EmptyState(filter = state.filter) }
+                    }
+                    itemsIndexed(state.items, key = { _, item -> item.episode.id }) { index, item ->
+                        SwipeableEpisodeRow(
+                            item = item,
+                            now = state.now,
+                            isPlaying = state.nowPlaying?.let { it.episodeId == item.episode.id && it.isPlaying } ?: false,
+                            onClick = { onOpenEpisode(item.episode.id) },
+                            onPlayClick = { onTogglePlay(item.episode.id) },
+                            onLongClick = { menuEpisodeId = item.episode.id },
+                            onAddToUpNext = { onAddToUpNext(item) },
+                            onTogglePlayed = { onTogglePlayed(item) },
+                        )
+                        if (index < state.items.lastIndex) {
+                            HorizontalDivider(
+                                modifier = Modifier.padding(start = Spacing.m + 56.dp + Spacing.m),
+                                color = AppTheme.colors.hairline,
+                            )
+                        }
+                    }
+                }
+            }
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.align(Alignment.BottomCenter),
+            )
+        }
+    }
+
+    if (menuItem != null) {
+        EpisodeActionSheet(
+            item = menuItem,
+            onDismiss = { menuEpisodeId = null },
+            onToggleStar = { onToggleStar(menuItem) },
+            onShare = { onShare(menuItem) },
+            onGoToPodcast = { onOpenPodcast(menuItem.episode.podcastId) },
+        )
+    }
+}
+
+internal fun LatestFilter.label(): String = when (this) {
+    LatestFilter.ALL -> "All"
+    LatestFilter.UNPLAYED -> "Unplayed"
+    LatestFilter.DOWNLOADED -> "Downloaded"
+}
+
+@Composable
+private fun FilterChipRow(selected: LatestFilter, onSelect: (LatestFilter) -> Unit) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Spacing.m, vertical = Spacing.s),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s),
+    ) {
+        LatestFilter.entries.forEach { filter ->
+            FilterChip(
+                selected = filter == selected,
+                onClick = { onSelect(filter) },
+                label = { Text(filter.label()) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun EmptyState(filter: LatestFilter) {
+    val (title, body) = if (filter == LatestFilter.ALL) {
+        "No episodes yet" to "Subscribe to podcasts from the Search tab."
+    } else {
+        "Nothing here" to "Nothing matches the ${filter.label()} filter."
+    }
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Spacing.l, vertical = Spacing.xl),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(title, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
+        Spacer(Modifier.height(Spacing.xs))
+        Text(
+            body,
+            style = MaterialTheme.typography.bodySmall,
+            color = AppTheme.colors.textSecondary,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
+/** Long-press menu (PLAN.md §8.2). Every action closes the sheet after it runs. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun EpisodeActionSheet(
+    item: EpisodeListItem,
+    onDismiss: () -> Unit,
+    onToggleStar: () -> Unit,
+    onShare: () -> Unit,
+    onGoToPodcast: () -> Unit,
+) {
+    val sheetState = rememberModalBottomSheetState()
+    val starred = item.episode.isStarred
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
+        Column(Modifier.padding(bottom = Spacing.l)) {
+            Text(
+                item.episode.title.ifBlank { "Untitled episode" },
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(horizontal = Spacing.m, vertical = Spacing.s),
+            )
+            SheetAction(Icons.Outlined.Download, "Download (coming soon)", enabled = false) {}
+            SheetAction(
+                icon = if (starred) Icons.Outlined.Star else Icons.Outlined.StarBorder,
+                label = if (starred) "Unstar" else "Star",
+            ) { onToggleStar(); onDismiss() }
+            SheetAction(Icons.Outlined.Share, "Share") { onShare(); onDismiss() }
+            SheetAction(Icons.Outlined.Podcasts, "Go to podcast") { onGoToPodcast(); onDismiss() }
+        }
+    }
+}
+
+@Composable
+private fun SheetAction(
+    icon: ImageVector,
+    label: String,
+    enabled: Boolean = true,
+    onClick: () -> Unit,
+) {
+    val tint = if (enabled) AppTheme.colors.textPrimary else AppTheme.colors.textSecondary
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clickable(enabled = enabled, onClick = onClick)
+            .padding(horizontal = Spacing.m, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(24.dp))
+        Spacer(Modifier.width(Spacing.m))
+        Text(label, style = MaterialTheme.typography.bodyLarge, color = tint)
+    }
+}
+
+/** ACTION_SEND chooser with "<episode title> — <podcast title>\n<enclosureUrl>" (PLAN.md §8.2). */
+internal fun shareEpisodeIntent(item: EpisodeListItem): Intent {
+    val text = "${item.episode.title.ifBlank { "Untitled episode" }} — ${item.podcastTitle}\n" +
+        item.episode.enclosureUrl
+    val send = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_TEXT, text)
+    }
+    return Intent.createChooser(send, null)
+}
+
+@ThemePreviews
+@Composable
+private fun LatestPreview() {
+    AppTheme {
+        Surface {
+            LatestContent(
+                state = LatestUiState(items = previewEpisodeItems(), loaded = true, now = PREVIEW_NOW),
+                snackbarHostState = remember { SnackbarHostState() },
+                onOpenSettings = {}, onOpenPodcast = {}, onOpenEpisode = {},
+                onFilterSelected = {}, onRefresh = {}, onTogglePlay = {},
+                onAddToUpNext = {}, onTogglePlayed = {}, onToggleStar = {}, onShare = {},
+            )
+        }
+    }
+}
+
+@ThemePreviews
+@Composable
+private fun LatestEmptyPreview() {
+    AppTheme {
+        Surface {
+            LatestContent(
+                state = LatestUiState(loaded = true, now = PREVIEW_NOW),
+                snackbarHostState = remember { SnackbarHostState() },
+                onOpenSettings = {}, onOpenPodcast = {}, onOpenEpisode = {},
+                onFilterSelected = {}, onRefresh = {}, onTogglePlay = {},
+                onAddToUpNext = {}, onTogglePlayed = {}, onToggleStar = {}, onShare = {},
+            )
+        }
+    }
+}
+
+@ThemePreviews
+@Composable
+private fun LatestFilteredEmptyPreview() {
+    AppTheme {
+        Surface {
+            LatestContent(
+                state = LatestUiState(filter = LatestFilter.UNPLAYED, loaded = true, now = PREVIEW_NOW),
+                snackbarHostState = remember { SnackbarHostState() },
+                onOpenSettings = {}, onOpenPodcast = {}, onOpenEpisode = {},
+                onFilterSelected = {}, onRefresh = {}, onTogglePlay = {},
+                onAddToUpNext = {}, onTogglePlayed = {}, onToggleStar = {}, onShare = {},
+            )
+        }
+    }
 }
