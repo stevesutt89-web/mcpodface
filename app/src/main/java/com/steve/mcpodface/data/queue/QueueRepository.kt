@@ -19,6 +19,19 @@ class QueueRepository @Inject constructor(private val db: AppDatabase) {
 
     suspend fun addFirst(episodeId: Long) = edit { ids -> listOf(episodeId) + (ids - episodeId) }
 
+    /** Swipe right: appends [episodeId] if it isn't queued, or removes it if it is. Returns true when added. */
+    suspend fun toggle(episodeId: Long): Boolean {
+        var added = false
+        edit { ids ->
+            if (episodeId in ids) ids - episodeId
+            else {
+                added = true
+                ids + episodeId
+            }
+        }
+        return added
+    }
+
     suspend fun remove(episodeId: Long) = edit { ids -> ids - episodeId }
 
     suspend fun move(fromIndex: Int, toIndex: Int) = edit { ids ->

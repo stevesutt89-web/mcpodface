@@ -26,6 +26,8 @@ import com.steve.mcpodface.data.prefs.ThemeMode
 import com.steve.mcpodface.data.playlist.PlaylistRepository
 import com.steve.mcpodface.data.playlist.SmartRules
 import com.steve.mcpodface.data.search.SearchRepository
+import com.steve.mcpodface.data.db.PlaylistEntity
+import com.steve.mcpodface.data.db.PlaylistItemEntity
 import com.steve.mcpodface.data.db.PlaylistKind
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -196,7 +198,6 @@ class BackupImporterTest {
 
     @Test fun playlistsRoundTrip() = runBlocking<Unit> {
         val a = old.db.podcastDao().getByFeedUrl("https://a/feed")!!.id
-        old.playlists.toggleListenLater(old.episode("https://a/feed", "g5").id)
         val road = old.playlists.createManual("Road trip")
         old.playlists.add(road, old.episode("https://b/feed", "g22").id)
         old.playlists.add(road, old.episode("https://a/feed", "g6").id)
@@ -206,8 +207,7 @@ class BackupImporterTest {
         new.restore(old.backup(includeArchive = false))
 
         val all = new.db.playlistDao().getAll()
-        val ll = all.single { it.kind == PlaylistKind.LISTEN_LATER }
-        assertThat(new.db.playlistDao().getItems(ll.id).map { new.db.episodeDao().getById(it.episodeId)!!.guid }).containsExactly("g5")
+        assertThat(all.map { it.kind }).doesNotContain(PlaylistKind.LISTEN_LATER)
         val roadNew = all.single { it.name == "Road trip" }
         assertThat(new.db.playlistDao().getItems(roadNew.id).map { new.db.episodeDao().getById(it.episodeId)!!.guid })
             .containsExactly("g22", "g6").inOrder()
@@ -216,6 +216,20 @@ class BackupImporterTest {
         assertThat(rules.podcastIds).containsExactly(new.db.podcastDao().getByFeedUrl("https://a/feed")!!.id)
         assertThat(rules.publishedWithinDays).isEqualTo(7)
         assertThat(rules.limit).isEqualTo(20)
+    }
+
+    @Test fun retiredListenLaterFromAnOlderBackupAppendsToUpNext() = runBlocking<Unit> {
+        // An older phone's backup still has a Listen Later playlist: its items join Up Next, skipping queued ones.
+        val legacy = old.db.playlistDao().insert(PlaylistEntity(name = "Listen Later", kind = PlaylistKind.LISTEN_LATER, position = -1, createdAt = 0L))
+        val items = listOf(old.episode("https://a/feed", "g5"), old.episode("https://a/feed", "g3"), old.episode("https://b/feed", "g22"))
+        old.db.playlistDao().insertItems(items.mapIndexed { i, episode -> PlaylistItemEntity(legacy, episode.id, i, addedAt = 0L) })
+
+        val new = phone("new")
+        new.restore(old.backup(includeArchive = false))
+
+        assertThat(new.db.playlistDao().getAll().map { it.kind }).doesNotContain(PlaylistKind.LISTEN_LATER)
+        val queue = new.db.queueDao().getAll().sortedBy { it.position }.map { new.db.episodeDao().getById(it.episodeId)!!.guid }
+        assertThat(queue).containsExactly("g3", "g21", "g5", "g22").inOrder()
     }
 
     @Test fun rejectsFilesThatAreNotBackups() = runBlocking<Unit> {

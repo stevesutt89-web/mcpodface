@@ -19,5 +19,8 @@ enum class DownloadSource { AUTO, MANUAL }
 
 enum class BackfillStatus { PENDING, IN_PROGRESS, COMPLETE, FAILED, PAUSED }
 
-/** Playlists (PLAN.md §8.11). LISTEN_LATER is the built-in one filled by swiping right on a row. */
+/**
+ * Playlists (PLAN.md §8.11). LISTEN_LATER is retired: swipe right now toggles Up Next. The constant
+ * stays so stored rows still deserialise; [PlaylistRepository.moveListenLaterToUpNext] moves them out.
+ */
 enum class PlaylistKind { LISTEN_LATER, MANUAL, SMART }

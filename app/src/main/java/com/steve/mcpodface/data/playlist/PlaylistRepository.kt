@@ -16,15 +16,13 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Playlists (PLAN.md §8.11): the built-in Listen Later list (swipe right on any episode row),
- * manual playlists the user adds episodes to, and smart playlists whose episodes come from saved
- * [SmartRules] evaluated by the search engine.
+ * Playlists (PLAN.md §8.11): manual playlists the user adds episodes to, and smart playlists whose
+ * episodes come from saved [SmartRules] evaluated by the search engine. Listen Later has been
+ * retired: swipe right now toggles Up Next (see [QueueRepository]).
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 @Singleton
@@ -34,15 +32,13 @@ class PlaylistRepository @Inject constructor(
     private val clock: Clock,
 ) {
     private val dao get() = db.playlistDao()
-    private val listenLaterLock = Mutex()
 
-    /** Every playlist for the Library, Listen Later first. Creates Listen Later on first use. */
-    fun observePlaylists(): Flow<List<PlaylistWithCount>> =
-        flowOf(Unit).flatMapLatest { listenLaterId(); dao.observeAll() }
+    /** Every MANUAL and SMART playlist for the Library, in the user's order. */
+    fun observePlaylists(): Flow<List<PlaylistWithCount>> = dao.observeAll()
 
     fun observePlaylist(id: Long): Flow<PlaylistEntity?> = dao.observeById(id)
 
-    /** The playlist's episodes: stored items for Listen Later and manual lists, live rules for smart ones. */
+    /** The playlist's episodes: stored items for manual lists, live rules for smart ones. */
     fun observeEpisodes(playlistId: Long): Flow<List<EpisodeListItem>> =
         dao.observeById(playlistId)
             .distinctUntilChanged { a, b -> a?.kind == b?.kind && a?.rulesJson == b?.rulesJson }
@@ -64,35 +60,27 @@ class PlaylistRepository @Inject constructor(
             listAllWhenBlank = true,
         ).map { results -> results.items.map { it.item } }
 
-    /** Episode ids in Listen Later, for showing each row's swipe as "add" or "remove". */
-    fun observeListenLaterIds(): Flow<Set<Long>> =
-        dao.observeEpisodeIdsOfKind(PlaylistKind.LISTEN_LATER).map { it.toSet() }
-
-    /** The manual playlists (and Listen Later) holding [episodeId], for ticks in the "Add to playlist" sheet. */
+    /** The manual playlists holding [episodeId], for ticks in the "Add to playlist" sheet. */
     fun observePlaylistIdsFor(episodeId: Long): Flow<Set<Long>> = dao.observePlaylistIdsFor(episodeId).map { it.toSet() }
 
-    suspend fun listenLaterId(): Long = listenLaterLock.withLock {
-        dao.getFirstOfKind(PlaylistKind.LISTEN_LATER)?.id
-            ?: dao.insert(PlaylistEntity(name = LISTEN_LATER_NAME, kind = PlaylistKind.LISTEN_LATER, position = -1, createdAt = clock.now()))
-    }
-
-    /** Swipe right: adds to Listen Later, or removes it if it's already there. Returns true when added. */
-    suspend fun toggleListenLater(episodeId: Long): Boolean {
-        val id = listenLaterId()
-        return db.withTransaction {
-            if (dao.getItems(id).any { it.episodeId == episodeId }) {
-                dao.deleteItem(id, episodeId)
-                false
-            } else {
-                // Newest saves go on top, like a reading list.
-                dao.insertItems(listOf(PlaylistItemEntity(id, episodeId, dao.minItemPosition(id) - 1, clock.now())))
-                true
+    /**
+     * One-time move, run at startup (PLAN.md §8.11): appends every Listen Later episode, in list order,
+     * to the end of Up Next (skipping ones already queued), then deletes the retired playlist.
+     * Does nothing when there is no Listen Later playlist.
+     */
+    suspend fun moveListenLaterToUpNext() = db.withTransaction {
+        val retired = dao.getAll().filter { it.kind == PlaylistKind.LISTEN_LATER }
+        if (retired.isEmpty()) return@withTransaction
+        val queue = db.queueDao()
+        val upNext = queue.getAll().map { it.episodeId }.toMutableList()
+        for (playlist in retired) {
+            for (item in dao.getItems(playlist.id)) {
+                if (item.episodeId !in upNext) upNext += item.episodeId
             }
+            dao.delete(playlist.id)
         }
+        queue.replaceAll(upNext)
     }
-
-    /** Finished episodes leave Listen Later (called by the playback engine). */
-    suspend fun onEpisodeFinished(episodeId: Long) = dao.removeFromKind(PlaylistKind.LISTEN_LATER, episodeId)
 
     suspend fun createManual(name: String): Long = create(name, PlaylistKind.MANUAL, null)
 
@@ -109,7 +97,7 @@ class PlaylistRepository @Inject constructor(
 
     suspend fun rename(playlistId: Long, name: String) {
         val p = dao.getById(playlistId) ?: return
-        if (p.kind == PlaylistKind.LISTEN_LATER || name.isBlank()) return
+        if (name.isBlank()) return
         dao.update(p.copy(name = name.trim()))
     }
 
@@ -119,16 +107,12 @@ class PlaylistRepository @Inject constructor(
         dao.update(p.copy(rulesJson = rules.toJson()))
     }
 
-    /** Listen Later can't be deleted. */
-    suspend fun delete(playlistId: Long) {
-        val p = dao.getById(playlistId) ?: return
-        if (p.kind != PlaylistKind.LISTEN_LATER) dao.delete(playlistId)
-    }
+    suspend fun delete(playlistId: Long) = dao.delete(playlistId)
 
-    /** Appends to a Listen Later or manual playlist; no-op if it's already there or the playlist is smart. */
+    /** Appends to a manual playlist; no-op for smart playlists and the retired Listen Later kind. */
     suspend fun add(playlistId: Long, episodeId: Long) = db.withTransaction {
         val p = dao.getById(playlistId) ?: return@withTransaction
-        if (p.kind == PlaylistKind.SMART) return@withTransaction
+        if (p.kind == PlaylistKind.SMART || p.kind == PlaylistKind.LISTEN_LATER) return@withTransaction
         dao.insertItems(listOf(PlaylistItemEntity(playlistId, episodeId, dao.maxItemPosition(playlistId) + 1, clock.now())))
     }
 
@@ -145,8 +129,4 @@ class PlaylistRepository @Inject constructor(
 
     /** The playlist's episode ids in order right now, for "Play all". */
     suspend fun episodeIds(playlistId: Long): List<Long> = observeEpisodes(playlistId).first().map { it.episode.id }
-
-    companion object {
-        const val LISTEN_LATER_NAME = "Listen Later"
-    }
 }

@@ -14,7 +14,7 @@ import com.steve.mcpodface.data.db.SortOrder
 import com.steve.mcpodface.data.episodes.EpisodeRepository
 import com.steve.mcpodface.data.feed.FeedRepository
 import com.steve.mcpodface.data.feed.SubscriptionRepository
-import com.steve.mcpodface.data.playlist.PlaylistRepository
+import com.steve.mcpodface.data.queue.QueueRepository
 import com.steve.mcpodface.domain.policy.defaultSortOrder
 import com.steve.mcpodface.playback.NowPlaying
 import com.steve.mcpodface.playback.PlayerController
@@ -51,8 +51,6 @@ data class PodcastUiState(
     val feedLoading: Boolean = false,
     /** First fetch failed: show the message with a retry. */
     val feedError: String? = null,
-    /** Episodes in Listen Later, for each row's swipe label (PLAN.md §8.11). */
-    val listenLaterIds: Set<Long> = emptySet(),
 ) {
     val isLoading: Boolean get() = !loaded
     val notFound: Boolean get() = loaded && podcast == null
@@ -74,7 +72,7 @@ class PodcastViewModel @Inject constructor(
     private val feedRepository: FeedRepository,
     private val podcastSettingsDao: PodcastSettingsDao,
     private val playerController: PlayerController,
-    private val playlists: PlaylistRepository,
+    private val queue: QueueRepository,
     private val clock: Clock,
 ) : ViewModel() {
 
@@ -114,12 +112,10 @@ class PodcastViewModel @Inject constructor(
         isRefreshing,
         playerController.nowPlaying,
         firstFetch,
-        playlists.observeListenLaterIds(),
-    ) { d, refreshing, np, ff, listenLater ->
+    ) { d, refreshing, np, ff ->
         d.toState(refreshing, np, clock.now()).copy(
             feedLoading = ff == SubscriptionRepository.FirstFetch.Loading,
             feedError = (ff as? SubscriptionRepository.FirstFetch.Failed)?.message,
-            listenLaterIds = listenLater,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), PodcastUiState())
 
@@ -173,9 +169,9 @@ class PodcastViewModel @Inject constructor(
         playerController.togglePlayPause(episodeId)
     }
 
-    /** Swipe right: Listen Later add or remove (PLAN.md §8.11). */
-    fun toggleListenLater(episodeId: Long) {
-        viewModelScope.launch { playlists.toggleListenLater(episodeId) }
+    /** Swipe right: Up Next add or remove (PLAN.md §8.11). */
+    fun toggleUpNext(episodeId: Long) {
+        viewModelScope.launch { queue.toggle(episodeId) }
     }
 
     /** Swipe left: played or unplayed. */

@@ -13,6 +13,7 @@ import com.steve.mcpodface.data.db.PodcastEntity
 import com.steve.mcpodface.data.feed.FeedRepository
 import com.steve.mcpodface.data.feed.SubscriptionRepository
 import com.steve.mcpodface.data.playlist.PlaylistRepository
+import com.steve.mcpodface.data.playlist.SmartRules
 import com.steve.mcpodface.data.prefs.LibraryLayout
 import com.steve.mcpodface.data.prefs.LibrarySort
 import com.steve.mcpodface.data.search.SearchRepository
@@ -129,8 +130,9 @@ class LibraryViewModelTest {
         coVerify(exactly = 1) { subscriptions.unsubscribe(8L, true) }
     }
 
-    @Test fun playlistSectionListsListenLaterFirstWithCountsAndKinds() = runTest {
+    @Test fun playlistSectionListsManualAndSmartPlaylistsWithCounts() = runTest {
         val mine = playlists.createManual("Mine")
+        playlists.createSmart("Fresh", SmartRules())
         val episodeId = db.episodeDao().insertAll(
             listOf(
                 EpisodeEntity(
@@ -143,7 +145,6 @@ class LibraryViewModelTest {
                 ),
             ),
         ).single()
-        playlists.toggleListenLater(episodeId)
         playlists.add(mine, episodeId)
         val vm = viewModel()
 
@@ -151,8 +152,8 @@ class LibraryViewModelTest {
 
         assertThat(state.playlists.map { it.playlist.name to it.playlist.kind to it.itemCount })
             .containsExactly(
-                "Listen Later" to PlaylistKind.LISTEN_LATER to 1,
                 "Mine" to PlaylistKind.MANUAL to 1,
+                "Fresh" to PlaylistKind.SMART to 0,
             ).inOrder()
     }
 

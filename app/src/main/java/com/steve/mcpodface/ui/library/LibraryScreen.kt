@@ -34,7 +34,6 @@ import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.automirrored.outlined.ViewList
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.AutoAwesome
-import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.BarChart
@@ -341,7 +340,7 @@ private fun SectionHeader(title: String) {
 }
 
 /**
- * Listen Later (with its count), then the user's playlists (manual with counts, smart marked
+ * The user's playlists (manual with counts, smart marked
  * "Smart"), then the two "New" actions (PLAN.md §8.11). One glass card, hairlines between rows.
  */
 @Composable
@@ -364,9 +363,9 @@ private fun PlaylistsCard(
             val isSmart = playlist.kind == PlaylistKind.SMART
             PlaylistRow(
                 icon = when (playlist.kind) {
-                    PlaylistKind.LISTEN_LATER -> Icons.Outlined.BookmarkBorder
                     PlaylistKind.MANUAL -> Icons.AutoMirrored.Outlined.PlaylistPlay
-                    PlaylistKind.SMART -> Icons.Outlined.AutoAwesome
+                    // LISTEN_LATER is retired and never listed; it only exists so the enum stays exhaustive.
+                    PlaylistKind.SMART, PlaylistKind.LISTEN_LATER -> Icons.Outlined.AutoAwesome
                 },
                 label = playlist.name,
                 trailing = if (isSmart) "Smart" else entry.itemCount.toString(),
@@ -747,7 +746,6 @@ private fun previewLibrary(): List<LibraryPodcast> = listOf(
 )
 
 private fun previewPlaylists(): List<PlaylistWithCount> = listOf(
-    PlaylistWithCount(PlaylistEntity(id = 1, name = "Listen Later", kind = PlaylistKind.LISTEN_LATER, createdAt = 0L), 4),
     PlaylistWithCount(PlaylistEntity(id = 2, name = "Road trip", kind = PlaylistKind.MANUAL, createdAt = 0L), 7),
     PlaylistWithCount(
         PlaylistEntity(id = 3, name = "Unplayed tech", kind = PlaylistKind.SMART, rulesJson = null, createdAt = 0L),

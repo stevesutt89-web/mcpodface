@@ -47,9 +47,7 @@ data class PlaylistUiState(
     val now: Long = 0L,
 ) {
     val isSmart: Boolean get() = playlist?.kind == PlaylistKind.SMART
-    /** Listen Later can't be renamed or deleted. */
-    val isListenLater: Boolean get() = playlist?.kind == PlaylistKind.LISTEN_LATER
-    /** Only Listen Later and manual lists take drag and swipe edits; smart lists are read-only. */
+    /** Only manual lists take drag and swipe edits; smart lists are read-only. */
     val isEditable: Boolean get() = playlist != null && !isSmart
 }
 
@@ -60,7 +58,7 @@ sealed interface PlaylistEvent {
 
 /**
  * One playlist (PLAN.md §8.11): its episodes, Play all / Shuffle into Up Next, drag to reorder and
- * swipe to remove for Listen Later and manual lists, plus rename and delete.
+ * swipe to remove for manual lists, plus rename and delete.
  */
 @HiltViewModel
 class PlaylistViewModel @Inject constructor(
@@ -180,11 +178,10 @@ class PlaylistViewModel @Inject constructor(
         viewModelScope.launch { playlists.rename(playlistId, name) }
     }
 
-    /** Deletes the playlist (not Listen Later), then tells the screen to leave. */
+    /** Deletes the playlist, then tells the screen to leave. */
     fun delete() {
         viewModelScope.launch {
-            val kind = playlists.observePlaylist(playlistId).first()?.kind ?: return@launch
-            if (kind == PlaylistKind.LISTEN_LATER) return@launch
+            playlists.observePlaylist(playlistId).first() ?: return@launch
             playlists.delete(playlistId)
             eventChannel.send(PlaylistEvent.Deleted)
         }

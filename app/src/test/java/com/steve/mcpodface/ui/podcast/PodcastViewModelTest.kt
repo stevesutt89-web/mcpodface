@@ -17,7 +17,7 @@ import com.steve.mcpodface.data.db.SortOrder
 import com.steve.mcpodface.data.episodes.EpisodeRepository
 import com.steve.mcpodface.data.feed.FeedRepository
 import com.steve.mcpodface.data.feed.SubscriptionRepository
-import com.steve.mcpodface.data.playlist.PlaylistRepository
+import com.steve.mcpodface.data.queue.QueueRepository
 import com.steve.mcpodface.data.search.SearchRepository
 import com.steve.mcpodface.playback.NowPlaying
 import com.steve.mcpodface.playback.NoOpPlayerController
@@ -76,7 +76,7 @@ class PodcastViewModelTest {
             feedRepository = feeds,
             podcastSettingsDao = db.podcastSettingsDao(),
             playerController = player,
-            playlists = PlaylistRepository(db, SearchRepository(db, clock, Dispatchers.Unconfined), clock),
+            queue = QueueRepository(db),
             clock = clock,
         )
         return Observed(vm, vm.uiState)

@@ -14,6 +14,7 @@ import com.steve.mcpodface.core.di.ApplicationScope
 import com.steve.mcpodface.data.db.AppDatabase
 import com.steve.mcpodface.data.db.DownloadState
 import com.steve.mcpodface.data.feed.FeedRepository
+import com.steve.mcpodface.data.playlist.PlaylistRepository
 import com.steve.mcpodface.data.prefs.SettingsRepository
 import com.steve.mcpodface.download.DownloadPaths
 import dagger.assisted.Assisted
@@ -100,10 +101,13 @@ class WorkScheduler @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val feedRepository: FeedRepository,
     private val coordinator: RefreshCoordinator,
+    private val playlists: PlaylistRepository,
     @ApplicationScope private val scope: CoroutineScope,
 ) {
     fun start() {
         val workManager = WorkManager.getInstance(context)
+        // One-time move of retired Listen Later items into Up Next; cheap once there is nothing to move.
+        scope.launch { playlists.moveListenLaterToUpNext() }
         workManager.enqueueUniquePeriodicWork(
             CLEANUP_WORK,
             ExistingPeriodicWorkPolicy.KEEP,

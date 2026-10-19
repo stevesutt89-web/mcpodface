@@ -543,6 +543,9 @@ politely. It's **best effort**, because no source is guaranteed to hold a show's
 
 ### 8.8 Up Next tab
 - A reorderable queue with drag handles, swipe to remove, and "Clear queue".
+- **Swipe right on any episode row** (Latest, podcast page, search results, Starred, History) toggles
+  the episode in Up Next: it is appended to the end, or removed if already queued. The swipe label
+  shows which will happen ("Up Next" / "Remove from Up Next"). `QueueRepository.toggle` does this.
 - Continuous playback: when an episode ends, play the next item in the queue. If the queue is empty,
   the setting "Autoplay next episode from same podcast" (default off) plays the next one in that
   podcast's sort order.
@@ -577,18 +580,17 @@ politely. It's **best effort**, because no source is guaranteed to hold a show's
 - **About:** Version, open source licenses.
 
 ### 8.11 Playlists
-Three kinds, stored in the `playlists` and `playlist_items` tables (DB v2), with the logic in
+Two kinds (manual and smart), stored in the `playlists` and `playlist_items` tables (DB v2), with the logic in
 `data/playlist/PlaylistRepository`:
 
-- **Listen Later**
-  - Built in, created on first use, always listed first; it can't be renamed or deleted.
-  - **Swipe right on any episode row** (Latest, podcast page, search results, Starred, History,
-    other playlists) to add an episode. Swiping right again removes it, and the swipe label shows
-    which will happen ("Listen later" / "Remove").
-  - Newest saves go on top.
-  - An episode leaves Listen Later automatically when it finishes playing.
-  - Swipe left keeps its current meaning (played/unplayed). "Add to Up Next" moves to the
-    long-press menu.
+- **Listen Later is retired.** Swipe right now toggles Up Next (§8.8), so there is one
+  save-for-later list. The `PlaylistKind.LISTEN_LATER` constant stays so stored rows still
+  deserialise. On startup `PlaylistRepository.moveListenLaterToUpNext()` appends any Listen Later
+  episodes, in their order and skipping ones already queued, to the end of Up Next, then deletes
+  that playlist. It is a no-op once there is nothing to move. Older backups are folded the same way
+  on import.
+- Swipe left keeps its current meaning (played/unplayed). Latest's long-press menu keeps "Add to
+  Up Next", labelled "Remove from Up Next" when the episode is already queued.
 - **Manual playlists**
   - The user names one and adds episodes from the episode page or a row's long-press menu ("Add to
     playlist…" sheet, which can also create a playlist).
@@ -599,9 +601,8 @@ Three kinds, stored in the `playlists` and `playlist_items` tables (DB v2), with
     duration, optional words, newest or oldest first, and a size limit (default 50).
   - The editor shows a live preview of the matching episodes as you change the rules.
 
-**Library tab:** Under Starred and History sits a **Playlists** section: Listen Later (with its
-count), then the user's playlists (manual with counts, smart marked as smart), then "New playlist"
-and "New smart playlist".
+**Library tab:** Under Starred and History sits a **Playlists** section: the user's playlists
+(manual with counts, smart marked as smart), then "New playlist" and "New smart playlist".
 
 **Playlist page:**
 - Large title and episode count, then **Play all**, which replaces Up Next with the playlist's

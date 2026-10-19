@@ -29,6 +29,7 @@ import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material.icons.rounded.FilterList
+import androidx.compose.material.icons.rounded.PlaylistRemove
 import androidx.compose.material.icons.rounded.Podcasts
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -94,11 +95,9 @@ fun LatestScreen(onOpenSettings: () -> Unit, onOpenPodcast: (Long) -> Unit, onOp
     LaunchedEffect(viewModel) {
         viewModel.messages.collect { message ->
             when (message) {
-                is LatestMessage.AddedToUpNext ->
-                    snackbarHostState.showSnackbar("Added to Up Next", duration = SnackbarDuration.Short)
-                is LatestMessage.ListenLaterChanged ->
+                is LatestMessage.UpNextChanged ->
                     snackbarHostState.showSnackbar(
-                        if (message.added) "Added to Listen Later" else "Removed from Listen Later",
+                        if (message.added) "Added to Up Next" else "Removed from Up Next",
                         duration = SnackbarDuration.Short,
                     )
                 is LatestMessage.PlayedChanged -> {
@@ -125,8 +124,7 @@ fun LatestScreen(onOpenSettings: () -> Unit, onOpenPodcast: (Long) -> Unit, onOp
         onFilterSelected = viewModel::setFilter,
         onRefresh = viewModel::refresh,
         onTogglePlay = viewModel::togglePlay,
-        onAddToUpNext = viewModel::addToUpNext,
-        onToggleListenLater = viewModel::toggleListenLater,
+        onToggleUpNext = viewModel::toggleUpNext,
         onTogglePlayed = viewModel::togglePlayed,
         onToggleStar = viewModel::toggleStar,
         onShare = { item -> context.startActivity(shareEpisodeIntent(item)) },
@@ -152,8 +150,7 @@ private fun LatestContent(
     onFilterSelected: (LatestFilter) -> Unit,
     onRefresh: () -> Unit,
     onTogglePlay: (Long) -> Unit,
-    onAddToUpNext: (EpisodeListItem) -> Unit,
-    onToggleListenLater: (Long) -> Unit,
+    onToggleUpNext: (Long) -> Unit,
     onTogglePlayed: (EpisodeListItem) -> Unit,
     onToggleStar: (EpisodeListItem) -> Unit,
     onShare: (EpisodeListItem) -> Unit,
@@ -212,11 +209,11 @@ private fun LatestContent(
                                 item = item,
                                 now = state.now,
                                 isPlaying = state.nowPlaying?.let { it.episodeId == item.episode.id && it.isPlaying } ?: false,
-                                inListenLater = item.episode.id in state.listenLaterIds,
+                                inUpNext = item.inQueue,
                                 onClick = { onOpenEpisode(item.episode.id) },
                                 onPlayClick = { onTogglePlay(item.episode.id) },
                                 onLongClick = { menuEpisodeId = item.episode.id },
-                                onToggleListenLater = { onToggleListenLater(item.episode.id) },
+                                onToggleUpNext = { onToggleUpNext(item.episode.id) },
                                 onTogglePlayed = { onTogglePlayed(item) },
                             )
                             if (index < state.items.lastIndex) {
@@ -240,7 +237,7 @@ private fun LatestContent(
         EpisodeActionSheet(
             item = menuItem,
             onDismiss = { menuEpisodeId = null },
-            onAddToUpNext = { onAddToUpNext(menuItem) },
+            onToggleUpNext = { onToggleUpNext(menuItem.episode.id) },
             onAddToPlaylist = { playlistEpisodeId = menuItem.episode.id },
             onToggleStar = { onToggleStar(menuItem) },
             onShare = { onShare(menuItem) },
@@ -318,7 +315,7 @@ private fun EmptyState(filter: LatestFilter) {
 private fun EpisodeActionSheet(
     item: EpisodeListItem,
     onDismiss: () -> Unit,
-    onAddToUpNext: () -> Unit,
+    onToggleUpNext: () -> Unit,
     onAddToPlaylist: () -> Unit,
     onToggleStar: () -> Unit,
     onShare: () -> Unit,
@@ -337,7 +334,11 @@ private fun EpisodeActionSheet(
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(horizontal = Spacing.m, vertical = Spacing.s),
             )
-            SheetAction(Icons.AutoMirrored.Rounded.PlaylistAdd, "Add to Up Next") { onAddToUpNext(); onDismiss() }
+            if (item.inQueue) {
+                SheetAction(Icons.Rounded.PlaylistRemove, "Remove from Up Next") { onToggleUpNext(); onDismiss() }
+            } else {
+                SheetAction(Icons.AutoMirrored.Rounded.PlaylistAdd, "Add to Up Next") { onToggleUpNext(); onDismiss() }
+            }
             SheetAction(Icons.Outlined.LibraryAdd, "Add to playlist…") { onAddToPlaylist(); onDismiss() }
             SheetAction(
                 icon = when (downloadAction) {
@@ -399,7 +400,7 @@ private fun LatestPreview() {
                 snackbarHostState = remember { SnackbarHostState() },
                 onOpenSettings = {}, onOpenPodcast = {}, onOpenEpisode = {},
                 onFilterSelected = {}, onRefresh = {}, onTogglePlay = {},
-                onAddToUpNext = {}, onToggleListenLater = {}, onTogglePlayed = {}, onToggleStar = {}, onShare = {},
+                onToggleUpNext = {}, onTogglePlayed = {}, onToggleStar = {}, onShare = {},
             )
         }
     }
@@ -415,7 +416,7 @@ private fun LatestEmptyPreview() {
                 snackbarHostState = remember { SnackbarHostState() },
                 onOpenSettings = {}, onOpenPodcast = {}, onOpenEpisode = {},
                 onFilterSelected = {}, onRefresh = {}, onTogglePlay = {},
-                onAddToUpNext = {}, onToggleListenLater = {}, onTogglePlayed = {}, onToggleStar = {}, onShare = {},
+                onToggleUpNext = {}, onTogglePlayed = {}, onToggleStar = {}, onShare = {},
             )
         }
     }
@@ -431,7 +432,7 @@ private fun LatestFilteredEmptyPreview() {
                 snackbarHostState = remember { SnackbarHostState() },
                 onOpenSettings = {}, onOpenPodcast = {}, onOpenEpisode = {},
                 onFilterSelected = {}, onRefresh = {}, onTogglePlay = {},
-                onAddToUpNext = {}, onToggleListenLater = {}, onTogglePlayed = {}, onToggleStar = {}, onShare = {},
+                onToggleUpNext = {}, onTogglePlayed = {}, onToggleStar = {}, onShare = {},
             )
         }
     }

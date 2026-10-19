@@ -68,7 +68,7 @@ fun formatUnplayedBadge(count: Int): String? = when {
 
 data class LibraryUiState(
     val podcasts: List<LibraryPodcast> = emptyList(),
-    /** Listen Later first, then the user's playlists (PLAN.md §8.11). */
+    /** The user's manual and smart playlists, in their order (PLAN.md §8.11). */
     val playlists: List<PlaylistWithCount> = emptyList(),
     val sort: LibrarySort = LibrarySort.RECENTLY_UPDATED,
     val layout: LibraryLayout = LibraryLayout.GRID,

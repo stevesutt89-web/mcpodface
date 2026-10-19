@@ -13,9 +13,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.Remove
+import androidx.compose.material.icons.rounded.PlaylistRemove
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -46,8 +46,8 @@ import com.steve.mcpodface.ui.theme.ThemePreviews
 fun playedToggleTarget(current: PlayState): Boolean = current != PlayState.PLAYED
 
 /**
- * An [EpisodeRow] with swipe actions (PLAN.md §8.2, §8.11). Swipe right toggles Listen Later (the
- * strip reads "Listen later" or "Remove"). Swipe left toggles played, and is disabled when
+ * An [EpisodeRow] with swipe actions (PLAN.md §8.2, §8.11). Swipe right toggles Up Next (the
+ * strip reads "Up Next" or "Remove from Up Next"). Swipe left toggles played, and is disabled when
  * [onTogglePlayed] is null. The row always springs back: the action runs, and the drag is cancelled
  * by returning false from confirmValueChange.
  */
@@ -57,10 +57,10 @@ fun SwipeableEpisodeRow(
     item: EpisodeListItem,
     now: Long,
     isPlaying: Boolean,
-    inListenLater: Boolean,
+    inUpNext: Boolean,
     onClick: () -> Unit,
     onPlayClick: () -> Unit,
-    onToggleListenLater: () -> Unit,
+    onToggleUpNext: () -> Unit,
     modifier: Modifier = Modifier,
     onLongClick: (() -> Unit)? = null,
     onTogglePlayed: (() -> Unit)? = null,
@@ -70,14 +70,14 @@ fun SwipeableEpisodeRow(
     dateLabel: String? = null,
 ) {
     val haptics = LocalHapticFeedback.current
-    val currentToggleListenLater by rememberUpdatedState(onToggleListenLater)
+    val currentToggleUpNext by rememberUpdatedState(onToggleUpNext)
     val currentTogglePlayed by rememberUpdatedState(onTogglePlayed)
     val state = rememberSwipeToDismissBoxState(
         confirmValueChange = { value ->
             when (value) {
                 SwipeToDismissBoxValue.StartToEnd -> {
                     haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                    currentToggleListenLater()
+                    currentToggleUpNext()
                 }
                 SwipeToDismissBoxValue.EndToStart -> currentTogglePlayed?.let {
                     haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
@@ -98,7 +98,7 @@ fun SwipeableEpisodeRow(
         backgroundContent = {
             SwipeActionBackground(
                 direction = state.dismissDirection,
-                inListenLater = inListenLater,
+                inUpNext = inUpNext,
                 playedLabel = if (playedAfterSwipe) "Played" else "Unplayed",
             )
         },
@@ -119,23 +119,23 @@ fun SwipeableEpisodeRow(
 }
 
 /**
- * The rounded strip revealed behind a row while it is swiped (inset 8dp). Listen Later is
+ * The rounded strip revealed behind a row while it is swiped (inset 8dp). Up Next is
  * accent-tinted with white content; played/unplayed is neutral. Draws nothing when settled.
  */
 @Composable
 internal fun SwipeActionBackground(
     direction: SwipeToDismissBoxValue,
-    inListenLater: Boolean,
+    inUpNext: Boolean,
     playedLabel: String,
 ) {
     if (direction == SwipeToDismissBoxValue.Settled) return
     val colors = AppTheme.colors
     val fromStart = direction == SwipeToDismissBoxValue.StartToEnd
-    val label = if (!fromStart) playedLabel else if (inListenLater) "Remove" else "Listen later"
+    val label = if (!fromStart) playedLabel else if (inUpNext) "Remove from Up Next" else "Up Next"
     val icon = when {
         !fromStart -> Icons.Rounded.CheckCircle
-        inListenLater -> Icons.Rounded.Remove
-        else -> Icons.Rounded.Add
+        inUpNext -> Icons.Rounded.PlaylistRemove
+        else -> Icons.AutoMirrored.Rounded.PlaylistAdd
     }
     val shape = remember { RoundedRectangle(20.dp) }
     val container = if (fromStart) colors.accent else colors.surfaceGrouped
@@ -169,19 +169,19 @@ private fun SwipeBackgroundsPreview() {
     AppTheme {
         Surface {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.s)) {
-                SwipeBackgroundSample(SwipeToDismissBoxValue.StartToEnd, inListenLater = false, playedLabel = "Played")
-                SwipeBackgroundSample(SwipeToDismissBoxValue.StartToEnd, inListenLater = true, playedLabel = "Played")
-                SwipeBackgroundSample(SwipeToDismissBoxValue.EndToStart, inListenLater = false, playedLabel = "Played")
-                SwipeBackgroundSample(SwipeToDismissBoxValue.EndToStart, inListenLater = false, playedLabel = "Unplayed")
+                SwipeBackgroundSample(SwipeToDismissBoxValue.StartToEnd, inUpNext = false, playedLabel = "Played")
+                SwipeBackgroundSample(SwipeToDismissBoxValue.StartToEnd, inUpNext = true, playedLabel = "Played")
+                SwipeBackgroundSample(SwipeToDismissBoxValue.EndToStart, inUpNext = false, playedLabel = "Played")
+                SwipeBackgroundSample(SwipeToDismissBoxValue.EndToStart, inUpNext = false, playedLabel = "Unplayed")
             }
         }
     }
 }
 
 @Composable
-private fun SwipeBackgroundSample(direction: SwipeToDismissBoxValue, inListenLater: Boolean, playedLabel: String) {
+private fun SwipeBackgroundSample(direction: SwipeToDismissBoxValue, inUpNext: Boolean, playedLabel: String) {
     Box(Modifier.fillMaxWidth().height(72.dp)) {
-        SwipeActionBackground(direction = direction, inListenLater = inListenLater, playedLabel = playedLabel)
+        SwipeActionBackground(direction = direction, inUpNext = inUpNext, playedLabel = playedLabel)
     }
 }
 
@@ -196,10 +196,10 @@ private fun SwipeableEpisodeRowPreview() {
                         item = item,
                         now = 1_792_411_200_000L,
                         isPlaying = false,
-                        inListenLater = index == 1,
+                        inUpNext = index == 1,
                         onClick = {},
                         onPlayClick = {},
-                        onToggleListenLater = {},
+                        onToggleUpNext = {},
                         onLongClick = {},
                         onTogglePlayed = {},
                     )

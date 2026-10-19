@@ -74,7 +74,7 @@ data class EpisodeSearchActions(
     val onClearRecent: () -> Unit = {},
     val onOpenEpisode: (Long) -> Unit = {},
     val onTogglePlay: (Long) -> Unit = {},
-    val onToggleListenLater: (Long) -> Unit = {},
+    val onToggleUpNext: (Long) -> Unit = {},
     val onTogglePlayed: (EpisodeListItem) -> Unit = {},
 )
 
@@ -98,7 +98,7 @@ fun rememberEpisodeSearchActions(
             onOpenEpisode(id)
         },
         onTogglePlay = viewModel::onTogglePlay,
-        onToggleListenLater = viewModel::onToggleListenLater,
+        onToggleUpNext = viewModel::onToggleUpNext,
         onTogglePlayed = viewModel::onTogglePlayed,
     )
 }
@@ -168,7 +168,6 @@ fun YourPodcastsContent(
                         result = result,
                         now = state.now,
                         nowPlaying = state.nowPlaying,
-                        listenLaterIds = state.listenLaterIds,
                         actions = actions,
                     )
                     if (index < results.items.lastIndex) {
@@ -369,7 +368,6 @@ private fun ResultRow(
     result: SearchResult,
     now: Long,
     nowPlaying: com.steve.mcpodface.playback.NowPlaying?,
-    listenLaterIds: Set<Long>,
     actions: EpisodeSearchActions,
 ) {
     val episodeId = result.item.episode.id
@@ -377,10 +375,10 @@ private fun ResultRow(
         item = result.item,
         now = now,
         isPlaying = nowPlaying?.let { it.episodeId == episodeId && it.isPlaying } ?: false,
-        inListenLater = episodeId in listenLaterIds,
+        inUpNext = result.item.inQueue,
         onClick = { actions.onOpenEpisode(episodeId) },
         onPlayClick = { actions.onTogglePlay(episodeId) },
-        onToggleListenLater = { actions.onToggleListenLater(episodeId) },
+        onToggleUpNext = { actions.onToggleUpNext(episodeId) },
         onTogglePlayed = { actions.onTogglePlayed(result.item) },
         showPodcastTitle = true,
         snippet = result.snippet?.let { snippetToAnnotatedString(it) },

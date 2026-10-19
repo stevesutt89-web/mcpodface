@@ -86,7 +86,7 @@ fun PodcastScreen(
         onToggleSort = viewModel::toggleSortOrder,
         onHidePlayedChange = viewModel::onHidePlayedChange,
         onRefresh = viewModel::refresh,
-        onToggleListenLater = viewModel::toggleListenLater,
+        onToggleUpNext = viewModel::toggleUpNext,
         onTogglePlayed = viewModel::togglePlayed,
     )
 }
@@ -105,7 +105,7 @@ private fun PodcastContent(
     onToggleSort: () -> Unit,
     onHidePlayedChange: (Boolean) -> Unit,
     onRefresh: () -> Unit,
-    onToggleListenLater: (Long) -> Unit = {},
+    onToggleUpNext: (Long) -> Unit = {},
     onTogglePlayed: (EpisodeListItem) -> Unit = {},
 ) {
     val podcast = state.podcast
@@ -263,10 +263,10 @@ private fun PodcastContent(
                                     item = item,
                                     now = state.now,
                                     isPlaying = state.isPlaying && state.nowPlayingEpisodeId == episodeId,
-                                    inListenLater = episodeId in state.listenLaterIds,
+                                    inUpNext = item.inQueue,
                                     onClick = { onOpenEpisode(episodeId) },
                                     onPlayClick = { onPlayClick(episodeId) },
-                                    onToggleListenLater = { onToggleListenLater(episodeId) },
+                                    onToggleUpNext = { onToggleUpNext(episodeId) },
                                     onLongClick = { menuEpisodeId = episodeId },
                                     onTogglePlayed = { onTogglePlayed(item) },
                                     showPodcastTitle = false,

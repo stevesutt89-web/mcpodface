@@ -11,6 +11,8 @@ import com.steve.mcpodface.data.db.DownloadSource
 import com.steve.mcpodface.data.db.DownloadState
 import com.steve.mcpodface.data.db.EpisodeEntity
 import com.steve.mcpodface.data.db.PlayState
+import com.steve.mcpodface.data.db.PlaylistEntity
+import com.steve.mcpodface.data.db.PlaylistItemEntity
 import com.steve.mcpodface.data.db.PlaylistKind
 import com.steve.mcpodface.data.db.PodcastEntity
 import com.steve.mcpodface.data.search.SearchRepository
@@ -66,34 +68,24 @@ class PlaylistRepositoryTest {
         withTimeout(5_000) { repo.observeEpisodes(playlistId).first().map { it.episode.guid } }
     }
 
-    @Test fun listenLaterExistsOnceAndComesFirst() = runBlocking<Unit> {
+    private suspend fun upNext(): List<Long> = db.queueDao().getAll().map { it.episodeId }
+
+    /** Inserts a retired LISTEN_LATER playlist the way an older install would have it. */
+    private suspend fun legacyListenLater(episodeGuids: List<String>): Long {
+        val id = db.playlistDao().insert(PlaylistEntity(name = "Listen Later", kind = PlaylistKind.LISTEN_LATER, position = -1, createdAt = 0L))
+        db.playlistDao().insertItems(
+            episodeGuids.mapIndexed { i, guid -> PlaylistItemEntity(id, ids.getValue(guid), position = i, addedAt = 0L) },
+        )
+        return id
+    }
+
+    @Test fun observePlaylistsOmitsRetiredListenLater() = runBlocking<Unit> {
+        legacyListenLater(listOf("new"))
         repo.createManual("Mine")
-        val a = repo.listenLaterId()
-        val b = repo.listenLaterId()
-        assertThat(a).isEqualTo(b)
+        repo.createSmart("Fresh", SmartRules())
         val all = repo.observePlaylists().first()
-        assertThat(all.first().playlist.kind).isEqualTo(PlaylistKind.LISTEN_LATER)
-        assertThat(all.map { it.playlist.name }).containsExactly("Listen Later", "Mine").inOrder()
-    }
-
-    @Test fun swipeTogglesListenLaterWithNewestOnTop() = runBlocking<Unit> {
-        assertThat(repo.toggleListenLater(ids.getValue("old"))).isTrue()
-        assertThat(repo.toggleListenLater(ids.getValue("new"))).isTrue()
-        val ll = repo.listenLaterId()
-        assertThat(guids(ll)).containsExactly("new", "old").inOrder()
-        assertThat(repo.observeListenLaterIds().first()).containsExactly(ids["new"], ids["old"])
-
-        assertThat(repo.toggleListenLater(ids.getValue("old"))).isFalse()
-        assertThat(guids(ll)).containsExactly("new")
-    }
-
-    @Test fun finishedEpisodesLeaveListenLaterButNotManualPlaylists() = runBlocking<Unit> {
-        val mine = repo.createManual("Mine")
-        repo.toggleListenLater(ids.getValue("new"))
-        repo.add(mine, ids.getValue("new"))
-        repo.onEpisodeFinished(ids.getValue("new"))
-        assertThat(guids(repo.listenLaterId())).isEmpty()
-        assertThat(guids(mine)).containsExactly("new")
+        assertThat(all.map { it.playlist.name }).containsExactly("Mine", "Fresh").inOrder()
+        assertThat(all.map { it.playlist.kind }).doesNotContain(PlaylistKind.LISTEN_LATER)
     }
 
     @Test fun manualPlaylistAddsInOrderWithoutDuplicatesAndReorders() = runBlocking<Unit> {
@@ -128,23 +120,48 @@ class PlaylistRepositoryTest {
         assertThat(guids(dl)).containsExactly("week")
     }
 
-    @Test fun smartPlaylistsCannotHoldItemsAndListenLaterCannotBeDeletedOrRenamed() = runBlocking<Unit> {
+    @Test fun smartPlaylistsCannotHoldItemsAndDeleteRemovesThem() = runBlocking<Unit> {
         val smart = repo.createSmart("S", SmartRules())
         repo.add(smart, ids.getValue("new"))
         assertThat(db.playlistDao().getItems(smart)).isEmpty()
 
-        val ll = repo.listenLaterId()
-        repo.delete(ll)
-        repo.rename(ll, "Nope")
-        assertThat(db.playlistDao().getById(ll)!!.name).isEqualTo("Listen Later")
         repo.delete(smart)
         assertThat(db.playlistDao().getById(smart)).isNull()
     }
 
+    @Test fun addRefusesRetiredListenLaterPlaylists() = runBlocking<Unit> {
+        val ll = db.playlistDao().insert(PlaylistEntity(name = "Listen Later", kind = PlaylistKind.LISTEN_LATER, createdAt = 0L))
+        repo.add(ll, ids.getValue("new"))
+        assertThat(db.playlistDao().getItems(ll)).isEmpty()
+    }
+
+    @Test fun moveListenLaterToUpNextAppendsItemsInOrderSkippingQueued() = runBlocking<Unit> {
+        db.queueDao().replaceAll(listOf(ids.getValue("old")))
+        legacyListenLater(listOf("new", "old", "week"))
+
+        repo.moveListenLaterToUpNext()
+
+        // "old" was already queued, so it keeps its place and is not repeated.
+        assertThat(upNext()).containsExactly(ids["old"], ids["new"], ids["week"]).inOrder()
+        assertThat(db.playlistDao().getAll().none { it.kind == PlaylistKind.LISTEN_LATER }).isTrue()
+    }
+
+    @Test fun moveListenLaterToUpNextIsANoOpWithoutListenLater() = runBlocking<Unit> {
+        val mine = repo.createManual("Mine")
+        repo.add(mine, ids.getValue("new"))
+
+        repo.moveListenLaterToUpNext()
+        repo.moveListenLaterToUpNext()
+
+        assertThat(upNext()).isEmpty()
+        assertThat(guids(mine)).containsExactly("new")
+    }
+
     @Test fun deletingAnEpisodeRemovesItFromPlaylists() = runBlocking<Unit> {
-        repo.toggleListenLater(ids.getValue("old"))
+        val mine = repo.createManual("Mine")
+        repo.add(mine, ids.getValue("old"))
         db.podcastDao().deleteAll()
-        assertThat(guids(repo.listenLaterId())).isEmpty()
+        assertThat(guids(mine)).isEmpty()
     }
 
     @Test fun rulesSurviveJsonAndBadJsonFallsBack() {
