@@ -74,7 +74,7 @@ fun GlassTabBar(
                     .offset(x = lensX)
                     .width(itemWidth)
                     .fillMaxHeight()
-                    .glass(lensShape, GlassStyle.Clear, tint = AppTheme.colors.accent.copy(alpha = 0.14f), backdrop = backdrop),
+                    .glass(lensShape, GlassStyle.Selected, backdrop = backdrop),
             )
         }
         Row(Modifier.fillMaxSize()) {

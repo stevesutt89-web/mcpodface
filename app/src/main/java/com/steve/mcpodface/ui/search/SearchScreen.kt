@@ -309,7 +309,7 @@ private fun GlassSegmentedControl(
                     .offset(x = lensX)
                     .width(itemWidth)
                     .fillMaxHeight()
-                    .glass(lensShape, GlassStyle.Clear, tint = colors.accent.copy(alpha = 0.14f)),
+                    .glass(lensShape, GlassStyle.Selected),
             )
         }
         Row(Modifier.fillMaxSize()) {

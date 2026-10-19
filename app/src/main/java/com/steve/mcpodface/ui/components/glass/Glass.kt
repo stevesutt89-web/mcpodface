@@ -13,6 +13,7 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.unit.dp
@@ -64,6 +65,9 @@ enum class GlassStyle {
 
     /** Primary actions (Play, Subscribe): tinted with the accent. */
     Prominent,
+
+    /** The selected item's highlight (tab bar, segmented control): frosted so its label stays readable. */
+    Selected,
 }
 
 /** Tint laid over the refracted backdrop. */
@@ -75,6 +79,9 @@ fun glassTint(style: GlassStyle, accent: Color = AppTheme.colors.accent): Color 
         GlassStyle.Regular -> if (dark) Color(0xFF1C1C1E).copy(alpha = 0.55f) else Color(0xFFF2F2F7).copy(alpha = 0.72f)
         GlassStyle.Clear -> if (dark) Color.Black.copy(alpha = 0.18f) else Color(0xFFF2F2F7).copy(alpha = 0.3f)
         GlassStyle.Prominent -> accent.copy(alpha = if (dark) 0.78f else 0.86f)
+        // A light accent wash over frosted glass, flattened into one colour for onDrawSurface.
+        GlassStyle.Selected -> accent.copy(alpha = if (dark) 0.22f else 0.16f)
+            .compositeOver(if (dark) Color(0xFF2C2C2E).copy(alpha = 0.62f) else Color.White.copy(alpha = 0.68f))
     }
 }
 
@@ -103,6 +110,7 @@ fun Modifier.glass(
         GlassStyle.Regular -> 10.dp
         GlassStyle.Clear -> 2.dp
         GlassStyle.Prominent -> 6.dp
+        GlassStyle.Selected -> 8.dp
     }
     val lensHeight = when (style) {
         GlassStyle.Clear -> 20.dp
