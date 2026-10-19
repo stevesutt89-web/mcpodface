@@ -25,6 +25,7 @@ kotlinxSerialization = "1.11.0"
 coroutines = "1.11.0"
 coil = "3.6.3"
 reorderable = "3.1.0"
+backdrop = "2.0.1"
 junit = "4.13.2"
 androidxTestCore = "1.7.0"
 androidxTestJunit = "1.3.0"
@@ -81,6 +82,8 @@ kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-t
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
+# Liquid Glass: backdrop blur, lens refraction, highlights; pulls in io.github.kyant0:shapes (continuous corners).
+backdrop = { module = "io.github.kyant0:backdrop", version.ref = "backdrop" }
 
 junit = { module = "junit:junit", version.ref = "junit" }
 androidx-test-core = { module = "androidx.test:core-ktx", version.ref = "androidxTestCore" }

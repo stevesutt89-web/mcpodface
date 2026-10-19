@@ -128,6 +128,7 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
     implementation(libs.reorderable)
+    implementation(libs.backdrop)
 
     testImplementation(libs.junit)
     testImplementation(libs.truth)
