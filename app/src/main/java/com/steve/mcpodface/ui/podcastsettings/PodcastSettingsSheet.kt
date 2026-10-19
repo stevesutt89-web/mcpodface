@@ -24,6 +24,7 @@ import com.steve.mcpodface.data.db.FeedType
 import com.steve.mcpodface.data.db.PodcastSettingsEntity
 import com.steve.mcpodface.data.prefs.GlobalSettings
 import com.steve.mcpodface.ui.components.glass.LocalGlassBackdrop
+import com.steve.mcpodface.ui.settings.ActionRow
 import com.steve.mcpodface.ui.settings.ChoiceRow
 import com.steve.mcpodface.ui.settings.SectionHeader
 import com.steve.mcpodface.ui.settings.SettingsCard
@@ -52,7 +53,12 @@ fun PodcastSettingsSheet(podcastId: Long, onDismiss: () -> Unit) {
         containerColor = MaterialTheme.colorScheme.background,
     ) {
         CompositionLocalProvider(LocalGlassBackdrop provides null) {
-            PodcastSettingsContent(state = state, onUpdate = viewModel::update)
+            PodcastSettingsContent(
+                state = state,
+                onUpdate = viewModel::update,
+                onTogglePaused = viewModel::togglePaused,
+                onBackfillNow = viewModel::backfillNow,
+            )
         }
     }
 }
@@ -62,6 +68,8 @@ fun PodcastSettingsSheet(podcastId: Long, onDismiss: () -> Unit) {
 private fun PodcastSettingsContent(
     state: PodcastSettingsUiState,
     onUpdate: ((PodcastSettingsEntity) -> PodcastSettingsEntity) -> Unit,
+    onTogglePaused: () -> Unit = {},
+    onBackfillNow: () -> Unit = {},
 ) {
     if (!state.loaded) return
     val colors = AppTheme.colors
@@ -183,9 +191,24 @@ private fun PodcastSettingsContent(
                 selected = o.backfill.selected(e),
                 onSelect = { v -> onUpdate { o.backfill.apply(it, v) } },
             )
+            val archive = state.archive
             SettingsRow(
-                title = "Archive status",
-                subtitle = "Archive status coming soon",
+                title = archive?.headline ?: "Archive",
+                subtitle = archive?.detail,
+                divider = true,
+            )
+            val phase = archive?.phase
+            val canPause = phase != null && phase != ArchivePhase.COMPLETE && phase != ArchivePhase.OFF
+            if (canPause) {
+                ActionRow(
+                    title = if (phase == ArchivePhase.PAUSED) "Resume archive" else "Pause archive",
+                    onClick = onTogglePaused,
+                )
+            }
+            ActionRow(
+                title = "Backfill now",
+                onClick = onBackfillNow,
+                enabled = state.backfillOn && phase != ArchivePhase.COMPLETE,
                 divider = false,
             )
         }
@@ -209,6 +232,37 @@ private fun PodcastSettingsContentPreview() {
                         autoDownload = false,
                     ),
                     global = GlobalSettings(),
+                    backfillOn = true,
+                    archive = PodcastArchiveStatus(
+                        phase = ArchivePhase.BACKFILLING,
+                        headline = "Archive: 412 of ~1,200 episodes · backfilling",
+                        detail = null,
+                    ),
+                ),
+                onUpdate = {},
+            )
+        }
+    }
+}
+
+@ThemePreviews
+@Composable
+private fun PodcastSettingsArchiveFailedPreview() {
+    AppTheme {
+        Surface {
+            PodcastSettingsContent(
+                state = PodcastSettingsUiState(
+                    loaded = true,
+                    title = "Radiolab",
+                    feedType = FeedType.SERIAL,
+                    settings = PodcastSettingsEntity(podcastId = 1L),
+                    global = GlobalSettings(),
+                    backfillOn = true,
+                    archive = PodcastArchiveStatus(
+                        phase = ArchivePhase.FAILED,
+                        headline = "Archive: 88 episodes · failed",
+                        detail = "Last error: HTTP 503. Next try after 3:40 pm.",
+                    ),
                 ),
                 onUpdate = {},
             )

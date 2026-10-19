@@ -22,6 +22,10 @@ interface EpisodeDao {
     @Query("SELECT * FROM episodes WHERE id = :id")
     fun observeById(id: Long): Flow<EpisodeEntity?>
 
+    /** How many episodes we hold for a podcast, for the archive status line (PLAN.md §7.4). */
+    @Query("SELECT COUNT(*) FROM episodes WHERE podcastId = :podcastId")
+    fun observeCount(podcastId: Long): Flow<Int>
+
     @Query("SELECT * FROM episodes WHERE podcastId = :podcastId")
     suspend fun getForPodcast(podcastId: Long): List<EpisodeEntity>
 

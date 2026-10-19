@@ -18,4 +18,8 @@ interface BackfillStateDao {
 
     @Query("SELECT * FROM backfill_state")
     suspend fun getAll(): List<BackfillStateEntity>
+
+    /** Every archive row, for the overall progress in Settings → Search & archive. */
+    @Query("SELECT * FROM backfill_state")
+    fun observeAll(): Flow<List<BackfillStateEntity>>
 }

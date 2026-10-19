@@ -4,7 +4,10 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
+import com.steve.mcpodface.core.Clock
 import com.steve.mcpodface.data.db.AppDatabase
+import com.steve.mcpodface.data.db.BackfillStateEntity
+import com.steve.mcpodface.data.db.BackfillStatus
 import com.steve.mcpodface.data.db.FeedType
 import com.steve.mcpodface.data.db.PodcastEntity
 import com.steve.mcpodface.data.db.PodcastSettingsEntity
@@ -63,6 +66,10 @@ class PodcastSettingsViewModelTest {
             podcastDao = db.podcastDao(),
             podcastSettingsDao = db.podcastSettingsDao(),
             settingsRepository = global,
+            backfillStateDao = db.backfillStateDao(),
+            episodeDao = db.episodeDao(),
+            clock = Clock { 1_800_000_000_000L },
+            context = ApplicationProvider.getApplicationContext(),
         )
         val latest = MutableStateFlow(PodcastSettingsUiState())
         observerScope.launch { vm.uiState.collect { latest.value = it } }
@@ -75,6 +82,14 @@ class PodcastSettingsViewModelTest {
                 while (!predicate(read())) delay(10)
             }
             read()
+        }
+
+    private suspend fun awaitBackfill(podcastId: Long, predicate: (BackfillStateEntity?) -> Boolean): BackfillStateEntity? =
+        withContext(Dispatchers.Default) {
+            withTimeout(5_000) {
+                while (!predicate(db.backfillStateDao().get(podcastId))) delay(10)
+            }
+            db.backfillStateDao().get(podcastId)
         }
 
     private suspend fun awaitRow(podcastId: Long, predicate: (PodcastSettingsEntity?) -> Boolean): PodcastSettingsEntity? =
@@ -190,6 +205,49 @@ class PodcastSettingsViewModelTest {
 
         val saved = awaitRow(podcastId) { it?.notifyNewEpisodes == false }
         assertThat(saved?.deletePlayed).isTrue()
+    }
+
+    @Test fun pauseCreatesAPausedRowWhenNoneExists() = runBlocking {
+        val podcastId = insertPodcast()
+        val (vm, _) = observe(podcastId)
+
+        vm.togglePaused()
+
+        val saved = awaitBackfill(podcastId) { it?.status == BackfillStatus.PAUSED }
+        assertThat(saved?.status).isEqualTo(BackfillStatus.PAUSED)
+    }
+
+    @Test fun resumeReturnsAPausedArchiveToPendingAndKeepsProgress() = runBlocking {
+        val podcastId = insertPodcast()
+        db.backfillStateDao().upsert(
+            BackfillStateEntity(podcastId = podcastId, status = BackfillStatus.PAUSED, episodesAdded = 40, rssPagingDone = true),
+        )
+        val (vm, _) = observe(podcastId)
+
+        vm.togglePaused()
+
+        val saved = awaitBackfill(podcastId) { it?.status == BackfillStatus.PENDING }
+        assertThat(saved).isEqualTo(
+            BackfillStateEntity(podcastId = podcastId, status = BackfillStatus.PENDING, episodesAdded = 40, rssPagingDone = true),
+        )
+    }
+
+    @Test fun archiveStateShowsEpisodeCountAndSize() = runBlocking {
+        val podcastId = db.podcastDao().insert(
+            PodcastEntity(
+                feedUrl = "https://example.com/sized",
+                title = "Sized",
+                isSubscribed = true,
+                podcastIndexEpisodeCount = 1_200,
+            ),
+        )
+        db.backfillStateDao().upsert(BackfillStateEntity(podcastId = podcastId, status = BackfillStatus.IN_PROGRESS))
+        val (_, read) = observe(podcastId)
+
+        val state = awaitState(read) { it.archive?.headline?.contains("~") == true }
+
+        assertThat(state.archive?.headline).isEqualTo("Archive: 0 of ~1,200 episodes · backfilling")
+        assertThat(state.backfillOn).isTrue()
     }
 
     @Test fun missingPodcastStillLoadsWithBlankTitle() = runBlocking {
