@@ -98,6 +98,7 @@ fun MiniPlayer(
                 Text(
                     text = state.title,
                     style = MaterialTheme.typography.titleSmall,
+                    color = colors.textPrimary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )

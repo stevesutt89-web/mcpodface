@@ -64,6 +64,7 @@ import com.kyant.shapes.Capsule
 import com.kyant.shapes.RoundedRectangle
 import com.steve.mcpodface.data.db.EpisodeListItem
 import com.steve.mcpodface.playback.NowPlaying
+import com.steve.mcpodface.ui.components.SettingsButton
 import com.steve.mcpodface.ui.components.EpisodeRow
 import com.steve.mcpodface.ui.components.LargeTitleScaffold
 import com.steve.mcpodface.ui.components.glass.GlassIconButton
@@ -82,7 +83,7 @@ private const val PREVIEW_NOW = 1_792_411_200_000L // 2026-10-19T12:00Z
 
 /** Up Next tab (PLAN.md §8.8): reorderable queue, swipe to remove, clear queue. */
 @Composable
-fun UpNextScreen() {
+fun UpNextScreen(onOpenSettings: () -> Unit = {}) {
     val viewModel: UpNextViewModel = hiltViewModel()
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -107,6 +108,7 @@ fun UpNextScreen() {
     UpNextContent(
         state = state,
         snackbarHostState = snackbarHostState,
+        onOpenSettings = onOpenSettings,
         onPlayClick = viewModel::togglePlay,
         onRemove = viewModel::remove,
         onDragStarted = viewModel::onDragStarted,
@@ -121,6 +123,7 @@ fun UpNextScreen() {
 private fun UpNextContent(
     state: UpNextUiState,
     snackbarHostState: SnackbarHostState,
+    onOpenSettings: () -> Unit = {},
     onPlayClick: (Long) -> Unit,
     onRemove: (Long) -> Unit,
     onDragStarted: (Long) -> Unit,
@@ -143,6 +146,7 @@ private fun UpNextContent(
             title = "Up Next",
             background = Color.Transparent,
             actions = {
+                SettingsButton(onOpenSettings)
                 if (state.items.isNotEmpty()) {
                     Box {
                         GlassIconButton(

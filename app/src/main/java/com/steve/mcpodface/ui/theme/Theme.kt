@@ -2,6 +2,7 @@ package com.steve.mcpodface.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -153,7 +154,10 @@ fun AppTheme(
             colorScheme = scheme,
             typography = AppTypography,
             shapes = AppShapes,
-            content = content,
-        )
+        ) {
+            // Text and icons outside any Material Surface (e.g. the floating glass mini player) would
+            // otherwise default to black, which vanishes on dark glass.
+            CompositionLocalProvider(LocalContentColor provides scheme.onBackground, content = content)
+        }
     }
 }

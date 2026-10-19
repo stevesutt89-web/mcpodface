@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Bedtime
@@ -35,6 +36,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -84,7 +87,7 @@ fun FullPlayer(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         containerColor = MaterialTheme.colorScheme.background,
-        shape = RoundedRectangle(36.dp),
+        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
         dragHandle = null,
     ) {
         FullPlayerContent(
@@ -114,16 +117,6 @@ fun FullPlayerContent(
     val artworkAccent by rememberArtworkAccent(state.artworkUrl)
     val accent = artworkAccent ?: colors.accent
     var showSpeedSheet by rememberSaveable { mutableStateOf(false) }
-
-    // While the user drags the scrubber, show the drag position; the seek happens on release.
-    var dragFraction by remember { mutableStateOf<Float?>(null) }
-    val playedFraction = if (state.durationMs > 0) {
-        (state.positionMs.toFloat() / state.durationMs.toFloat()).coerceIn(0f, 1f)
-    } else {
-        0f
-    }
-    val shownFraction = dragFraction ?: playedFraction
-    val shownPositionMs = (shownFraction * state.durationMs).toLong()
 
     // The artwork breathes: full size while playing, springs back a little when paused.
     val artScale by animateFloatAsState(
@@ -185,26 +178,13 @@ fun FullPlayerContent(
             )
 
             Spacer(Modifier.height(Spacing.m))
-            Scrubber(
-                fraction = shownFraction,
-                onScrub = { dragFraction = it },
-                onScrubEnd = {
-                    dragFraction?.let { onSeek((it * state.durationMs).toLong()) }
-                    dragFraction = null
-                },
+            Timeline(
+                positionMs = state.positionMs,
+                durationMs = state.durationMs,
+                speed = state.speed,
+                accent = accent,
+                onSeek = onSeek,
             )
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(
-                    text = formatClock(shownPositionMs),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = colors.textSecondary,
-                )
-                Text(
-                    text = if (state.durationMs > 0) formatRemaining(state.durationMs, shownPositionMs, state.speed) else "--:--",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = colors.textSecondary,
-                )
-            }
 
             Spacer(Modifier.height(Spacing.l))
             Row(
@@ -295,6 +275,54 @@ fun FullPlayerContent(
             onSpeedChange = onSpeedChange,
             onDismiss = { showSpeedSheet = false },
         )
+    }
+}
+
+/**
+ * Standard Material slider plus elapsed/remaining times. The drag position is held *here*, so
+ * while dragging only this small composable recomposes, not the whole player (that made
+ * scrubbing jerky). The seek happens on release.
+ */
+@Composable
+private fun Timeline(
+    positionMs: Long,
+    durationMs: Long,
+    speed: Float,
+    accent: Color,
+    onSeek: (Long) -> Unit,
+) {
+    val colors = AppTheme.colors
+    var dragFraction by remember { mutableStateOf<Float?>(null) }
+    val playedFraction = if (durationMs > 0) (positionMs.toFloat() / durationMs).coerceIn(0f, 1f) else 0f
+    val shownFraction = dragFraction ?: playedFraction
+    val shownPositionMs = (shownFraction * durationMs).toLong()
+    Column {
+        Slider(
+            value = shownFraction,
+            onValueChange = { dragFraction = it },
+            onValueChangeFinished = {
+                dragFraction?.let { onSeek((it * durationMs).toLong()) }
+                dragFraction = null
+            },
+            enabled = durationMs > 0,
+            colors = SliderDefaults.colors(
+                thumbColor = accent,
+                activeTrackColor = accent,
+                inactiveTrackColor = colors.textPrimary.copy(alpha = 0.16f),
+            ),
+        )
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(
+                text = formatClock(shownPositionMs),
+                style = MaterialTheme.typography.labelMedium,
+                color = colors.textSecondary,
+            )
+            Text(
+                text = if (durationMs > 0) formatRemaining(durationMs, shownPositionMs, speed) else "--:--",
+                style = MaterialTheme.typography.labelMedium,
+                color = colors.textSecondary,
+            )
+        }
     }
 }
 

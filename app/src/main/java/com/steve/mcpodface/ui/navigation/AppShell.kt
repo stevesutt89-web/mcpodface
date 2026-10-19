@@ -131,9 +131,9 @@ fun AppShell(
             }
             composable<StarredRoute> { StarredScreen(onBack = back, onOpenEpisode = openEpisode) }
             composable<HistoryRoute> { HistoryScreen(onBack = back, onOpenEpisode = openEpisode) }
-            composable<DownloadsRoute> { DownloadsScreen() }
-            composable<UpNextRoute> { UpNextScreen() }
-            composable<SearchRoute> { SearchScreen(onOpenPodcast = openPodcast) }
+            composable<DownloadsRoute> { DownloadsScreen(onOpenSettings = openSettings) }
+            composable<UpNextRoute> { UpNextScreen(onOpenSettings = openSettings) }
+            composable<SearchRoute> { SearchScreen(onOpenPodcast = openPodcast, onOpenSettings = openSettings) }
             composable<SettingsRoute> { SettingsScreen(onBack = back) }
             composable<PodcastRoute> { entry ->
                 PodcastScreen(podcastId = entry.toRoute<PodcastRoute>().podcastId, onBack = back, onOpenEpisode = openEpisode)

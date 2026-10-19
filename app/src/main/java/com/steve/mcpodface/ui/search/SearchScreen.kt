@@ -56,6 +56,7 @@ import com.kyant.shapes.Capsule
 import com.steve.mcpodface.data.catalog.CatalogPodcast
 import com.steve.mcpodface.data.prefs.SearchMode
 import com.steve.mcpodface.ui.addpodcast.AddPodcastMenu
+import com.steve.mcpodface.ui.components.SettingsButton
 import com.steve.mcpodface.ui.components.LargeTitleScaffold
 import com.steve.mcpodface.ui.components.glass.GlassPage
 import com.steve.mcpodface.ui.components.glass.GlassStyle
@@ -66,7 +67,7 @@ import com.steve.mcpodface.ui.theme.ThemePreviews
 
 /** Search tab (PLAN.md §8.9): "Your podcasts" (placeholder until 6.3) or "Discover". */
 @Composable
-fun SearchScreen(onOpenPodcast: (Long) -> Unit) {
+fun SearchScreen(onOpenPodcast: (Long) -> Unit, onOpenSettings: () -> Unit = {}) {
     val viewModel: SearchViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -84,6 +85,7 @@ fun SearchScreen(onOpenPodcast: (Long) -> Unit) {
     SearchContent(
         state = state,
         snackbarHostState = snackbarHostState,
+        onOpenSettings = onOpenSettings,
         onOpenPodcast = onOpenPodcast,
         onQueryChange = viewModel::onQueryChange,
         onModeChange = viewModel::onModeChange,
@@ -98,6 +100,7 @@ fun SearchScreen(onOpenPodcast: (Long) -> Unit) {
 private fun SearchContent(
     state: SearchUiState,
     snackbarHostState: SnackbarHostState,
+    onOpenSettings: () -> Unit = {},
     onOpenPodcast: (Long) -> Unit,
     onQueryChange: (String) -> Unit,
     onModeChange: (SearchMode) -> Unit,
@@ -111,7 +114,10 @@ private fun SearchContent(
         LargeTitleScaffold(
             title = "Search",
             background = Color.Transparent,
-            actions = { AddPodcastMenu(onOpenPodcast) },
+            actions = {
+                AddPodcastMenu(onOpenPodcast)
+                SettingsButton(onOpenSettings)
+            },
         ) { padding ->
             // The search field and mode switch stay pinned under the large title; the results
             // below scroll under the floating tab bar, which the bottom padding clears.
