@@ -36,10 +36,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kyant.shapes.Capsule
+import com.steve.mcpodface.data.db.EpisodeEntity
 import com.steve.mcpodface.data.db.EpisodeListItem
 import com.steve.mcpodface.ui.components.BackButton
-import com.steve.mcpodface.ui.components.EpisodeRow
 import com.steve.mcpodface.ui.components.GlassTopBarScaffold
+import com.steve.mcpodface.ui.components.SwipeableEpisodeRow
 import com.steve.mcpodface.ui.components.glass.GlassPage
 import com.steve.mcpodface.ui.components.glass.GlassStyle
 import com.steve.mcpodface.ui.components.glass.glass
@@ -62,6 +63,8 @@ fun StarredScreen(onBack: () -> Unit, onOpenEpisode: (Long) -> Unit) {
         onOpenEpisode = onOpenEpisode,
         onTogglePlay = viewModel::togglePlay,
         onRemoveStar = viewModel::removeStar,
+        onToggleListenLater = viewModel::toggleListenLater,
+        onTogglePlayed = viewModel::togglePlayed,
     )
 }
 
@@ -73,6 +76,8 @@ private fun StarredContent(
     onOpenEpisode: (Long) -> Unit,
     onTogglePlay: (Long) -> Unit,
     onRemoveStar: (Long) -> Unit,
+    onToggleListenLater: (Long) -> Unit = {},
+    onTogglePlayed: (EpisodeEntity) -> Unit = {},
 ) {
     var menuEpisodeId by rememberSaveable { mutableStateOf<Long?>(null) }
 
@@ -95,11 +100,14 @@ private fun StarredContent(
                     itemsIndexed(state.items, key = { _, item -> item.episode.id }) { index, item ->
                         val episodeId = item.episode.id
                         Box {
-                            EpisodeRow(
+                            SwipeableEpisodeRow(
                                 item = item,
                                 onClick = { onOpenEpisode(episodeId) },
                                 onPlayClick = { onTogglePlay(episodeId) },
                                 isPlaying = state.nowPlaying?.let { it.episodeId == episodeId && it.isPlaying } ?: false,
+                                inListenLater = episodeId in state.listenLaterIds,
+                                onToggleListenLater = { onToggleListenLater(episodeId) },
+                                onTogglePlayed = { onTogglePlayed(item.episode) },
                                 showPodcastTitle = true,
                                 now = state.now,
                                 onLongClick = { menuEpisodeId = episodeId },

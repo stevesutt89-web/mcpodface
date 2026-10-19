@@ -14,14 +14,17 @@ import com.steve.mcpodface.data.db.PlayState
 import com.steve.mcpodface.data.db.PodcastEntity
 import com.steve.mcpodface.data.episodes.EpisodeRepository
 import com.steve.mcpodface.data.feed.FeedRepository
+import com.steve.mcpodface.data.playlist.PlaylistRepository
 import com.steve.mcpodface.data.prefs.GlobalSettings
 import com.steve.mcpodface.data.prefs.LatestFilter
 import com.steve.mcpodface.data.prefs.SettingsRepository
 import com.steve.mcpodface.data.queue.QueueRepository
+import com.steve.mcpodface.data.search.SearchRepository
 import com.steve.mcpodface.download.DownloadManager
 import com.steve.mcpodface.playback.NowPlaying
 import com.steve.mcpodface.playback.NoOpPlayerController
 import com.steve.mcpodface.playback.PlayerController
+import com.steve.mcpodface.ui.components.playedToggleTarget
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -87,6 +90,7 @@ class LatestViewModelTest {
     private lateinit var feeds: FeedRepository
     private lateinit var player: RecordingPlayer
     private lateinit var downloads: DownloadManager
+    private lateinit var playlists: PlaylistRepository
     private val clock = Clock { NOW }
 
     @Before fun setUp() {
@@ -100,6 +104,7 @@ class LatestViewModelTest {
         feeds = mockk(relaxed = true)
         player = RecordingPlayer()
         downloads = mockk(relaxed = true)
+        playlists = PlaylistRepository(db, SearchRepository(db, clock, Dispatchers.Unconfined), clock)
     }
 
     @After fun tearDown() {
@@ -107,7 +112,7 @@ class LatestViewModelTest {
         db.close()
     }
 
-    private fun viewModel() = LatestViewModel(episodes, queue, feeds, settings, player, downloads, clock)
+    private fun viewModel() = LatestViewModel(episodes, queue, feeds, settings, player, downloads, playlists, clock)
 
     private suspend fun seed(
         title: String,
@@ -215,6 +220,22 @@ class LatestViewModelTest {
 
         assertThat(vm.messages.first()).isEqualTo(LatestMessage.AddedToUpNext("queue me"))
         assertThat(queue.observeIds().first()).containsExactly(id)
+    }
+
+    @Test fun swipeRightTogglesListenLater() = runTest {
+        val id = seed("later")
+        val vm = viewModel()
+        val item = vm.state.awaitValue { it.items.isNotEmpty() }.items.single()
+
+        vm.toggleListenLater(item.episode.id)
+
+        assertThat(vm.messages.first()).isEqualTo(LatestMessage.ListenLaterChanged(id, added = true))
+        assertThat(vm.state.awaitValue { id in it.listenLaterIds }.listenLaterIds).containsExactly(id)
+
+        vm.toggleListenLater(id)
+
+        assertThat(vm.messages.first()).isEqualTo(LatestMessage.ListenLaterChanged(id, added = false))
+        assertThat(vm.state.awaitValue { id !in it.listenLaterIds }.listenLaterIds).isEmpty()
     }
 
     @Test fun toggleStarFlipsFlag() = runTest {

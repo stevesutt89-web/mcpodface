@@ -1,6 +1,5 @@
 package com.steve.mcpodface.ui.podcast
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -46,10 +45,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kyant.shapes.RoundedRectangle
+import com.steve.mcpodface.data.db.EpisodeListItem
 import com.steve.mcpodface.data.db.SortOrder
 import com.steve.mcpodface.ui.components.BackButton
-import com.steve.mcpodface.ui.components.EpisodeRow
 import com.steve.mcpodface.ui.components.GlassTopBarScaffold
+import com.steve.mcpodface.ui.components.SwipeableEpisodeRow
 import com.steve.mcpodface.ui.components.glass.ArtworkAmbience
 import com.steve.mcpodface.ui.components.glass.GlassButton
 import com.steve.mcpodface.ui.components.glass.GlassChip
@@ -60,6 +60,7 @@ import com.steve.mcpodface.ui.components.glass.rememberArtworkAccent
 import com.steve.mcpodface.ui.components.previewEpisodeItems
 import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
+import com.steve.mcpodface.ui.playlist.AddToPlaylistSheet
 import com.steve.mcpodface.ui.podcastsettings.PodcastSettingsSheet
 import com.steve.mcpodface.ui.theme.ThemePreviews
 
@@ -85,6 +86,8 @@ fun PodcastScreen(
         onToggleSort = viewModel::toggleSortOrder,
         onHidePlayedChange = viewModel::onHidePlayedChange,
         onRefresh = viewModel::refresh,
+        onToggleListenLater = viewModel::toggleListenLater,
+        onTogglePlayed = viewModel::togglePlayed,
     )
 }
 
@@ -102,6 +105,8 @@ private fun PodcastContent(
     onToggleSort: () -> Unit,
     onHidePlayedChange: (Boolean) -> Unit,
     onRefresh: () -> Unit,
+    onToggleListenLater: (Long) -> Unit = {},
+    onTogglePlayed: (EpisodeListItem) -> Unit = {},
 ) {
     val podcast = state.podcast
     // Artwork accent for the Subscribe button, sort toggle and Hide played chip (PLAN.md §11).
@@ -110,6 +115,9 @@ private fun PodcastContent(
     var menuOpen by remember { mutableStateOf(false) }
     var showUnsubscribe by rememberSaveable { mutableStateOf(false) }
     var showSettings by rememberSaveable { mutableStateOf(false) }
+    // The episode whose long-press menu is open, and the one whose "Add to playlist" sheet is up.
+    var menuEpisodeId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var playlistEpisodeId by rememberSaveable { mutableStateOf<Long?>(null) }
     val listState = rememberLazyListState()
     // The top bar shows the podcast title only once the header has scrolled away.
     val headerScrolledAway by remember { derivedStateOf { listState.firstVisibleItemIndex > 0 } }
@@ -248,16 +256,34 @@ private fun PodcastContent(
                             }
                         }
                         items(state.episodes, key = { it.episode.id }) { item ->
-                            // Episode rows stay solid so they read clearly over the artwork ambience.
-                            EpisodeRow(
-                                item = item,
-                                onClick = { onOpenEpisode(item.episode.id) },
-                                onPlayClick = { onPlayClick(item.episode.id) },
-                                modifier = Modifier.background(MaterialTheme.colorScheme.background),
-                                isPlaying = state.isPlaying && state.nowPlayingEpisodeId == item.episode.id,
-                                showPodcastTitle = false,
-                                now = state.now,
-                            )
+                            val episodeId = item.episode.id
+                            // Rows are solid (the swipe row paints the background) so they read over the artwork ambience.
+                            Box {
+                                SwipeableEpisodeRow(
+                                    item = item,
+                                    now = state.now,
+                                    isPlaying = state.isPlaying && state.nowPlayingEpisodeId == episodeId,
+                                    inListenLater = episodeId in state.listenLaterIds,
+                                    onClick = { onOpenEpisode(episodeId) },
+                                    onPlayClick = { onPlayClick(episodeId) },
+                                    onToggleListenLater = { onToggleListenLater(episodeId) },
+                                    onLongClick = { menuEpisodeId = episodeId },
+                                    onTogglePlayed = { onTogglePlayed(item) },
+                                    showPodcastTitle = false,
+                                )
+                                DropdownMenu(
+                                    expanded = menuEpisodeId == episodeId,
+                                    onDismissRequest = { menuEpisodeId = null },
+                                ) {
+                                    DropdownMenuItem(
+                                        text = { Text("Add to playlist…") },
+                                        onClick = {
+                                            menuEpisodeId = null
+                                            playlistEpisodeId = episodeId
+                                        },
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -267,6 +293,9 @@ private fun PodcastContent(
 
     if (showSettings && podcast != null) {
         PodcastSettingsSheet(podcastId = podcast.id, onDismiss = { showSettings = false })
+    }
+    playlistEpisodeId?.let { episodeId ->
+        AddToPlaylistSheet(episodeId = episodeId, onDismiss = { playlistEpisodeId = null })
     }
     if (showUnsubscribe && podcast != null) {
         AlertDialog(

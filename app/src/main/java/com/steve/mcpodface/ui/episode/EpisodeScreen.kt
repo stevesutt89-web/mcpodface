@@ -19,6 +19,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.automirrored.rounded.PlaylistAddCheck
+import androidx.compose.material.icons.rounded.LibraryAdd
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
@@ -37,6 +38,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -68,6 +70,7 @@ import com.steve.mcpodface.ui.components.glass.GlassStyle
 import com.steve.mcpodface.ui.components.glass.glass
 import com.steve.mcpodface.ui.components.glass.glassCard
 import com.steve.mcpodface.ui.components.glass.rememberArtworkAccent
+import com.steve.mcpodface.ui.playlist.AddToPlaylistSheet
 import com.steve.mcpodface.ui.podcast.ShadowedArtwork
 import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
@@ -137,6 +140,7 @@ private fun EpisodeContent(
     val artworkAccent by rememberArtworkAccent(artworkUrl)
     val accent: Color = artworkAccent ?: AppTheme.colors.accent
     var menuOpen by remember { mutableStateOf(false) }
+    var showPlaylistSheet by rememberSaveable { mutableStateOf(false) }
 
     GlassPage(background = { ArtworkAmbience(artworkUrl, fadeTo = 0.6f) }) {
         GlassTopBarScaffold(
@@ -211,9 +215,14 @@ private fun EpisodeContent(
                     onCancelDownload = onCancelDownload,
                     onDeleteDownload = onDeleteDownload,
                     onRetryDownload = onRetryDownload,
+                    onAddToPlaylist = { showPlaylistSheet = true },
                 )
             }
         }
+    }
+
+    if (showPlaylistSheet && episode != null) {
+        AddToPlaylistSheet(episodeId = episode.id, onDismiss = { showPlaylistSheet = false })
     }
 }
 
@@ -233,6 +242,7 @@ private fun EpisodeBody(
     onCancelDownload: () -> Unit,
     onDeleteDownload: () -> Unit,
     onRetryDownload: () -> Unit,
+    onAddToPlaylist: () -> Unit,
 ) {
     val colors = AppTheme.colors
     val inProgress = state.isInProgress
@@ -341,6 +351,11 @@ private fun EpisodeBody(
                 contentDescription = if (state.isStarred) "Unstar" else "Star",
                 onClick = onToggleStarred,
                 tint = if (state.isStarred) accent else null,
+            )
+            GlassIconButton(
+                icon = Icons.Rounded.LibraryAdd,
+                contentDescription = "Add to playlist",
+                onClick = onAddToPlaylist,
             )
         }
 

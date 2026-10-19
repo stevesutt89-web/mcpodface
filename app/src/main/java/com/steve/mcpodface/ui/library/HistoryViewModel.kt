@@ -3,10 +3,14 @@ package com.steve.mcpodface.ui.library
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.steve.mcpodface.core.Clock
+import com.steve.mcpodface.data.db.EpisodeEntity
 import com.steve.mcpodface.data.db.HistoryItem
 import com.steve.mcpodface.data.db.ListeningSessionDao
+import com.steve.mcpodface.data.episodes.EpisodeRepository
+import com.steve.mcpodface.data.playlist.PlaylistRepository
 import com.steve.mcpodface.playback.NowPlaying
 import com.steve.mcpodface.playback.PlayerController
+import com.steve.mcpodface.ui.components.playedToggleTarget
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -29,6 +33,8 @@ data class HistoryUiState(
     /** Wall-clock time for relative dates in the rows. */
     val now: Long = 0L,
     val nowPlaying: NowPlaying? = null,
+    /** Episodes in Listen Later, for each row's swipe label (PLAN.md §8.11). */
+    val listenLaterIds: Set<Long> = emptySet(),
 )
 
 /**
@@ -70,20 +76,24 @@ fun groupHistory(
 @HiltViewModel
 class HistoryViewModel @Inject constructor(
     private val sessions: ListeningSessionDao,
+    private val episodes: EpisodeRepository,
     private val player: PlayerController,
+    private val playlists: PlaylistRepository,
     private val clock: Clock,
 ) : ViewModel() {
 
     val state: StateFlow<HistoryUiState> = combine(
         sessions.observeRecentlyPlayed(),
         player.nowPlaying,
-    ) { items, nowPlaying ->
+        playlists.observeListenLaterIds(),
+    ) { items, nowPlaying, listenLater ->
         val now = clock.now()
         HistoryUiState(
             sections = groupHistory(items, now),
             loaded = true,
             now = now,
             nowPlaying = nowPlaying,
+            listenLaterIds = listenLater,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HistoryUiState())
 
@@ -91,5 +101,16 @@ class HistoryViewModel @Inject constructor(
 
     fun clearHistory() {
         viewModelScope.launch { sessions.clearHistory() }
+    }
+
+    /** Swipe right: Listen Later add or remove (PLAN.md §8.11). */
+    fun toggleListenLater(episodeId: Long) {
+        viewModelScope.launch { playlists.toggleListenLater(episodeId) }
+    }
+
+    /** Swipe left: played or unplayed. Finishing an episode here does not change its history position. */
+    fun togglePlayed(episode: EpisodeEntity) {
+        val target = playedToggleTarget(episode.playState)
+        viewModelScope.launch { episodes.setPlayed(episode.id, target) }
     }
 }
