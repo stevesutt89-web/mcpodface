@@ -28,6 +28,9 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -59,8 +62,12 @@ class SmartPlaylistEditorViewModelTest {
         episode("elsewhere", other, daysAgo = 3)
     }
 
+    /** Every ViewModel made, so their scopes (the debounced preview runs off the test thread) stop before the DB closes. */
+    private val viewModels = mutableListOf<SmartPlaylistEditorViewModel>()
+
     @After fun tearDown() {
         observerScope.cancel()
+        runBlocking { viewModels.forEach { it.viewModelScope.coroutineContext[Job]?.cancelAndJoin() } }
         db.close()
         Dispatchers.resetMain()
     }
@@ -83,7 +90,7 @@ class SmartPlaylistEditorViewModelTest {
                 playlists = repo,
                 podcasts = db.podcastDao(),
                 clock = clock,
-            ),
+            ).also { viewModels += it },
         )
 
     /** Keeps the ViewModel's state flow subscribed and exposes the latest value to the test. */
