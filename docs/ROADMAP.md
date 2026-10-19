@@ -15,6 +15,7 @@ Task IDs match the phases in [`PLAN.md` §14](../PLAN.md#14-phased-delivery).
 | 6 Search & archive | Search engine (FTS4 query syntax, filters, relevance, snippets; 100k episodes in ~30 ms), persisted API rate limiter, slow archive backfill (RSS paging, then Podcast Index), archive status UI, "Your podcasts" search screen with filter chips and search within a podcast |
 | 8 Backup | Export to a zip (data, OPML, optional streamed archive) and import (merge or replace) from Settings, via the system file picker |
 | 7 Settings | Global settings, per-podcast settings sheet, preview before a change deletes files, battery-optimisation row, notification prompt |
+| 8.11 Playlists | Listen Later (swipe right on any episode), manual playlists, smart playlists from rules |
 | Design | Liquid Glass pass across the app |
 
 ## Next
