@@ -15,4 +15,8 @@ interface RecentSearchDao {
 
     @Query("DELETE FROM recent_searches")
     suspend fun clear()
+
+    /** Keeps only the [keep] most recent searches. */
+    @Query("DELETE FROM recent_searches WHERE `query` NOT IN (SELECT `query` FROM recent_searches ORDER BY lastUsedAt DESC LIMIT :keep)")
+    suspend fun trimTo(keep: Int)
 }

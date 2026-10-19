@@ -33,6 +33,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun listeningSessionDao(): ListeningSessionDao
     abstract fun recentSearchDao(): RecentSearchDao
     abstract fun catalogCacheDao(): CatalogCacheDao
+    abstract fun searchDao(): SearchDao
 
     companion object {
         const val NAME = "mcpodface.db"
