@@ -7,13 +7,20 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.steve.mcpodface.core.Clock
 import com.steve.mcpodface.data.db.AppDatabase
+import com.steve.mcpodface.data.db.DownloadEntity
+import com.steve.mcpodface.data.db.DownloadSource
+import com.steve.mcpodface.data.db.DownloadState
 import com.steve.mcpodface.data.db.EpisodeEntity
 import com.steve.mcpodface.data.db.PlayState
 import com.steve.mcpodface.data.db.PodcastEntity
 import com.steve.mcpodface.data.episodes.EpisodeRepository
 import com.steve.mcpodface.data.queue.QueueRepository
+import com.steve.mcpodface.download.DownloadManager
 import com.steve.mcpodface.playback.NoOpPlayerController
 import com.steve.mcpodface.playback.NowPlaying
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -38,6 +45,7 @@ class EpisodeViewModelTest {
     private lateinit var db: AppDatabase
     private lateinit var observerScope: CoroutineScope
     private val player = RecordingPlayer()
+    private val downloads: DownloadManager = mockk(relaxed = true)
     private val clock = Clock { NOW }
 
     @Before fun setUp() {
@@ -60,6 +68,7 @@ class EpisodeViewModelTest {
             episodeRepository = EpisodeRepository(db.episodeDao(), db.podcastDao(), clock),
             queueRepository = QueueRepository(db),
             downloadDao = db.downloadDao(),
+            downloadManager = downloads,
             playerController = player,
             clock = clock,
         )
@@ -196,6 +205,105 @@ class EpisodeViewModelTest {
     @Test fun shareTextIsTitleDashPodcastThenUrl() {
         assertThat(shareText("Bridges", "Sample Show", "https://example.com/a.mp3"))
             .isEqualTo("Bridges — Sample Show\nhttps://example.com/a.mp3")
+    }
+
+    @Test fun requestDownloadEnqueuesManualWhenNoPromptIsNeeded() = runBlocking<Unit> {
+        val episodeId = insertEpisode()
+        coEvery { downloads.needsCellularPrompt(episodeId) } returns false
+        val vm = viewModel(episodeId)
+        vm.await { it.loaded }
+
+        vm.vm.requestDownload()
+
+        coVerify(exactly = 1) { downloads.enqueue(episodeId, DownloadSource.MANUAL, null) }
+        assertThat(vm.await { it.loaded }.showCellularPrompt).isFalse()
+    }
+
+    @Test fun requestDownloadShowsPromptInsteadWhenCellularIsNeeded() = runBlocking<Unit> {
+        val episodeId = insertEpisode()
+        coEvery { downloads.needsCellularPrompt(episodeId) } returns true
+        val vm = viewModel(episodeId)
+        vm.await { it.loaded }
+
+        vm.vm.requestDownload()
+
+        assertThat(vm.await { it.showCellularPrompt }.showCellularPrompt).isTrue()
+        coVerify(exactly = 0) { downloads.enqueue(any(), any(), any()) }
+    }
+
+    @Test fun promptDownloadNowEnqueuesWithCellularAllowed() = runBlocking<Unit> {
+        val episodeId = insertEpisode()
+        coEvery { downloads.needsCellularPrompt(episodeId) } returns true
+        val vm = viewModel(episodeId)
+        vm.await { it.loaded }
+        vm.vm.requestDownload()
+        vm.await { it.showCellularPrompt }
+
+        vm.vm.confirmCellularDownload(allowCellular = true)
+
+        coVerify(exactly = 1) { downloads.enqueue(episodeId, DownloadSource.MANUAL, true) }
+        assertThat(vm.await { !it.showCellularPrompt }.showCellularPrompt).isFalse()
+    }
+
+    @Test fun promptWaitForWifiEnqueuesWithCellularNotAllowed() = runBlocking<Unit> {
+        val episodeId = insertEpisode()
+        coEvery { downloads.needsCellularPrompt(episodeId) } returns true
+        val vm = viewModel(episodeId)
+        vm.await { it.loaded }
+        vm.vm.requestDownload()
+        vm.await { it.showCellularPrompt }
+
+        vm.vm.confirmCellularDownload(allowCellular = false)
+
+        coVerify(exactly = 1) { downloads.enqueue(episodeId, DownloadSource.MANUAL, false) }
+        assertThat(vm.await { !it.showCellularPrompt }.showCellularPrompt).isFalse()
+    }
+
+    @Test fun dismissingThePromptDownloadsNothing() = runBlocking<Unit> {
+        val episodeId = insertEpisode()
+        coEvery { downloads.needsCellularPrompt(episodeId) } returns true
+        val vm = viewModel(episodeId)
+        vm.await { it.loaded }
+        vm.vm.requestDownload()
+        vm.await { it.showCellularPrompt }
+
+        vm.vm.dismissCellularPrompt()
+
+        assertThat(vm.await { !it.showCellularPrompt }.showCellularPrompt).isFalse()
+        coVerify(exactly = 0) { downloads.enqueue(any(), any(), any()) }
+    }
+
+    @Test fun removeDownloadCallsDelete() = runBlocking<Unit> {
+        val episodeId = insertEpisode()
+        val vm = viewModel(episodeId)
+        vm.await { it.loaded }
+
+        vm.vm.deleteDownload()
+
+        coVerify(exactly = 1) { downloads.delete(episodeId) }
+    }
+
+    @Test fun cancelAndRetryDelegateToDownloadManager() = runBlocking<Unit> {
+        val episodeId = insertEpisode()
+        val vm = viewModel(episodeId)
+        vm.await { it.loaded }
+
+        vm.vm.cancelDownload()
+        vm.vm.retryDownload()
+
+        coVerify(exactly = 1) { downloads.cancel(episodeId) }
+        coVerify(exactly = 1) { downloads.retry(episodeId) }
+    }
+
+    @Test fun downloadRowIsExposedInUiState() = runBlocking<Unit> {
+        val episodeId = insertEpisode()
+        db.downloadDao().upsert(DownloadEntity(episodeId = episodeId, state = DownloadState.QUEUED, source = DownloadSource.MANUAL))
+        val vm = viewModel(episodeId)
+
+        val state = vm.await { it.downloadState == DownloadState.QUEUED }
+
+        assertThat(state.download?.episodeId).isEqualTo(episodeId)
+        assertThat(state.isDownloaded).isFalse()
     }
 
     /** Keeps one collector alive on the ViewModel's state and lets tests wait for a condition on it. */

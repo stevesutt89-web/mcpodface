@@ -19,6 +19,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Cancel
+import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Podcasts
 import androidx.compose.material.icons.outlined.Share
@@ -63,6 +65,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kyant.shapes.Capsule
 import com.steve.mcpodface.data.db.EpisodeListItem
 import com.steve.mcpodface.data.prefs.LatestFilter
+import com.steve.mcpodface.ui.components.CellularPromptDialog
 import com.steve.mcpodface.ui.components.LargeTitleScaffold
 import com.steve.mcpodface.ui.components.glass.GlassChip
 import com.steve.mcpodface.ui.components.glass.GlassIconButton
@@ -117,7 +120,15 @@ fun LatestScreen(onOpenSettings: () -> Unit, onOpenPodcast: (Long) -> Unit, onOp
         onTogglePlayed = viewModel::togglePlayed,
         onToggleStar = viewModel::toggleStar,
         onShare = { item -> context.startActivity(shareEpisodeIntent(item)) },
+        onDownloadAction = viewModel::onDownloadMenuAction,
     )
+    if (state.cellularPromptEpisodeId != null) {
+        CellularPromptDialog(
+            onDownloadNow = { viewModel.confirmCellularDownload(allowCellular = true) },
+            onWaitForWifi = { viewModel.confirmCellularDownload(allowCellular = false) },
+            onDismiss = viewModel::dismissCellularPrompt,
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -135,6 +146,7 @@ private fun LatestContent(
     onTogglePlayed: (EpisodeListItem) -> Unit,
     onToggleStar: (EpisodeListItem) -> Unit,
     onShare: (EpisodeListItem) -> Unit,
+    onDownloadAction: (EpisodeListItem) -> Unit = {},
 ) {
     var menuEpisodeId by rememberSaveable { mutableStateOf<Long?>(null) }
     val menuItem = menuEpisodeId?.let { id -> state.items.firstOrNull { it.episode.id == id } }
@@ -218,6 +230,7 @@ private fun LatestContent(
             onToggleStar = { onToggleStar(menuItem) },
             onShare = { onShare(menuItem) },
             onGoToPodcast = { onOpenPodcast(menuItem.episode.podcastId) },
+            onDownload = { onDownloadAction(menuItem) },
         )
     }
 }
@@ -290,9 +303,11 @@ private fun EpisodeActionSheet(
     onToggleStar: () -> Unit,
     onShare: () -> Unit,
     onGoToPodcast: () -> Unit,
+    onDownload: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState()
     val starred = item.episode.isStarred
+    val downloadAction = downloadMenuAction(item.downloadState)
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
         Column(Modifier.padding(bottom = Spacing.l)) {
             Text(
@@ -302,7 +317,14 @@ private fun EpisodeActionSheet(
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(horizontal = Spacing.m, vertical = Spacing.s),
             )
-            SheetAction(Icons.Outlined.Download, "Download (coming soon)", enabled = false) {}
+            SheetAction(
+                icon = when (downloadAction) {
+                    DownloadMenuAction.DOWNLOAD -> Icons.Outlined.Download
+                    DownloadMenuAction.REMOVE -> Icons.Outlined.DeleteOutline
+                    DownloadMenuAction.CANCEL -> Icons.Outlined.Cancel
+                },
+                label = downloadMenuLabel(item.downloadState),
+            ) { onDownload(); onDismiss() }
             SheetAction(
                 icon = if (starred) Icons.Outlined.Star else Icons.Outlined.StarBorder,
                 label = if (starred) "Unstar" else "Star",

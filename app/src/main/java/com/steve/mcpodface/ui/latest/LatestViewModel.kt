@@ -3,6 +3,8 @@ package com.steve.mcpodface.ui.latest
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.steve.mcpodface.core.Clock
+import com.steve.mcpodface.data.db.DownloadSource
+import com.steve.mcpodface.data.db.DownloadState
 import com.steve.mcpodface.data.db.EpisodeListItem
 import com.steve.mcpodface.data.db.PlayState
 import com.steve.mcpodface.data.episodes.EpisodeRepository
@@ -10,6 +12,7 @@ import com.steve.mcpodface.data.feed.FeedRepository
 import com.steve.mcpodface.data.prefs.LatestFilter
 import com.steve.mcpodface.data.prefs.SettingsRepository
 import com.steve.mcpodface.data.queue.QueueRepository
+import com.steve.mcpodface.download.DownloadManager
 import com.steve.mcpodface.playback.NowPlaying
 import com.steve.mcpodface.playback.PlayerController
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -39,6 +42,22 @@ fun latestQueryFor(filter: LatestFilter): LatestQuery = when (filter) {
 /** Swipe left toggles: an episode that is played becomes unplayed, anything else becomes played. */
 fun playedToggleTarget(current: PlayState): Boolean = current != PlayState.PLAYED
 
+/** What the long-press menu's download item does for a row, chosen from its download state (PLAN.md §8.2). */
+enum class DownloadMenuAction { DOWNLOAD, REMOVE, CANCEL }
+
+fun downloadMenuAction(state: DownloadState?): DownloadMenuAction = when (state) {
+    DownloadState.COMPLETED -> DownloadMenuAction.REMOVE
+    DownloadState.QUEUED, DownloadState.DOWNLOADING, DownloadState.PAUSED_NETWORK -> DownloadMenuAction.CANCEL
+    // No row, or FAILED: a fresh manual download (FAILED re-queues over the old attempt).
+    null, DownloadState.FAILED -> DownloadMenuAction.DOWNLOAD
+}
+
+fun downloadMenuLabel(state: DownloadState?): String = when (downloadMenuAction(state)) {
+    DownloadMenuAction.DOWNLOAD -> "Download"
+    DownloadMenuAction.REMOVE -> "Remove download"
+    DownloadMenuAction.CANCEL -> "Cancel download"
+}
+
 data class LatestUiState(
     val items: List<EpisodeListItem> = emptyList(),
     val filter: LatestFilter = LatestFilter.ALL,
@@ -48,6 +67,8 @@ data class LatestUiState(
     val now: Long = 0L,
     val refreshing: Boolean = false,
     val nowPlaying: NowPlaying? = null,
+    /** The episode whose manual download is waiting on the mobile-data prompt, or null (PLAN.md §6.6). */
+    val cellularPromptEpisodeId: Long? = null,
 )
 
 /** One-shot feedback for the screen to show as a Snackbar. */
@@ -65,10 +86,12 @@ class LatestViewModel @Inject constructor(
     private val feeds: FeedRepository,
     private val settings: SettingsRepository,
     private val player: PlayerController,
+    private val downloads: DownloadManager,
     private val clock: Clock,
 ) : ViewModel() {
 
     private val refreshing = MutableStateFlow(false)
+    private val cellularPromptEpisodeId = MutableStateFlow<Long?>(null)
     private val messageChannel = Channel<LatestMessage>(Channel.BUFFERED)
 
     val messages: Flow<LatestMessage> = messageChannel.receiveAsFlow()
@@ -80,7 +103,8 @@ class LatestViewModel @Inject constructor(
         },
         player.nowPlaying,
         refreshing,
-    ) { (filter, items), nowPlaying, isRefreshing ->
+        cellularPromptEpisodeId,
+    ) { (filter, items), nowPlaying, isRefreshing, promptEpisodeId ->
         LatestUiState(
             items = items,
             filter = filter,
@@ -88,6 +112,7 @@ class LatestViewModel @Inject constructor(
             now = clock.now(),
             refreshing = isRefreshing,
             nowPlaying = nowPlaying,
+            cellularPromptEpisodeId = promptEpisodeId,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), LatestUiState())
 
@@ -119,6 +144,39 @@ class LatestViewModel @Inject constructor(
 
     fun toggleStar(item: EpisodeListItem) {
         viewModelScope.launch { episodes.setStarred(item.episode.id, !item.episode.isStarred) }
+    }
+
+    /** The long-press menu's download item: download, remove or cancel, by the row's state. */
+    fun onDownloadMenuAction(item: EpisodeListItem) {
+        val id = item.episode.id
+        when (downloadMenuAction(item.downloadState)) {
+            DownloadMenuAction.DOWNLOAD -> requestDownload(item)
+            DownloadMenuAction.REMOVE -> viewModelScope.launch { downloads.delete(id) }
+            DownloadMenuAction.CANCEL -> viewModelScope.launch { downloads.cancel(id) }
+        }
+    }
+
+    /** Queues a manual download, or asks first when it would run on mobile data (PLAN.md §6.6). */
+    fun requestDownload(item: EpisodeListItem) {
+        viewModelScope.launch {
+            val id = item.episode.id
+            if (downloads.needsCellularPrompt(id)) {
+                cellularPromptEpisodeId.value = id
+            } else {
+                downloads.enqueue(id, DownloadSource.MANUAL)
+            }
+        }
+    }
+
+    /** The prompt's choice: "Download now" passes true, "Wait for Wi-Fi" passes false. */
+    fun confirmCellularDownload(allowCellular: Boolean) {
+        val id = cellularPromptEpisodeId.value ?: return
+        cellularPromptEpisodeId.value = null
+        viewModelScope.launch { downloads.enqueue(id, DownloadSource.MANUAL, allowCellular) }
+    }
+
+    fun dismissCellularPrompt() {
+        cellularPromptEpisodeId.value = null
     }
 
     fun refresh() {

@@ -18,10 +18,12 @@ import com.steve.mcpodface.data.prefs.GlobalSettings
 import com.steve.mcpodface.data.prefs.LatestFilter
 import com.steve.mcpodface.data.prefs.SettingsRepository
 import com.steve.mcpodface.data.queue.QueueRepository
+import com.steve.mcpodface.download.DownloadManager
 import com.steve.mcpodface.playback.NowPlaying
 import com.steve.mcpodface.playback.NoOpPlayerController
 import com.steve.mcpodface.playback.PlayerController
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -56,6 +58,24 @@ class LatestDecisionsTest {
         assertThat(playedToggleTarget(PlayState.IN_PROGRESS)).isTrue()
         assertThat(playedToggleTarget(PlayState.PLAYED)).isFalse()
     }
+
+    @Test fun menuLabelIsDownloadWhenThereIsNoRowOrItFailed() {
+        assertThat(downloadMenuLabel(null)).isEqualTo("Download")
+        assertThat(downloadMenuLabel(DownloadState.FAILED)).isEqualTo("Download")
+        assertThat(downloadMenuAction(null)).isEqualTo(DownloadMenuAction.DOWNLOAD)
+    }
+
+    @Test fun menuLabelIsRemoveWhenCompleted() {
+        assertThat(downloadMenuLabel(DownloadState.COMPLETED)).isEqualTo("Remove download")
+        assertThat(downloadMenuAction(DownloadState.COMPLETED)).isEqualTo(DownloadMenuAction.REMOVE)
+    }
+
+    @Test fun menuLabelIsCancelWhileQueuedDownloadingOrWaiting() {
+        for (state in listOf(DownloadState.QUEUED, DownloadState.DOWNLOADING, DownloadState.PAUSED_NETWORK)) {
+            assertThat(downloadMenuLabel(state)).isEqualTo("Cancel download")
+            assertThat(downloadMenuAction(state)).isEqualTo(DownloadMenuAction.CANCEL)
+        }
+    }
 }
 
 @RunWith(AndroidJUnit4::class)
@@ -66,6 +86,7 @@ class LatestViewModelTest {
     private lateinit var episodes: EpisodeRepository
     private lateinit var feeds: FeedRepository
     private lateinit var player: RecordingPlayer
+    private lateinit var downloads: DownloadManager
     private val clock = Clock { NOW }
 
     @Before fun setUp() {
@@ -78,6 +99,7 @@ class LatestViewModelTest {
         episodes = EpisodeRepository(db.episodeDao(), db.podcastDao(), clock)
         feeds = mockk(relaxed = true)
         player = RecordingPlayer()
+        downloads = mockk(relaxed = true)
     }
 
     @After fun tearDown() {
@@ -85,7 +107,7 @@ class LatestViewModelTest {
         db.close()
     }
 
-    private fun viewModel() = LatestViewModel(episodes, queue, feeds, settings, player, clock)
+    private fun viewModel() = LatestViewModel(episodes, queue, feeds, settings, player, downloads, clock)
 
     private suspend fun seed(
         title: String,
@@ -221,6 +243,84 @@ class LatestViewModelTest {
 
         eventually { calls == 1 }
         assertThat(vm.state.awaitValue { !it.refreshing }.refreshing).isFalse()
+    }
+
+    @Test fun requestDownloadEnqueuesManualWhenNoPromptIsNeeded() = runTest {
+        val id = seed("plain")
+        coEvery { downloads.needsCellularPrompt(id) } returns false
+        val vm = viewModel()
+        val item = vm.state.awaitValue { it.items.isNotEmpty() }.items.single()
+
+        vm.requestDownload(item)
+
+        coVerify(exactly = 1) { downloads.enqueue(id, DownloadSource.MANUAL, null) }
+        assertThat(vm.state.awaitValue { it.loaded }.cellularPromptEpisodeId).isNull()
+    }
+
+    @Test fun requestDownloadShowsPromptAndDownloadNowPassesCellularTrue() = runTest {
+        val id = seed("metered")
+        coEvery { downloads.needsCellularPrompt(id) } returns true
+        val vm = viewModel()
+        val item = vm.state.awaitValue { it.items.isNotEmpty() }.items.single()
+
+        vm.requestDownload(item)
+
+        assertThat(vm.state.awaitValue { it.cellularPromptEpisodeId == id }.cellularPromptEpisodeId).isEqualTo(id)
+        coVerify(exactly = 0) { downloads.enqueue(any(), any(), any()) }
+
+        vm.confirmCellularDownload(allowCellular = true)
+
+        coVerify(exactly = 1) { downloads.enqueue(id, DownloadSource.MANUAL, true) }
+        assertThat(vm.state.awaitValue { it.cellularPromptEpisodeId == null }.cellularPromptEpisodeId).isNull()
+    }
+
+    @Test fun waitForWifiChoicePassesCellularFalse() = runTest {
+        val id = seed("wait")
+        coEvery { downloads.needsCellularPrompt(id) } returns true
+        val vm = viewModel()
+        val item = vm.state.awaitValue { it.items.isNotEmpty() }.items.single()
+        vm.requestDownload(item)
+        vm.state.awaitValue { it.cellularPromptEpisodeId == id }
+
+        vm.confirmCellularDownload(allowCellular = false)
+
+        coVerify(exactly = 1) { downloads.enqueue(id, DownloadSource.MANUAL, false) }
+    }
+
+    @Test fun dismissingThePromptDownloadsNothing() = runTest {
+        val id = seed("dismiss")
+        coEvery { downloads.needsCellularPrompt(id) } returns true
+        val vm = viewModel()
+        val item = vm.state.awaitValue { it.items.isNotEmpty() }.items.single()
+        vm.requestDownload(item)
+        vm.state.awaitValue { it.cellularPromptEpisodeId == id }
+
+        vm.dismissCellularPrompt()
+
+        assertThat(vm.state.awaitValue { it.cellularPromptEpisodeId == null }.cellularPromptEpisodeId).isNull()
+        coVerify(exactly = 0) { downloads.enqueue(any(), any(), any()) }
+    }
+
+    @Test fun menuDownloadActionOnCompletedRowRemovesIt() = runTest {
+        val id = seed("gone", downloaded = true)
+        val vm = viewModel()
+        val item = vm.state.awaitValue { it.items.isNotEmpty() }.items.single()
+        assertThat(item.downloadState).isEqualTo(DownloadState.COMPLETED)
+
+        vm.onDownloadMenuAction(item)
+
+        coVerify(exactly = 1) { downloads.delete(id) }
+    }
+
+    @Test fun menuDownloadActionOnQueuedRowCancelsIt() = runTest {
+        val id = seed("pending")
+        db.downloadDao().upsert(DownloadEntity(episodeId = id, state = DownloadState.QUEUED, source = DownloadSource.MANUAL))
+        val vm = viewModel()
+        val item = vm.state.awaitValue { it.items.singleOrNull()?.downloadState == DownloadState.QUEUED }.items.single()
+
+        vm.onDownloadMenuAction(item)
+
+        coVerify(exactly = 1) { downloads.cancel(id) }
     }
 
     private class FakeSettings : SettingsRepository {
