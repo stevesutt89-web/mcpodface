@@ -41,6 +41,18 @@ interface QueueDao {
     @Query("DELETE FROM queue_items")
     suspend fun clear()
 
+    /** Queue in order, keyed by feed URL + guid for the backup (PLAN.md §9). */
+    @Query(
+        """
+        SELECT p.feedUrl AS feedUrl, e.guid AS guid
+        FROM queue_items q
+        INNER JOIN episodes e ON e.id = q.episodeId
+        INNER JOIN podcasts p ON p.id = e.podcastId
+        ORDER BY q.position
+        """,
+    )
+    suspend fun backupRows(): List<QueueBackupRow>
+
     /** Replaces the whole queue with episodeIds, in order. */
     @Transaction
     suspend fun replaceAll(episodeIds: List<Long>) {
@@ -48,3 +60,6 @@ interface QueueDao {
         upsertAll(episodeIds.mapIndexed { i, id -> QueueItemEntity(id, i) })
     }
 }
+
+/** One queued episode, keyed by feed URL + guid. Its position is its index in the list. */
+data class QueueBackupRow(val feedUrl: String, val guid: String)

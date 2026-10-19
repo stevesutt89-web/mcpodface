@@ -51,4 +51,26 @@ interface ListeningSessionDao {
 
     @Query("DELETE FROM listening_sessions")
     suspend fun clearHistory()
+
+    /** Every listening session, oldest first, keyed by feed URL + guid for the backup (PLAN.md §9). */
+    @Query(
+        """
+        SELECT p.feedUrl AS feedUrl, e.guid AS guid, s.startedAt AS startedAt,
+               s.listenedMs AS listenedMs, s.speed AS speed
+        FROM listening_sessions s
+        INNER JOIN episodes e ON e.id = s.episodeId
+        INNER JOIN podcasts p ON p.id = e.podcastId
+        ORDER BY s.startedAt, s.id
+        """,
+    )
+    suspend fun backupRows(): List<SessionBackupRow>
 }
+
+/** One listening session for the backup. */
+data class SessionBackupRow(
+    val feedUrl: String,
+    val guid: String,
+    val startedAt: Long,
+    val listenedMs: Long,
+    val speed: Float,
+)

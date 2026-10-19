@@ -4,12 +4,14 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -27,6 +29,21 @@ class DataStoreSettingsRepository @Inject constructor(
         dataStore.updateData { prefs ->
             prefs.toMutablePreferences().apply { write(transform(prefs.toSettings())) }
         }.toSettings()
+
+    /**
+     * Every persisted setting for the backup (PLAN.md §9), as DataStore key name → string value.
+     * Written through the same mapping as [update], so the keys are always the DataStore names.
+     * Rate-limiter state (apiRequestsToday, apiBudgetDay, apiPausedUntil) is left out.
+     */
+    suspend fun backupEntries(): Map<String, String> {
+        val settings = dataStore.data.first().toSettings()
+        return emptyPreferences().toMutablePreferences()
+            .apply { write(settings) }
+            .asMap()
+            .filterKeys { it.name !in RATE_LIMITER_KEY_NAMES }
+            .map { (key, value) -> key.name to value.toString() }
+            .toMap()
+    }
 
     private object K {
         val theme = stringPreferencesKey("theme")
@@ -150,4 +167,8 @@ class DataStoreSettingsRepository @Inject constructor(
 
     private inline fun <reified E : Enum<E>> enumOr(name: String?, default: E): E =
         name?.let { n -> enumValues<E>().firstOrNull { it.name == n } } ?: default
+
+    private companion object {
+        val RATE_LIMITER_KEY_NAMES = setOf("apiRequestsToday", "apiBudgetDay", "apiPausedUntil")
+    }
 }
