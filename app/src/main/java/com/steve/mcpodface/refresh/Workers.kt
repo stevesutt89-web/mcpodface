@@ -9,6 +9,7 @@ import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import com.steve.mcpodface.backfill.BackfillWorker
 import com.steve.mcpodface.core.di.ApplicationScope
 import com.steve.mcpodface.data.db.AppDatabase
 import com.steve.mcpodface.data.db.DownloadState
@@ -20,6 +21,7 @@ import dagger.assisted.AssistedInject
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.io.File
@@ -126,6 +128,12 @@ class WorkScheduler @Inject constructor(
                     )
                 }
             }
+        }
+        scope.launch {
+            settingsRepository.settings
+                .map { Triple(it.backfillEnabled, it.backfillWifiOnly, it.backfillChargingOnly) }
+                .distinctUntilChanged()
+                .collect { BackfillWorker.schedule(workManager, settingsRepository.settings.first()) }
         }
         // Pull-to-refresh and subscribe refresh through FeedRepository; apply policies after them too.
         scope.launch {

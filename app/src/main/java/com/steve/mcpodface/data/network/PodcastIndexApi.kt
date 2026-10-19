@@ -39,6 +39,17 @@ interface PodcastIndexApi {
 
     @GET("podcasts/byfeedurl")
     suspend fun byFeedUrl(@Query("url") url: String): PodcastIndexFeedResponse
+
+    /**
+     * Archive backfill (PLAN.md §7.4): up to [max] (1000 at most) of the feed's episodes, newest
+     * first. `fulltext` (present = true) returns whole descriptions instead of 100 characters.
+     */
+    @GET("episodes/byfeedid")
+    suspend fun episodesByFeedId(
+        @Query("id") id: Long,
+        @Query("max") max: Int,
+        @Query("fulltext") fulltext: String = "",
+    ): PodcastIndexEpisodesResponse
 }
 
 @Serializable
@@ -50,6 +61,29 @@ data class PodcastIndexFeedResponse(val feed: JsonElement? = null) {
     fun feedOrNull(): PodcastIndexFeed? =
         (feed as? JsonObject)?.let { podcastIndexJson.decodeFromJsonElement(PodcastIndexFeed.serializer(), it) }
 }
+
+@Serializable
+data class PodcastIndexEpisodesResponse(val items: List<PodcastIndexEpisode> = emptyList())
+
+@Serializable
+data class PodcastIndexEpisode(
+    val id: Long? = null,
+    val title: String? = null,
+    val description: String? = null,
+    val guid: String? = null,
+    /** Unix seconds. */
+    val datePublished: Long? = null,
+    val enclosureUrl: String? = null,
+    val enclosureType: String? = null,
+    val enclosureLength: Long? = null,
+    /** Seconds. */
+    val duration: Int? = null,
+    val episode: Int? = null,
+    val season: Int? = null,
+    val image: String? = null,
+    val chaptersUrl: String? = null,
+    val transcriptUrl: String? = null,
+)
 
 @Serializable
 data class PodcastIndexCategoriesResponse(val feeds: List<PodcastIndexCategory> = emptyList())

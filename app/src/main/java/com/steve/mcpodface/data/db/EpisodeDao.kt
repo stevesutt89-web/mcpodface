@@ -25,6 +25,10 @@ interface EpisodeDao {
     @Query("SELECT * FROM episodes WHERE podcastId = :podcastId")
     suspend fun getForPodcast(podcastId: Long): List<EpisodeEntity>
 
+    /** When each podcast was last played, for archive backfill's priority order. */
+    @Query("SELECT podcastId, MAX(lastPlayedAt) AS lastPlayedAt FROM episodes WHERE lastPlayedAt IS NOT NULL GROUP BY podcastId")
+    suspend fun lastPlayedPerPodcast(): List<PodcastLastPlayed>
+
     /** Starred episodes of any podcast, newest first (Library → Starred). */
     @Query(
         """
@@ -138,3 +142,5 @@ interface EpisodeDao {
     @Query("UPDATE episodes SET playState = 'PLAYED', playedAt = :at WHERE podcastId = :podcastId AND playState != 'PLAYED'")
     suspend fun markAllPlayed(podcastId: Long, at: Long)
 }
+
+data class PodcastLastPlayed(val podcastId: Long, val lastPlayedAt: Long)
