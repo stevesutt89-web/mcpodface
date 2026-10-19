@@ -2,6 +2,8 @@ package com.steve.mcpodface.ui.navigation
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -17,6 +19,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
@@ -99,6 +102,13 @@ fun AppShell(
         if (playerState == null) showFullPlayer = false
     }
 
+    // Full player open/close. Once it fully covers the screen the app underneath is not drawn at
+    // all (it was being re-rendered, glass and all, behind an opaque player on every frame).
+    val fullPlayerTransition = remember { MutableTransitionState(false) }
+    fullPlayerTransition.targetState = showFullPlayer && playerState != null
+    val playerCoversScreen = fullPlayerTransition.currentState && fullPlayerTransition.targetState &&
+        fullPlayerTransition.isIdle
+
     val chromeBackdrop = rememberLayerBackdrop()
     val density = LocalDensity.current
     var chromeHeight by remember { mutableStateOf(0.dp) }
@@ -111,7 +121,10 @@ fun AppShell(
         NavHost(
             navController = navController,
             startDestination = TopLevelDestination.of(startTab).route,
-            modifier = Modifier.fillMaxSize().layerBackdrop(chromeBackdrop),
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer { alpha = if (playerCoversScreen) 0f else 1f }
+                .layerBackdrop(chromeBackdrop),
         ) {
             val openSettings = { navController.navigate(SettingsRoute) }
             val openPodcast = { id: Long -> navController.navigate(PodcastRoute(id)) }
@@ -153,6 +166,7 @@ fun AppShell(
             Column(
                 Modifier
                     .align(Alignment.BottomCenter)
+                    .graphicsLayer { alpha = if (playerCoversScreen) 0f else 1f }
                     .navigationBarsPadding()
                     .padding(horizontal = 14.dp)
                     .padding(bottom = 6.dp)
@@ -188,11 +202,16 @@ fun AppShell(
                 )
             }
         }
-    }
 
-    playerState?.let { state ->
-        if (showFullPlayer) {
-            FullPlayer(state = state, viewModel = playerViewModel, onDismiss = { showFullPlayer = false })
+        // Full player: a full-screen layer over everything, sliding up from the bottom.
+        AnimatedVisibility(
+            visibleState = fullPlayerTransition,
+            enter = slideInVertically(spring(dampingRatio = 0.85f, stiffness = 380f)) { it },
+            exit = slideOutVertically(spring(dampingRatio = 1f, stiffness = 500f)) { it },
+        ) {
+            lastPlayerState?.let { state ->
+                FullPlayer(state = state, viewModel = playerViewModel, onDismiss = { showFullPlayer = false })
+            }
         }
     }
 }

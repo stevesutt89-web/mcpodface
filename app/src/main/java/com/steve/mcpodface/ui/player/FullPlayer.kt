@@ -3,6 +3,15 @@ package com.steve.mcpodface.ui.player
 import android.content.Context
 import android.content.Intent
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.Animatable
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
+import kotlinx.coroutines.launch
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,7 +30,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Bedtime
@@ -32,14 +40,11 @@ import androidx.compose.material.icons.rounded.Replay10
 import androidx.compose.material.icons.rounded.Replay30
 import androidx.compose.material.icons.rounded.SpeakerGroup
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -73,10 +78,11 @@ import com.steve.mcpodface.ui.theme.Spacing
 import com.steve.mcpodface.ui.theme.ThemePreviews
 
 /**
- * Full player (PLAN.md §8.6, §11): a full-screen sheet washed in the artwork's colours, with Liquid
- * Glass controls tinted by an accent taken from the artwork.
+ * Full player (PLAN.md §8.6, §11): a true full-screen layer (drawn by the shell over everything,
+ * edge to edge behind the status and gesture bars) washed in the artwork's colours, with Liquid
+ * Glass controls tinted by an accent taken from the artwork. Drag the grabber or artwork down,
+ * or use back, to close it. (A ModalBottomSheet left inset strips and rounded edges.)
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FullPlayer(
     state: PlayerUiState,
@@ -84,26 +90,46 @@ fun FullPlayer(
     onDismiss: () -> Unit,
 ) {
     val context = LocalContext.current
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        containerColor = MaterialTheme.colorScheme.background,
-        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-        dragHandle = null,
-    ) {
+    val scope = rememberCoroutineScope()
+    val dragY = remember { Animatable(0f) }
+    val dismissThreshold = with(LocalDensity.current) { 140.dp.toPx() }
+    BackHandler(onBack = onDismiss)
+
+    val dismissDrag = Modifier.pointerInput(Unit) {
+        detectVerticalDragGestures(
+            onDragEnd = {
+                scope.launch {
+                    if (dragY.value > dismissThreshold) onDismiss()
+                    else dragY.animateTo(0f, spring(dampingRatio = 0.75f, stiffness = 400f))
+                }
+            },
+            onDragCancel = { scope.launch { dragY.animateTo(0f) } },
+        ) { change, dy ->
+            change.consume()
+            scope.launch { dragY.snapTo((dragY.value + dy).coerceAtLeast(0f)) }
+        }
+    }
+
+    // The position ticks twice a second. Only the timeline should redraw for that, so the rest of
+    // the player gets a copy without it (equal between ticks, so Compose skips it) and the timeline
+    // reads the live position through a lambda.
+    val latest = rememberUpdatedState(state)
+    Box(Modifier.fillMaxSize().graphicsLayer { translationY = dragY.value }) {
         FullPlayerContent(
-            state = state,
+            state = state.copy(positionMs = 0L),
+            positionMs = { latest.value.positionMs },
             onSeek = viewModel::seekTo,
             onTogglePlayPause = viewModel::togglePlayPause,
             onSkipBack = viewModel::skipBack,
             onSkipForward = viewModel::skipForward,
             onSpeedChange = viewModel::setSpeed,
             onOpenOutputSwitcher = { openOutputSwitcher(context) },
+            dismissDrag = dismissDrag,
         )
     }
 }
 
-/** Sheet content without the ModalBottomSheet wrapper, so it can be previewed directly. */
+/** Player content without the dismiss wrapper, so it can be previewed directly. [dismissDrag] goes on the grabber and artwork. */
 @Composable
 fun FullPlayerContent(
     state: PlayerUiState,
@@ -113,6 +139,8 @@ fun FullPlayerContent(
     onSkipForward: () -> Unit,
     onSpeedChange: (speed: Float, rememberForPodcast: Boolean) -> Unit,
     onOpenOutputSwitcher: () -> Unit,
+    dismissDrag: Modifier = Modifier,
+    positionMs: () -> Long = { state.positionMs },
 ) {
     val colors = AppTheme.colors
     val artworkAccent by rememberArtworkAccent(state.artworkUrl)
@@ -132,20 +160,24 @@ fun FullPlayerContent(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .statusBarsPadding()
+                .navigationBarsPadding()
                 .padding(horizontal = Spacing.l)
                 .padding(bottom = Spacing.xl),
         ) {
-            // Grabber
+            // Grabber, with a generous touch area for the drag-down-to-close gesture.
             Box(
-                Modifier
-                    .padding(vertical = 10.dp)
-                    .align(Alignment.CenterHorizontally)
-                    .size(width = 40.dp, height = 5.dp)
-                    .clip(Capsule())
-                    .background(colors.textPrimary.copy(alpha = 0.25f)),
-            )
+                Modifier.fillMaxWidth().height(28.dp).then(dismissDrag),
+                contentAlignment = Alignment.Center,
+            ) {
+                Box(
+                    Modifier
+                        .size(width = 40.dp, height = 5.dp)
+                        .clip(Capsule())
+                        .background(colors.textPrimary.copy(alpha = 0.25f)),
+                )
+            }
             Spacer(Modifier.height(Spacing.m))
-            BoxWithConstraints(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            BoxWithConstraints(Modifier.fillMaxWidth().then(dismissDrag), contentAlignment = Alignment.Center) {
                 Artwork(
                     url = state.artworkUrl,
                     contentDescription = null,
@@ -180,7 +212,7 @@ fun FullPlayerContent(
 
             Spacer(Modifier.height(Spacing.m))
             Timeline(
-                positionMs = state.positionMs,
+                positionMs = positionMs,
                 durationMs = state.durationMs,
                 speed = state.speed,
                 accent = accent,
@@ -286,7 +318,7 @@ fun FullPlayerContent(
  */
 @Composable
 private fun Timeline(
-    positionMs: Long,
+    positionMs: () -> Long,
     durationMs: Long,
     speed: Float,
     accent: Color,
@@ -294,7 +326,7 @@ private fun Timeline(
 ) {
     val colors = AppTheme.colors
     var dragFraction by remember { mutableStateOf<Float?>(null) }
-    val playedFraction = if (durationMs > 0) (positionMs.toFloat() / durationMs).coerceIn(0f, 1f) else 0f
+    val playedFraction = if (durationMs > 0) (positionMs().toFloat() / durationMs).coerceIn(0f, 1f) else 0f
     val shownFraction = dragFraction ?: playedFraction
     val shownPositionMs = (shownFraction * durationMs).toLong()
     Column {

@@ -8,11 +8,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.BlurredEdgeTreatment
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
@@ -48,18 +48,25 @@ fun ArtworkAmbience(
     val dark = AppTheme.colors.isDark
     Box(modifier.fillMaxSize().background(background)) {
         if (artworkUrl != null && !LocalInspectionMode.current) {
+            // The artwork decoded at ~24px and stretched with bilinear filtering is already a soft
+            // blur, at almost no cost. (A full-screen blur(80.dp) was re-rendered by every glass
+            // control on every scroll frame.)
+            val context = LocalContext.current
+            val request = remember(artworkUrl) {
+                ImageRequest.Builder(context).data(artworkUrl).size(AMBIENCE_PX).build()
+            }
             AsyncImage(
-                model = artworkUrl,
+                model = request,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
+                filterQuality = FilterQuality.Low,
                 alpha = (if (dark) 0.75f else 0.6f) * intensity,
                 modifier = Modifier
                     .fillMaxSize()
                     .graphicsLayer {
-                        scaleX = 1.8f
-                        scaleY = 1.8f
-                    }
-                    .blur(80.dp, BlurredEdgeTreatment.Unbounded),
+                        scaleX = 1.4f
+                        scaleY = 1.4f
+                    },
             )
         }
         Box(
@@ -112,3 +119,5 @@ internal fun readableAccent(argb: Int, dark: Boolean): Color {
 }
 
 internal fun Color.argbInt(): Int = toArgb()
+
+private const val AMBIENCE_PX = 24

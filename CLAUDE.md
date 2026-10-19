@@ -33,5 +33,6 @@ Tests: `app/src/test/` (JVM + Robolectric, emulating SDK 36 via `robolectric.pro
 ./gradlew :app:testDebugUnitTest         # unit tests
 ./gradlew :app:lintDebug                 # lint
 ./gradlew :app:installDebug              # to connected phone(s)
+./gradlew :app:installFast               # optimised build over the debug app (judge smoothness with this)
 ```
 Only one Gradle build at a time on this machine.
