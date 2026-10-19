@@ -89,6 +89,22 @@ class SubscriptionRepositoryTest {
         assertThat(server.requestCount).isEqualTo(1)
     }
 
+    @Test fun addingCredentialsToAKnownFeedStoresThemAndRefetches() = runTest {
+        server.enqueue(MockResponse().setBody(feedXml))
+        server.enqueue(MockResponse().setBody(feedXml))
+        val url = server.url("/feed").toString()
+        val repo = repo()
+        val id = (repo.open(url) as SubscriptionRepository.OpenResult.Ok).podcastId
+        server.takeRequest()
+
+        repo.open(url, authUser = "me", authPassword = "pw")
+
+        val p = db.podcastDao().getById(id)!!
+        assertThat(p.authUser).isEqualTo("me")
+        assertThat(p.authPassword).isEqualTo("pw")
+        assertThat(server.takeRequest().getHeader("Authorization")).isNotNull()
+    }
+
     @Test fun failedPreviewLeavesNoPlaceholder() = runTest {
         server.enqueue(MockResponse().setResponseCode(404))
         val r = repo().open(server.url("/missing").toString())

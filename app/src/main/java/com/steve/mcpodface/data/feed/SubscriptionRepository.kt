@@ -45,6 +45,18 @@ class SubscriptionRepository @Inject constructor(
         val url = feedUrl.trim()
         val existing = podcastDao.getByFeedUrl(url)
         val id = existing?.id ?: insertPlaceholder(url, hint, authUser, authPassword)
+        // New credentials for a feed we already know (e.g. it was first previewed publicly):
+        // store them and fetch again with them.
+        val newCredentials = existing != null && !authUser.isNullOrEmpty() &&
+            (authUser != existing.authUser || authPassword != existing.authPassword)
+        if (newCredentials) {
+            podcastDao.update(existing!!.copy(authUser = authUser, authPassword = authPassword))
+            return when (val r = feedRepository.refresh(id, force = true)) {
+                is RefreshResult.Failed -> OpenResult.Failed(r.message)
+                is RefreshResult.Gone -> OpenResult.Failed("This feed no longer exists")
+                else -> OpenResult.Ok(id)
+            }
+        }
         if (existing?.lastRefreshAt != null) return OpenResult.Ok(id)
 
         return when (val r = feedRepository.refresh(id)) {
