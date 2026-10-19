@@ -1,0 +1,491 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:podcast="https://podcastindex.org/namespace/1.0" xmlns:psc="http://podlove.org/simple-chapters">
+  <channel>
+    <title>The Changelog: Software Development, Open Source</title>
+    <copyright>All rights reserved</copyright>
+    <link>https://changelog.com/podcast</link>
+    <atom:link type="application/rss+xml" rel="self" href="https://changelog.com/podcast/feed"/>
+    <atom:link type="text/html" rel="alternate" href="https://changelog.com/podcast"/>
+    <language>en-us</language>
+    <description>Software&apos;s best weekly news brief, deep technical interviews &amp; talk show.</description>
+    <itunes:summary>Software&apos;s best weekly news brief, deep technical interviews &amp; talk show.</itunes:summary>
+    <itunes:explicit>false</itunes:explicit>
+    <itunes:image href="https://cdn.changelog.com/static/images/podcasts/podcast-original-f16d0363067166f241d080ee2e2d4a28.png"/>
+    <itunes:author>Changelog Media</itunes:author>
+    <itunes:owner>
+      <itunes:name>Changelog Media</itunes:name>
+      <itunes:email>editors@changelog.com</itunes:email>
+    </itunes:owner>
+    <itunes:keywords>changelog, open source, software, development, code, programming, hacker, change log, software engineering</itunes:keywords>
+    <itunes:category text="Technology"/>
+    <podcast:funding url="https://changelog.com/++">Support our work by joining Changelog++</podcast:funding>
+    <podcast:person role="host" img="https://cdn.changelog.com/uploads/avatars/people/Qo/avatar_large.jpg?v=63760280419" href="https://changelog.com/person/adamstac">Adam Stacoviak</podcast:person>
+<item>
+      <title>From zero to NanoClaw (Interview)</title>
+      <guid isPermaLink="false">changelog.com/1/2834</guid>
+      <link>https://changelog.com/podcast/686</link>
+      <pubDate>Fri, 09 Oct 2026 19:00:00 +0000</pubDate>
+      <enclosure type="audio/mpeg" length="234654580" url="https://op3.dev/e/https://pscrb.fm/rss/p/https://cdn.changelog.com/uploads/podcast/686/the-changelog-686.mp3"/>
+      <description>Gavriel Cohen, creator of NanoClaw and co-founder of NanoCo, joins Adam to explain how a 40-hour weekend project became a viral open source hit and the foundation of an enterprise AI company. Gavriel describes the security concerns that led him to build a small, container-isolated alternative to OpenClaw, why he released it under the MIT license, and why the project&apos;s community and credibility are more valuable than keeping its code private.
+
+They explore the shift from writing code to architecting the environments in which agents work, NanoClaw&apos;s &quot;skills over features&quot; approach, the approval and governance layers required inside large companies, and a future where every worker manages agents without surrendering human judgment. They close with the technical simplicity behind NanoClaw, containers, TypeScript, SQLite, and a two-database design, and Adam&apos;s case for durable Agent Flow artifacts that keep organizational context from disappearing into chat.</description>
+      <itunes:episodeType>full</itunes:episodeType>
+      <itunes:image href="https://cdn.changelog.com/uploads/covers/changelog-interviews-original.png?v=63848368174"/>
+      <itunes:duration>2:42:51</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+      <podcast:person role="host" img="https://cdn.changelog.com/uploads/avatars/people/Qo/avatar_large.jpg?v=63760280419" href="https://changelog.com/person/adamstac">Adam Stacoviak</podcast:person>
+      <podcast:person role="guest" img="https://cdn.changelog.com/uploads/avatars/people/5OEbY/avatar_large.jpg?v=63958808786" href="https://twitter.com/Gavriel_Cohen">Gavriel Cohen</podcast:person>
+      <podcast:chapters type="application/json+chapters" url="https://changelog.com/podcast/686/chapters"/>
+      <psc:chapters version="1.1" xmlns="http://podlove.org/simple-chapters">
+        <psc:chapter start="0" title="Changelog time!"/>
+        <psc:chapter start="77" title="Sponsor: Coder.com" href="https://coder.com/"/>
+        <psc:chapter start="264" title="Start the show!"/>
+        <psc:chapter start="650" title="From developer-manager to agent architect"/>
+        <psc:chapter start="1143" title="The 40-hour weekend that launched NanoClaw"/>
+        <psc:chapter start="1528" title="Giving away the crown jewels under MIT"/>
+        <psc:chapter start="1980" title="Turning open source trust into a business"/>
+        <psc:chapter start="2393" title="Building an enterprise agent factory"/>
+        <psc:chapter start="2640" title="Skills, recipes, and maintainable forks"/>
+        <psc:chapter start="2807" title="Sponsor: WorkOS" href="https://workos.com"/>
+        <psc:chapter start="2942" title="Agents at home and work"/>
+        <psc:chapter start="3389" title="Context sharing and approval gates"/>
+        <psc:chapter start="3772" title="The security onion"/>
+        <psc:chapter start="4119" title="Designing the human-agent workflow"/>
+        <psc:chapter start="4567" title="Keeping humans at the center"/>
+        <psc:chapter start="4831" title="When agents become business-critical"/>
+        <psc:chapter start="5428" title="Open source core, enterprise control plane"/>
+        <psc:chapter start="5755" title="Keeping coding agents on the path"/>
+        <psc:chapter start="6145" title="Contribute skills, not code"/>
+        <psc:chapter start="6280" title="Sponsor: Buildkite" href="https://buildkite.com/"/>
+        <psc:chapter start="6448" title="Remixing NanoClaw into new businesses"/>
+        <psc:chapter start="7003" title="A partner ecosystem for vertical agents"/>
+        <psc:chapter start="7223" title="Docker, Apple containers, and isolation"/>
+        <psc:chapter start="7651" title="The many flavors of personal agents"/>
+        <psc:chapter start="8053" title="The Linux of agents"/>
+        <psc:chapter start="8416" title="SQLite, WAL, and Turso"/>
+        <psc:chapter start="8739" title="Agent comments and Agent Flow"/>
+        <psc:chapter start="9130" title="Durable context beyond chat"/>
+        <psc:chapter start="9544" title="Wrapping up"/>
+        <psc:chapter start="9662" title="Closing thoughts and stuff"/>
+      </psc:chapters>
+      <content:encoded><![CDATA[<p>Gavriel Cohen, creator of NanoClaw and co-founder of NanoCo, joins Adam to explain how a 40-hour weekend project became a viral open source hit and the foundation of an enterprise AI company. Gavriel describes the security concerns that led him to build a small, container-isolated alternative to OpenClaw, why he released it under the MIT license, and why the project’s community and credibility are more valuable than keeping its code private.</p>
+<p>They explore the shift from writing code to architecting the environments in which agents work, NanoClaw’s “skills over features” approach, the approval and governance layers required inside large companies, and a future where every worker manages agents without surrendering human judgment. They close with the technical simplicity behind NanoClaw, containers, TypeScript, SQLite, and a two-database design, and Adam’s case for durable Agent Flow artifacts that keep organizational context from disappearing into chat.</p>
+<p><a href="https://changelog.zulipchat.com/#narrow/stream/456187-interviews">Join the discussion</a></p><p><a href="https://changelog.com/++" rel="payment">Changelog++</a> members save 9 minutes on this episode because they made the ads disappear. Join today!</p><p>Sponsors:</p><p><ul><li><a href="https://coder.com/">Coder.com</a> – Secure environments where devs and agents work in parallel. Open by design. Secure by default.
+</li>
+<li><a href="https://workos.com">WorkOS</a> – Auth for CLI with AuthKit from WorkOS — Bring secure browser-based login to your terminal apps using the OAuth Device Flow, with the same polished AuthKit experience plus SSO, MFA, and passkeys. Learn more at <a href="https://workos.com/">WorkOS.com</a> and <a href="https://www.authkit.com">AuthKit.com</a>
+</li>
+<li><a href="https://buildkite.com/">Buildkite</a> – You deserve better CI. Buildkite is engineered for frontier scale and trusted by the teams setting the pace.
+</li>
+<li><a href="https://fly.io/">Fly.io</a> – <strong>The home of Changelog.com</strong> — Deploy your apps close to your users — global Anycast load-balancing, zero-configuration private networking, hardware isolation, and instant WireGuard VPN connections. Push-button deployments that scale to thousands of instances. <a href="https://fly.io/speedrun/">Check out the speedrun</a> to get started in minutes.
+</li>
+</ul></p><p>Featuring:</p><ul><li>Gavriel Cohen &ndash; <a href="https://www.linkedin.com/in/gavrielco" rel="external ugc">LinkedIn</a>, <a href="https://x.com/Gavriel_Cohen" rel="external ugc">X</a></li><li>Adam Stacoviak &ndash; <a href="https://adamstacoviak.com/" rel="external ugc">Website</a>, <a href="https://github.com/adamstac" rel="external ugc">GitHub</a>, <a href="https://www.linkedin.com/in/adamstacoviak" rel="external ugc">LinkedIn</a>, <a href="https://changelog.social/@adam" rel="external ugc">Mastodon</a>, <a href="https://x.com/adamstac" rel="external ugc">X</a></li></ul></p><p>Show Notes:</p><p><h4>NanoClaw and NanoCo</h4>
+<ul>
+<li><a href="https://nanoclaw.dev/">NanoClaw</a></li>
+<li><a href="https://github.com/nanocoai/nanoclaw">NanoClaw on GitHub</a></li>
+<li><a href="https://github.com/nanocoai/nanoclaw#philosophy">NanoClaw design philosophy and README</a></li>
+<li><a href="https://github.com/nanocoai/nanoclaw/blob/main/docs/customizing.md">NanoClaw customization with skills and recipes</a></li>
+<li><a href="https://github.com/nanocoai/nanoclaw/blob/main/docs/db-session.md">NanoClaw v2 two-database session design</a></li>
+<li><a href="https://nanoco.ai/">NanoCo</a></li>
+</ul>
+<h4>Agent projects and models</h4>
+<ul>
+<li><a href="https://openclaw.ai/">OpenClaw</a></li>
+<li><a href="https://github.com/openclaw/openclaw">OpenClaw on GitHub</a></li>
+<li><a href="https://github.com/NousResearch/hermes-agent">Hermes Agent</a></li>
+<li><a href="https://www.anthropic.com/claude/fable">Claude Fable 5</a></li>
+</ul>
+<h4>Containers and databases</h4>
+<ul>
+<li><a href="https://github.com/apple/container">Apple container</a></li>
+<li><a href="https://docs.docker.com/ai/sandboxes/">Docker Sandboxes</a></li>
+<li><a href="https://sqlite.org/wal.html">SQLite write-ahead logging</a></li>
+<li><a href="https://turso.tech/">Turso</a></li>
+<li><a href="https://github.com/tursodatabase/libsql">libSQL</a></li>
+</ul>
+</p><p>Something missing or broken? <a href="https://github.com/thechangelog/show-notes/blob/master/podcast/the-changelog-686.md">PRs welcome!</a></p>]]></content:encoded>
+    </item>
+<item>
+      <title>Forking Cal.com to closed source (Interview)</title>
+      <guid isPermaLink="false">changelog.com/1/2836</guid>
+      <link>https://changelog.com/podcast/685</link>
+      <pubDate>Thu, 03 Sep 2026 20:00:00 +0000</pubDate>
+      <enclosure type="audio/mpeg" length="165091080" url="https://op3.dev/e/https://pscrb.fm/rss/p/https://cdn.changelog.com/uploads/podcast/685/the-changelog-685.mp3"/>
+      <description>This week I&apos;m joined by Peer Richelsen, co-founder of Cal.com. What if the majority of open source repositories are already compromised and we just don&apos;t know it yet? That&apos;s the theory Peer brings to the table this week. We dig into how AI has flattened the knowledge graph to the point that a 16-year-old can vibe hack a power station just as easily as their mom can vibe code an iOS app, why the reporting culture that has kept open source safe all these years is collapsing under AI generated noise, Cal.com&apos;s move to fork its own codebase and take the sensitive parts private, and the eye opening reality that shipping &quot;$1 of AI tokens for pennies on the dollar&quot; is now a common startup business model.</description>
+      <itunes:episodeType>full</itunes:episodeType>
+      <itunes:image href="https://cdn.changelog.com/uploads/covers/changelog-interviews-original.png?v=63848368174"/>
+      <itunes:duration>1:54:32</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+      <podcast:person role="host" img="https://cdn.changelog.com/uploads/avatars/people/Qo/avatar_large.jpg?v=63760280419" href="https://changelog.com/person/adamstac">Adam Stacoviak</podcast:person>
+      <podcast:person role="guest" img="https://cdn.changelog.com/uploads/avatars/people/0PXPe/avatar_large.jpg?v=63955690029" href="https://changelog.com/person/peer">Peer Richelsen</podcast:person>
+      <podcast:chapters type="application/json+chapters" url="https://changelog.com/podcast/685/chapters"/>
+      <psc:chapters version="1.1" xmlns="http://podlove.org/simple-chapters">
+        <psc:chapter start="0" title="It's The Changelog!"/>
+        <psc:chapter start="83" title="Sponsor: Coder.com" href="https://coder.com/"/>
+        <psc:chapter start="270" title="It's about time"/>
+        <psc:chapter start="421" title="AI reshuffles the startup playbook"/>
+        <psc:chapter start="795" title="Slop is overwhelming maintainers"/>
+        <psc:chapter start="1062" title="The security pendulum swings back"/>
+        <psc:chapter start="1538" title="Most open source repos are compromised"/>
+        <psc:chapter start="1841" title="Commercial open source as a target"/>
+        <psc:chapter start="2176" title="Sponsor: Buildkite" href="https://buildkite.com/"/>
+        <psc:chapter start="2343" title="Forking Cal.com's code private"/>
+        <psc:chapter start="2770" title="Other COSS companies struggling"/>
+        <psc:chapter start="3131" title="Prescription: go private, patch vulnerabilities"/>
+        <psc:chapter start="3272" title="Is GitHub at risk?"/>
+        <psc:chapter start="3615" title="Sponsor: WorkOS" href="https://workos.com"/>
+        <psc:chapter start="3750" title="Mitchell Hashimoto's GitHub fix"/>
+        <psc:chapter start="3902" title="The AI coding landscape"/>
+        <psc:chapter start="4267" title="The autonomous agent future"/>
+        <psc:chapter start="4561" title="Cal.com's growth story"/>
+        <psc:chapter start="4674" title="Burning money to grow"/>
+        <psc:chapter start="5149" title="Growing SaaS without AI"/>
+        <psc:chapter start="5281" title="The reschedule UX problem"/>
+        <psc:chapter start="5546" title="Racing toward 10 million ARR"/>
+        <psc:chapter start="6053" title="Closed source and the tldraw license"/>
+        <psc:chapter start="6515" title="Open source isn't dead, it's changing"/>
+        <psc:chapter start="6695" title="Wrapping up"/>
+        <psc:chapter start="6763" title="Closing thoughts and stuff"/>
+      </psc:chapters>
+      <podcast:socialInteract protocol="activitypub" uri="https://changelog.social/@changelog/117209400941424910"/>
+      <content:encoded><![CDATA[<p>This week I’m joined by Peer Richelsen, co-founder of Cal.com. What if the majority of open source repositories are already compromised and we just don’t know it yet? That’s the theory Peer brings to the table this week. We dig into how AI has flattened the knowledge graph to the point that a 16-year-old can vibe hack a power station just as easily as their mom can vibe code an iOS app, why the reporting culture that has kept open source safe all these years is collapsing under AI generated noise, Cal.com’s move to fork its own codebase and take the sensitive parts private, and the eye opening reality that shipping “$1 of AI tokens for pennies on the dollar” is now a common startup business model.</p>
+<p><a href="https://changelog.zulipchat.com/#narrow/stream/456187-interviews">Join the discussion</a></p><p><a href="https://changelog.com/++" rel="payment">Changelog++</a> members save 10 minutes on this episode because they made the ads disappear. Join today!</p><p>Sponsors:</p><p><ul><li><a href="https://coder.com/">Coder.com</a> – Secure environments where devs and agents work in parallel. Open by design. Secure by default.
+</li>
+<li><a href="https://buildkite.com/">Buildkite</a> – You deserve better CI. Buildkite is engineered for frontier scale and trusted by the teams setting the pace.
+</li>
+<li><a href="https://workos.com">WorkOS</a> – Auth for CLI with AuthKit from WorkOS — Bring secure browser-based login to your terminal apps using the OAuth Device Flow, with the same polished AuthKit experience plus SSO, MFA, and passkeys. Learn more at <a href="https://workos.com/">WorkOS.com</a> and <a href="https://www.authkit.com">AuthKit.com</a>
+</li>
+<li><a href="https://fly.io/">Fly.io</a> – <strong>The home of Changelog.com</strong> — Deploy your apps close to your users — global Anycast load-balancing, zero-configuration private networking, hardware isolation, and instant WireGuard VPN connections. Push-button deployments that scale to thousands of instances. <a href="https://fly.io/speedrun/">Check out the speedrun</a> to get started in minutes.
+</li>
+</ul></p><p>Featuring:</p><ul><li>Peer Richelsen &ndash; <a href="https://cal.com/peer" rel="external ugc">Website</a>, <a href="https://github.com/PeerRich" rel="external ugc">GitHub</a>, <a href="https://www.linkedin.com/in/peer-richelsen-221233138" rel="external ugc">LinkedIn</a>, <a href="https://x.com/peer_rich" rel="external ugc">X</a></li><li>Adam Stacoviak &ndash; <a href="https://adamstacoviak.com/" rel="external ugc">Website</a>, <a href="https://github.com/adamstac" rel="external ugc">GitHub</a>, <a href="https://www.linkedin.com/in/adamstacoviak" rel="external ugc">LinkedIn</a>, <a href="https://changelog.social/@adam" rel="external ugc">Mastodon</a>, <a href="https://x.com/adamstac" rel="external ugc">X</a></li></ul></p><p>Show Notes:</p><p><p>Editorial disclosure: Adam states in the episode that he is a small seed investor in Cal.com.</p>
+<h4>Cal.com and Cal.diy</h4>
+<ul>
+<li><a href="https://cal.com/blog/cal-com-goes-closed-source-why">Cal.com is going closed source — here’s why</a></li>
+<li><a href="https://cal.com/blog/cal-diy-open-source-to-closed-source">Moving to closed-source: the technical changes</a></li>
+<li><a href="https://github.com/calcom/cal.diy">Cal.diy on GitHub</a></li>
+<li><a href="https://github.com/calcom/cal.diy/blob/main/CONTRIBUTING.md">Cal.diy contributing guide</a></li>
+<li><a href="https://cal.com/">Cal.com</a></li>
+</ul>
+<h4>Open source, agents, and contribution workflows</h4>
+<ul>
+<li><a href="https://swamp-club.com/">Swamp Club</a></li>
+<li><a href="https://openclaw.ai/">OpenClaw</a></li>
+<li><a href="https://mitchellh.com/writing/non-trivial-vibing">Mitchell Hashimoto: Vibing a Non-Trivial Ghostty Feature</a></li>
+<li><a href="https://github.blog/ai-and-ml/automate-repository-tasks-with-github-agentic-workflows/">GitHub Agentic Workflows</a></li>
+<li><a href="https://docs.github.com/en/copilot/how-tos/use-copilot-agents/cloud-agent/manage-rationale-confidence-approvals">GitHub issue-intent, rationale, confidence, and approvals</a></li>
+</ul>
+<h4>AI-assisted security</h4>
+<ul>
+<li><a href="https://blog.mozilla.org/en/firefox/hardening-firefox-anthropic-red-team/">Mozilla: Hardening Firefox with Anthropic’s Red Team</a></li>
+<li><a href="https://blog.mozilla.org/en/firefox/ai-security-zero-day-vulnerabilities/">Mozilla: The zero-days are numbered</a></li>
+<li><a href="https://www.anthropic.com/news/mozilla-firefox-security">Anthropic and Mozilla’s Firefox security collaboration</a></li>
+<li><a href="https://nextjs.org/blog">Next.js security advisories</a></li>
+<li><a href="https://github.com/BerriAI/litellm/issues/24512">LiteLLM issue: malicious package and credential stealer</a></li>
+</ul>
+</p><p>Something missing or broken? <a href="https://github.com/thechangelog/show-notes/blob/master/podcast/the-changelog-685.md">PRs welcome!</a></p>]]></content:encoded>
+    </item>
+<item>
+      <title>Postgres at PlanetScale (Interview)</title>
+      <guid isPermaLink="false">changelog.com/1/2831</guid>
+      <link>https://changelog.com/podcast/684</link>
+      <pubDate>Tue, 25 Aug 2026 19:00:00 +0000</pubDate>
+      <enclosure type="audio/mpeg" length="147459633" url="https://op3.dev/e/https://pscrb.fm/rss/p/https://cdn.changelog.com/uploads/podcast/684/the-changelog-684.mp3"/>
+      <description>Sam Lambert is back after 4 years and he does not hold back! We cover $5 PlanetScale Postgres, the Neki &quot;do-over&quot; of Vitess, agents shipping schema changes through deploy requests, rolling back a 500TB table in seconds, and the very real question of whether to open source any of it. Plus: why he thinks the sleeping, lazy giants should be broken up.</description>
+      <itunes:episodeType>full</itunes:episodeType>
+      <itunes:image href="https://cdn.changelog.com/uploads/covers/changelog-interviews-original.png?v=63848368174"/>
+      <itunes:duration>1:42:17</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+      <podcast:person role="host" img="https://cdn.changelog.com/uploads/avatars/people/Qo/avatar_large.jpg?v=63760280419" href="https://changelog.com/person/adamstac">Adam Stacoviak</podcast:person>
+      <podcast:person role="guest" img="https://cdn.changelog.com/uploads/avatars/people/m1aol/avatar_large.png?v=63954950206" href="https://changelog.com/person/isamlambert">Sam Lambert</podcast:person>
+      <podcast:chapters type="application/json+chapters" url="https://changelog.com/podcast/684/chapters"/>
+      <psc:chapters version="1.1" xmlns="http://podlove.org/simple-chapters">
+        <psc:chapter start="0" title="It's The Changelog!"/>
+        <psc:chapter start="79" title="Sponsor: Buildkite" href="https://buildkite.com/"/>
+        <psc:chapter start="243" title="Sam is an old friend"/>
+        <psc:chapter start="791" title="Agents optimizing databases via MCP"/>
+        <psc:chapter start="1098" title="Deploy requests and safety gates"/>
+        <psc:chapter start="1191" title="Neki: Sharded Postgres arrives"/>
+        <psc:chapter start="1467" title="Whether to open source Neki"/>
+        <psc:chapter start="1766" title="Capitalism and breaking up big tech"/>
+        <psc:chapter start="2018" title="Sponsor: Coder.com" href="https://coder.com/"/>
+        <psc:chapter start="2204" title="Open source the crown jewels?"/>
+        <psc:chapter start="2301" title="Moving fast and making mistakes"/>
+        <psc:chapter start="2768" title="It's been a year for Adam (buying out a partner)"/>
+        <psc:chapter start="3059" title="Competing with Amazon's scale"/>
+        <psc:chapter start="3200" title="Bare-metal on the hyperscalers"/>
+        <psc:chapter start="3633" title="Sponsor: WorkOS" href="https://workos.com"/>
+        <psc:chapter start="3768" title="Silicon Valley and stolen secrets"/>
+        <psc:chapter start="4066" title="X/Twitter as a lead source"/>
+        <psc:chapter start="4531" title="Out-engineering with the Postgres benchmark"/>
+        <psc:chapter start="4821" title="The minimalist website story"/>
+        <psc:chapter start="4943" title="Supabase, multigres, and competition"/>
+        <psc:chapter start="5339" title="Building Neki with AI"/>
+        <psc:chapter start="5743" title="MySQL versus Postgres"/>
+        <psc:chapter start="5841" title="Grateful to be back"/>
+        <psc:chapter start="6031" title="So much glazing"/>
+        <psc:chapter start="6048" title="Closing thoughts and stuff"/>
+      </psc:chapters>
+      <podcast:socialInteract protocol="activitypub" uri="https://changelog.social/@changelog/117158369461731238"/>
+      <content:encoded><![CDATA[<p>Sam Lambert is back after 4 years and he does not hold back! We cover $5 PlanetScale Postgres, the Neki “do-over” of Vitess, agents shipping schema changes through deploy requests, rolling back a 500TB table in seconds, and the very real question of whether to open source any of it. Plus: why he thinks the sleeping, lazy giants should be broken up.</p>
+<p><a href="https://changelog.zulipchat.com/#narrow/stream/456187-interviews">Join the discussion</a></p><p><a href="https://changelog.com/++" rel="payment">Changelog++</a> members save 9 minutes on this episode because they made the ads disappear. Join today!</p><p>Sponsors:</p><p><ul><li><a href="https://buildkite.com/">Buildkite</a> – You deserve better CI. Buildkite is engineered for frontier scale and trusted by the teams setting the pace.
+</li>
+<li><a href="https://workos.com">WorkOS</a> – Auth for CLI with AuthKit from WorkOS — Bring secure browser-based login to your terminal apps using the OAuth Device Flow, with the same polished AuthKit experience plus SSO, MFA, and passkeys. Learn more at <a href="https://workos.com/">WorkOS.com</a> and <a href="https://www.authkit.com">AuthKit.com</a>
+</li>
+<li><a href="https://coder.com/">Coder.com</a> – Secure environments where devs and agents work in parallel. Open by design. Secure by default.
+</li>
+<li><a href="https://fly.io/">Fly.io</a> – <strong>The home of Changelog.com</strong> — Deploy your apps close to your users — global Anycast load-balancing, zero-configuration private networking, hardware isolation, and instant WireGuard VPN connections. Push-button deployments that scale to thousands of instances. <a href="https://fly.io/speedrun/">Check out the speedrun</a> to get started in minutes.
+</li>
+</ul></p><p>Featuring:</p><ul><li>Sam Lambert &ndash; <a href="https://planetscale.com" rel="external ugc">Website</a>, <a href="https://github.com/samlambert" rel="external ugc">GitHub</a>, <a href="https://www.linkedin.com/in/isamlambert" rel="external ugc">LinkedIn</a>, <a href="https://x.com/isamlambert" rel="external ugc">X</a></li><li>Adam Stacoviak &ndash; <a href="https://adamstacoviak.com/" rel="external ugc">Website</a>, <a href="https://github.com/adamstac" rel="external ugc">GitHub</a>, <a href="https://www.linkedin.com/in/adamstacoviak" rel="external ugc">LinkedIn</a>, <a href="https://changelog.social/@adam" rel="external ugc">Mastodon</a>, <a href="https://x.com/adamstac" rel="external ugc">X</a></li></ul></p><p>Show Notes:</p><p><h4>PlanetScale products and features</h4>
+<ul>
+<li><a href="https://planetscale.com/postgres">PlanetScale Postgres</a></li>
+<li><a href="https://planetscale.com/docs/metal">PlanetScale Metal</a></li>
+<li><a href="https://planetscale.com/neki">Neki</a></li>
+<li><a href="https://vitess.io/">Vitess</a></li>
+<li><a href="https://planetscale.com/docs/postgres/branching">Database branching</a></li>
+<li><a href="https://planetscale.com/docs/vitess/schema-changes">Non-blocking schema changes</a></li>
+<li><a href="https://planetscale.com/docs/vitess/schema-changes/deploy-requests">Deploy requests</a></li>
+<li><a href="https://planetscale.com/docs/vitess/schema-changes/deploy-requests#revert-a-schema-change">Schema reverts</a></li>
+<li><a href="https://planetscale.com/docs/postgres/traffic-control">Database Traffic Control</a></li>
+<li><a href="https://planetscale.com/docs/postgres/monitoring/query-insights">Query Insights</a></li>
+<li><a href="https://planetscale.com/docs/connect/mcp">PlanetScale MCP server</a></li>
+<li><a href="https://github.com/planetscale/skills">PlanetScale Skills</a></li>
+<li><a href="https://planetscale.com/blog/benchmarking-postgres">Benchmarking Postgres</a></li>
+</ul>
+<h4>Databases and infrastructure</h4>
+<ul>
+<li><a href="https://www.postgresql.org/">PostgreSQL</a></li>
+<li><a href="https://www.mysql.com/">MySQL</a></li>
+<li><a href="https://nvmexpress.org/">NVM Express (NVMe)</a></li>
+<li><a href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/limitless.html">Amazon Aurora PostgreSQL Limitless Database</a></li>
+<li><a href="https://aws.amazon.com/">Amazon Web Services</a></li>
+<li><a href="https://cloud.google.com/">Google Cloud</a></li>
+</ul>
+<h4>Companies and tools</h4>
+<ul>
+<li><a href="https://cursor.com/">Cursor</a></li>
+<li><a href="https://www.ycombinator.com/">Y Combinator</a></li>
+<li><a href="https://kick.com/">Kick</a></li>
+<li><a href="https://squareup.com/us/en">Square</a></li>
+<li><a href="https://cash.app/">Cash App</a></li>
+<li><a href="https://github.com/">GitHub</a></li>
+<li><a href="https://pierre.computer/">Pierre</a></li>
+<li><a href="https://www.salesforce.com/?bc=HL">Salesforce</a></li>
+<li><a href="https://supabase.com/">Supabase</a></li>
+<li><a href="https://github.com/multigres/multigres">Multigres</a></li>
+</ul>
+<h4>Talks and prior episodes</h4>
+<ul>
+<li><a href="https://cursor.com/compile">Sam Lambert: Agents and Infrastructure — Cursor Compile 2026</a></li>
+<li><a href="https://changelog.com/founderstalk/85">Making the last database you’ll ever need — Founders Talk #85</a></li>
+<li><a href="https://changelog.com/podcast/651">Bringing Vitess to Postgres — Changelog Interviews #651</a></li>
+</ul>
+</p><p>Something missing or broken? <a href="https://github.com/thechangelog/show-notes/blob/master/podcast/the-changelog-684.md">PRs welcome!</a></p>]]></content:encoded>
+    </item>
+<item>
+      <title>Canary tokens and digital tripwires (Interview)</title>
+      <guid isPermaLink="false">changelog.com/1/2823</guid>
+      <link>https://changelog.com/podcast/683</link>
+      <pubDate>Tue, 21 Jul 2026 19:00:00 +0000</pubDate>
+      <enclosure type="audio/mpeg" length="182749707" url="https://op3.dev/e/https://pscrb.fm/rss/p/https://cdn.changelog.com/uploads/podcast/683/the-changelog-683.mp3"/>
+      <description>Haroon Meer is back! Haroon is the Founder of Thinkst, the ~50-person bootstrapped company behind Canary and Canarytokens — honeypots and tripwires you sprinkle inside your network and forget about until an attacker touches one. We talk about the AWS API key token attackers just can&apos;t resist trying, the real credit card token backed by an actual bank partnership, Breadcrumbs (their brand-new feature that leads intruders straight to your canaries), a live demo where a hardware Canary becomes a Synology NAS in one click, and how a company with zero outbound sales and no price increase in ten years quietly passed $22.5 million in ARR.</description>
+      <itunes:episodeType>full</itunes:episodeType>
+      <itunes:image href="https://cdn.changelog.com/uploads/covers/changelog-interviews-original.png?v=63848368174"/>
+      <itunes:duration>2:06:48</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+      <podcast:person role="host" img="https://cdn.changelog.com/uploads/avatars/people/Qo/avatar_large.jpg?v=63760280419" href="https://changelog.com/person/adamstac">Adam Stacoviak</podcast:person>
+      <podcast:person role="guest" img="https://cdn.changelog.com/uploads/avatars/people/0PmRk/avatar_large.jpg?v=63861888623" href="https://changelog.com/person/haroonmeer">Haroon Meer</podcast:person>
+      <podcast:chapters type="application/json+chapters" url="https://changelog.com/podcast/683/chapters"/>
+      <psc:chapters version="1.1" xmlns="http://podlove.org/simple-chapters">
+        <psc:chapter start="0" title="Welcome back Haroon!"/>
+        <psc:chapter start="130" title="Fifty people, zero outbound sales, 22.5M ARR"/>
+        <psc:chapter start="247" title="Honeypots inside the network, not research toys"/>
+        <psc:chapter start="427" title="The AWS API key attackers can't resist"/>
+        <psc:chapter start="560" title="Hosting Canarytokens free for the world"/>
+        <psc:chapter start="693" title="Ten years without a price increase"/>
+        <psc:chapter start="972" title="A Python shop and a self-hosted token server"/>
+        <psc:chapter start="1237" title="Real credit card as a tripwire"/>
+        <psc:chapter start="1373" title="Dragging attacks into molasses"/>
+        <psc:chapter start="1615" title="Demo: Synology NAS in one click (watch on YouTube)"/>
+        <psc:chapter start="2196" title="WireGuard tokens, QR codes, and dumpster divers"/>
+        <psc:chapter start="2447" title="Sponsor: Buildkite" href="https://buildkite.com/"/>
+        <psc:chapter start="2615" title="Securing the canaries themselves"/>
+        <psc:chapter start="2746" title="$7.5K to start, million-dollar customers"/>
+        <psc:chapter start="2940" title="Airport ads, padel, and quality swag"/>
+        <psc:chapter start="3290" title="Open Canary, the free little brother"/>
+        <psc:chapter start="3388" title="Self-hosting and sovereignty in the agent era"/>
+        <psc:chapter start="3727" title="Divergent codebases and DNS-tunneled updates"/>
+        <psc:chapter start="4103" title="A first acquisition and open source PRs"/>
+        <psc:chapter start="4402" title="Breadcrumbs lead attackers to canaries"/>
+        <psc:chapter start="4754" title="Tokens in binaries, catching reverse engineers!!"/>
+        <psc:chapter start="4942" title="Sponsor: WorkOS" href="https://workos.com"/>
+        <psc:chapter start="5078" title="Why Python still pays the bills"/>
+        <psc:chapter start="5619" title="Don't overthink it. Just deploy."/>
+        <psc:chapter start="6093" title="GPL, clean rooms, and playing with other vendors"/>
+        <psc:chapter start="6275" title="Growth without jet fuel"/>
+        <psc:chapter start="6665" title="canary.love, law enforcement, NVIDIA, and Grafana"/>
+        <psc:chapter start="7366" title="Wrapping up...canary.tools and canarytokens.org"/>
+      </psc:chapters>
+      <podcast:socialInteract protocol="activitypub" uri="https://changelog.social/@changelog/116960448053871678"/>
+      <content:encoded><![CDATA[<p>Haroon Meer is back! Haroon is the Founder of Thinkst, the ~50-person bootstrapped company behind Canary and Canarytokens — honeypots and tripwires you sprinkle inside your network and forget about until an attacker touches one. We talk about the AWS API key token attackers just can’t resist trying, the real credit card token backed by an actual bank partnership, Breadcrumbs (their brand-new feature that leads intruders straight to your canaries), a live demo where a hardware Canary becomes a Synology NAS in one click, and how a company with zero outbound sales and no price increase in ten years quietly passed $22.5 million in ARR.</p>
+<p><a href="https://changelog.zulipchat.com/#narrow/stream/456187-interviews">Join the discussion</a></p><p><a href="https://changelog.com/++" rel="payment">Changelog++</a> members get a bonus 4 minutes at the end of this episode and zero ads. Join today!</p><p>Sponsors:</p><p><ul><li><a href="https://buildkite.com/">Buildkite</a> – You deserve better CI. Buildkite is engineered for frontier scale and trusted by the teams setting the pace.
+</li>
+<li><a href="https://workos.com">WorkOS</a> – Auth for CLI with AuthKit from WorkOS — Bring secure browser-based login to your terminal apps using the OAuth Device Flow, with the same polished AuthKit experience plus SSO, MFA, and passkeys. Learn more at <a href="https://workos.com/">WorkOS.com</a> and <a href="https://www.authkit.com">AuthKit.com</a>
+</li>
+</ul></p><p>Featuring:</p><ul><li>Haroon Meer &ndash; <a href="https://thinkst.com" rel="external ugc">Website</a>, <a href="https://www.linkedin.com/in/haroonmeer" rel="external ugc">LinkedIn</a>, <a href="https://x.com/haroonmeer" rel="external ugc">X</a></li><li>Adam Stacoviak &ndash; <a href="https://adamstacoviak.com/" rel="external ugc">Website</a>, <a href="https://github.com/adamstac" rel="external ugc">GitHub</a>, <a href="https://www.linkedin.com/in/adamstacoviak" rel="external ugc">LinkedIn</a>, <a href="https://changelog.social/@adam" rel="external ugc">Mastodon</a>, <a href="https://x.com/adamstac" rel="external ugc">X</a></li></ul></p><p>Show Notes:</p><p><ul>
+<li><a href="https://thinkst.com">Thinkst</a></li>
+<li><a href="https://canary.tools">Thinkst Canary</a></li>
+<li><a href="https://canary.tools/security">Thinkst Canary Security</a></li>
+<li><a href="https://canarytokens.org/nest/">Canary Tokens</a></li>
+<li><a href="https://docs.canarytokens.org/guide/">Canary Tokens Docs</a></li>
+<li><a href="https://github.com/thinkst/canarytokens">Canary Tokens on GitHub</a></li>
+<li><a href="https://github.com/thinkst/opencanary">OpenCanary on GitHub</a></li>
+<li><a href="https://opencanary.readthedocs.io/">OpenCanary Docs</a></li>
+<li><a href="https://techcrunch.com/2025/05/29/a-decade-in-bootstrapped-thinkst-canary-reaches-20m-in-arr-without-vc-funding/">TechCrunch: A decade in, bootstrapped Thinkst Canary reaches $20M in ARR without VC funding</a></li>
+<li><a href="https://grafana.com/blog/canary-tokens-learn-all-about-the-unsung-heroes-of-security-at-grafana-labs/">Grafana Labs: Canary Tokens, the unsung heroes of security</a></li>
+<li><a href="https://canary.tools/love">Canary Love</a></li>
+</ul>
+</p><p>Something missing or broken? <a href="https://github.com/thechangelog/show-notes/blob/master/podcast/the-changelog-683.md">PRs welcome!</a></p>]]></content:encoded>
+    </item>
+<item>
+      <title>From open source hits to OpenAI (Interview)</title>
+      <guid isPermaLink="false">changelog.com/1/2829</guid>
+      <link>https://changelog.com/podcast/682</link>
+      <pubDate>Fri, 05 Jun 2026 19:00:00 +0000</pubDate>
+      <enclosure type="audio/mpeg" length="153465091" url="https://op3.dev/e/https://pscrb.fm/rss/p/https://cdn.changelog.com/uploads/podcast/682/the-changelog-682.mp3"/>
+      <description>This week I&apos;m talking with Max Stoiber, currently working on ChatGPT&apos;s plugin directory and app platform at OpenAI. We discuss the hundreds of open source projects nobody remembers alongside the big ones like react-boilerplate and styled-components, how Spectrum became part of GitHub and eventually helped shape GitHub Discussions, the founder growth that came from building Stellate, the GraphQL cache that turned into a dual acquisition by Shopify and The Guild, and why ChatGPT apps feel like a new surface for software.</description>
+      <itunes:episodeType>full</itunes:episodeType>
+      <itunes:image href="https://cdn.changelog.com/uploads/covers/changelog-interviews-original.png?v=63848368174"/>
+      <itunes:duration>1:46:28</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+      <podcast:person role="host" img="https://cdn.changelog.com/uploads/avatars/people/Qo/avatar_large.jpg?v=63760280419" href="https://changelog.com/person/adamstac">Adam Stacoviak</podcast:person>
+      <podcast:person role="guest" img="https://secure.gravatar.com/avatar/48619fc17b3ab68472aebd56c0106278.jpg?s=600&amp;d=mm" href="https://changelog.com/person/mxstbr">Max Stoiber</podcast:person>
+      <podcast:chapters type="application/json+chapters" url="https://changelog.com/podcast/682/chapters"/>
+      <psc:chapters version="1.1" xmlns="http://podlove.org/simple-chapters">
+        <psc:chapter start="0" title="This week on The Changelog"/>
+        <psc:chapter start="52" title="Sponsor: Coder.com" href="https://coder.com/"/>
+        <psc:chapter start="249" title="Start the show!"/>
+        <psc:chapter start="348" title="Max's drive to make things to solve his own problems"/>
+        <psc:chapter start="494" title="Why for free instead of charging?"/>
+        <psc:chapter start="614" title="Does it still make sense to share work for free in the current world?"/>
+        <psc:chapter start="868" title="Even if the value isn't in writing code, it's still worth it to share things with the world"/>
+        <psc:chapter start="885" title="Building things is still hard work"/>
+        <psc:chapter start="1116" title="The history of Spectrum and Spec.fm"/>
+        <psc:chapter start="1389" title="Sponsor: WorkOS" href="https://workos.com"/>
+        <psc:chapter start="1572" title="How Max joined the Spectrum team"/>
+        <psc:chapter start="1864" title="Joining GitHub and the origins of GitHub Discussions"/>
+        <psc:chapter start="1985" title="Any regrets about the outcome of Spectrum and Github Discussions?"/>
+        <psc:chapter start="2193" title="Exploring the idea of buying Spectrum back"/>
+        <psc:chapter start="2325" title="Reflecting on the time spent working at GitHub"/>
+        <psc:chapter start="2408" title="What Max worked on after GitHub"/>
+        <psc:chapter start="2675" title="The challenges of building a good team"/>
+        <psc:chapter start="2978" title="Learning how to provide good critical feedback"/>
+        <psc:chapter start="3005" title="Using the COINS framework for feedback"/>
+        <psc:chapter start="3233" title="The benefits of providing better feedback"/>
+        <psc:chapter start="3360" title="Building Stellate"/>
+        <psc:chapter start="3800" title="Sponsor: Notion" href="http://notion.com/changelog"/>
+        <psc:chapter start="3903" title="Why Stellate's caching worked so well: Partial Query Caching deep dive"/>
+        <psc:chapter start="4057" title="Is GraphQL still popular?"/>
+        <psc:chapter start="4156" title="The danger of building a good product for a undersized market"/>
+        <psc:chapter start="4407" title="Managing a dual aquisition for Stellate"/>
+        <psc:chapter start="4794" title="Moving from Stellate to Shopify and discovering the right role"/>
+        <psc:chapter start="4985" title="Why Max chose to work on Shopify's Liquid Storefronts"/>
+        <psc:chapter start="5194" title="Why Max decided to join OpenAI"/>
+        <psc:chapter start="5372" title="What Max is working on at OpenAI"/>
+        <psc:chapter start="5627" title="MCP Apps deep dive (MCP server for UI)"/>
+        <psc:chapter start="5852" title="Are MCP Apps a potential replacement for building a website?"/>
+        <psc:chapter start="6165" title="Max's closing thoughts"/>
+        <psc:chapter start="6313" title="Closing thoughts and stuff"/>
+      </psc:chapters>
+      <podcast:socialInteract protocol="activitypub" uri="https://changelog.social/@changelog/116700083978892648"/>
+      <content:encoded><![CDATA[<p>This week I’m talking with Max Stoiber, currently working on ChatGPT’s plugin directory and app platform at OpenAI. We discuss the hundreds of open source projects nobody remembers alongside the big ones like react-boilerplate and styled-components, how Spectrum became part of GitHub and eventually helped shape GitHub Discussions, the founder growth that came from building Stellate, the GraphQL cache that turned into a dual acquisition by Shopify and The Guild, and why ChatGPT apps feel like a new surface for software.</p>
+<p><a href="https://changelog.zulipchat.com/#narrow/stream/456187-interviews">Join the discussion</a></p><p><a href="https://changelog.com/++" rel="payment">Changelog++</a> members save 9 minutes on this episode because they made the ads disappear. Join today!</p><p>Sponsors:</p><p><ul><li><a href="https://coder.com/">Coder.com</a> – Secure environments where devs and agents work in parallel. Open by design. Secure by default.
+</li>
+<li><a href="https://workos.com">WorkOS</a> – Auth for CLI with AuthKit from WorkOS — Bring secure browser-based login to your terminal apps using the OAuth Device Flow, with the same polished AuthKit experience plus SSO, MFA, and passkeys. Learn more at <a href="https://workos.com/">WorkOS.com</a> and <a href="https://www.authkit.com">AuthKit.com</a>
+</li>
+<li><a href="http://notion.com/changelog">Notion</a> – Custom Agents that automate the busywork so your team can focus on real work. Try them free at <a href="http://notion.com/changelog">notion.com/changelog</a>
+</li>
+<li><a href="https://fly.io/">Fly.io</a> – <strong>The home of Changelog.com</strong> — Deploy your apps close to your users — global Anycast load-balancing, zero-configuration private networking, hardware isolation, and instant WireGuard VPN connections. Push-button deployments that scale to thousands of instances. <a href="https://fly.io/speedrun/">Check out the speedrun</a> to get started in minutes.
+</li>
+</ul></p><p>Featuring:</p><ul><li>Max Stoiber &ndash; <a href="https://mxstbr.com/" rel="external ugc">Website</a>, <a href="https://github.com/mxstbr" rel="external ugc">GitHub</a>, <a href="https://x.com/mxstbr" rel="external ugc">X</a></li><li>Adam Stacoviak &ndash; <a href="https://adamstacoviak.com/" rel="external ugc">Website</a>, <a href="https://github.com/adamstac" rel="external ugc">GitHub</a>, <a href="https://www.linkedin.com/in/adamstacoviak" rel="external ugc">LinkedIn</a>, <a href="https://changelog.social/@adam" rel="external ugc">Mastodon</a>, <a href="https://x.com/adamstac" rel="external ugc">X</a></li></ul></p><p>Show Notes:</p><p><h4>Featured</h4>
+<ul>
+<li><a href="https://mxstbr.com/">Max Stoiber</a></li>
+<li><a href="https://github.com/mxstbr">Max Stoiber on GitHub</a></li>
+<li><a href="https://openai.com/">OpenAI</a></li>
+<li><a href="https://chatgpt.com/">ChatGPT</a></li>
+<li><a href="https://openai.com/index/developers-can-now-submit-apps-to-chatgpt/">Developers can now submit apps to ChatGPT</a></li>
+<li><a href="https://developers.openai.com/api/docs/guides/developer-mode">ChatGPT Developer mode</a></li>
+<li><a href="https://github.com/openai/openai-apps-sdk-examples">OpenAI Apps SDK examples</a></li>
+<li><a href="https://github.com/openai/apps-sdk-ui">OpenAI Apps SDK UI</a></li>
+<li><a href="https://modelcontextprotocol.io/">Model Context Protocol</a></li>
+</ul>
+<h4>Max’s open source and community path</h4>
+<ul>
+<li><a href="https://styled-components.com/">styled-components</a></li>
+<li><a href="https://github.com/styled-components/styled-components">styled-components on GitHub</a></li>
+<li><a href="https://github.com/react-boilerplate/react-boilerplate">react-boilerplate</a></li>
+<li><a href="https://mxstbr.com/oss">Max’s open source projects</a></li>
+<li><a href="https://spec.fm/">Spec.fm</a></li>
+<li><a href="https://www.packtpub.com/en-es/learning/tech-news/github-acquires-spectrum-a-community-centric-conversational-platform">GitHub acquires Spectrum</a></li>
+<li><a href="https://github.com/features/discussions">GitHub Discussions</a></li>
+<li><a href="https://slack.com/">Slack</a></li>
+<li><a href="https://circle.so/">Circle</a></li>
+</ul>
+<h4>GraphQL and Stellate</h4>
+<ul>
+<li><a href="https://stellate.co/">Stellate</a></li>
+<li><a href="https://stellate.co/blog/announcing-stellate">Announcing Stellate, the CDN for GraphQL APIs</a></li>
+<li><a href="https://stellate.co/blog/graphcdn-is-now-stellate">GraphCDN is now Stellate and we’ve raised $30M</a></li>
+<li><a href="https://the-guild.dev/graphql/hive/blog/stellate-acquisition">The Guild acquires Stellate</a></li>
+<li><a href="https://graphql.org/">GraphQL</a></li>
+<li><a href="https://the-guild.dev/graphql/hive">GraphQL Hive</a></li>
+<li><a href="https://the-guild.dev/graphql/yoga-server">GraphQL Yoga</a></li>
+<li><a href="https://graphql.org/swapi-graphql/">GraphiQL</a></li>
+<li><a href="https://firebase.google.com/">Firebase</a></li>
+<li><a href="https://vercel.com/">Vercel</a></li>
+<li><a href="https://rethinkdb.com/">RethinkDB</a></li>
+<li><a href="https://www.apollographql.com/docs/react/">Apollo Client</a></li>
+<li><a href="https://commerce.nearform.com/open-source/urql/docs/">urql</a></li>
+<li><a href="https://github.com/graphql/dataloader">DataLoader</a></li>
+</ul>
+<h4>Shopify and storefronts</h4>
+<ul>
+<li><a href="https://www.shopify.com/">Shopify</a></li>
+<li><a href="https://shopify.dev/docs/api/liquid/">Shopify Liquid reference</a></li>
+<li><a href="https://themes.shopify.com/">Shopify themes</a></li>
+<li><a href="https://changelog.shopify.com/posts/horizon-10-new-free-themes-by-shopify">Horizon: 10 new free themes by Shopify</a></li>
+<li><a href="https://shopify-horizon.mintlify.app/">Horizon documentation</a></li>
+<li><a href="https://www.shopify.com/news/winter-26-edition-agentic-storefronts">Shopify Agentic Storefronts</a></li>
+</ul>
+<h4>ChatGPT apps and MCP</h4>
+<ul>
+<li><a href="https://platform.openai.com/docs/mcp/">Building MCP servers for ChatGPT and API integrations</a></li>
+<li><a href="https://help.openai.com/en/articles/12515353-build-with-the-apps-sdk">Build with the Apps SDK</a></li>
+<li><a href="https://help.openai.com/en/articles/11487775-connectors-in-chatgpt">Apps in ChatGPT</a></li>
+<li><a href="https://www.mcp-framework.com/docs/apps/overview">MCP Apps overview</a></li>
+<li><a href="https://www.zillow.com/">Zillow</a></li>
+<li><a href="https://www.expedia.com/">Expedia</a></li>
+</ul>
+<h4>Leadership and founder references</h4>
+<ul>
+<li><a href="https://frameworkforest.com/coin/">COIN feedback framework</a></li>
+<li><a href="https://www.gatsbyjs.com/">Gatsby</a></li>
+<li><a href="https://github.com/">GitHub</a></li>
+<li><a href="https://the-guild.dev/">The Guild</a></li>
+<li><a href="https://shopify.engineering/">Shopify Engineering</a></li>
+</ul>
+<h4>Tools, platforms, and companies mentioned</h4>
+<ul>
+<li><a href="https://nodejs.org/">Node.js</a></li>
+<li><a href="https://www.typescriptlang.org/">TypeScript</a></li>
+<li><a href="https://bun.sh/">Bun</a></li>
+<li><a href="https://zed.dev/">Zed</a></li>
+<li><a href="https://ghostty.org/">Ghostty</a></li>
+<li><a href="https://fly.io/">Fly.io</a></li>
+<li><a href="https://getdx.com/">DX</a></li>
+<li><a href="https://incident.io/">Incident.io</a></li>
+<li><a href="https://clerk.com/">Clerk</a></li>
+<li><a href="https://www.raycast.com/">Raycast</a></li>
+</ul>
+</p><p>Something missing or broken? <a href="https://github.com/thechangelog/show-notes/blob/master/podcast/the-changelog-682.md">PRs welcome!</a></p>]]></content:encoded>
+    </item>
+  </channel>
+</rss>

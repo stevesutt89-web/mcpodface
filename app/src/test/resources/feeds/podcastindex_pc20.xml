@@ -1,0 +1,712 @@
+<rss xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:podcast="https://github.com/Podcastindex-org/podcast-namespace/blob/main/docs/1.0.md" version="2.0">
+  <channel>
+    <title>Podcasting 2.0</title>
+    <description>The Podcast Index presents Podcasting 2.0 - Upgrading Podcasting</description>
+    <link>http://podcastindex.org</link>
+    <docs>http://blogs.law.harvard.edu/tech/rss</docs>
+    <language>en</language>
+    <generator>Sovereign Feeds</generator>
+    <pubDate>Fri, 16 Oct 2026 19:43:21 +0000</pubDate>
+    <lastBuildDate>Fri, 16 Oct 2026 19:43:21 +0000</lastBuildDate>
+    <podcast:locked owner="adam@curry.com">yes</podcast:locked>
+    <podcast:funding url="https://paypal.me/podcastindex">Value 4 Value</podcast:funding>
+    <managingEditor>adam@curry.com (Adam Curry)</managingEditor>
+    <webMaster>adam@curry.com (Adam Curry)</webMaster>
+    <itunes:owner>
+      <itunes:email>adam@curry.com</itunes:email>
+      <itunes:name><![CDATA[Adam Curry & Dave Jones]]></itunes:name>
+    </itunes:owner>
+    <image>
+      <url>https://noagendaassets.com/enc/1684513486.722_pcifeedimage.png</url>
+      <link>http://podcastindex.org</link>
+      <title>Podcasting 2.0</title>
+      <description>The Podcast Index presents Podcasting 2.0 - Upgrading Podcasting</description>
+      <width>144</width>
+      <height>144</height>
+    </image>
+    <itunes:summary>The Podcast Index presents Podcasting 2.0 - Upgrading Podcasting</itunes:summary>
+    <itunes:author>Podcast Index LLC</itunes:author>
+    <itunes:image href="https://noagendaassets.com/enc/1684513486.722_pcifeedimage.png"/>
+    <itunes:explicit>no</itunes:explicit>
+    <itunes:keywords>podcasting,media,software</itunes:keywords>
+    <itunes:category text="News &amp; Politics"/>
+    <itunes:category text="Technology"/>
+    <podcast:value type="lightning" method="keysend" suggested="0.00000005000">
+      <podcast:valueRecipient name="Podcastindex.org" type="lnaddress" address="podcastindex@getalby.com" split="92"/>
+      <podcast:valueRecipient name="Dreb Scott (Chapters)" type="lnaddress" address="drebscott@getalby.com" split="5"/>
+      <podcast:valueRecipient name="Sovereign Feeds" address="035ad2c954e264004986da2d9499e1732e5175e1dcef2453c921c6cdcc3536e9d8" type="node" fee="true" split="5"/>
+      <podcast:valueRecipient name="Boostagram Monitor" type="lnaddress" address="adam@getalby.com" split="1"/>
+      <podcast:valueRecipient name="Stay Safe Sage" type="lnaddress" address="dave@getalby.com" split="1"/>
+      <podcast:valueRecipient name="Fountain Boost Bot" type="lnaddress" address="boostbot@fountain.fm" split="1"/>
+      <podcast:valueRecipient name="IPFSPodcasting.net" type="node" address="028eb5be336f7fdf2a4e40c57ff55d3d5d71277bb4197ea14957f756bff249e623" split="5" fee="true"/>
+    </podcast:value>
+    <podcast:guid>917393e3-1b1e-5cef-ace4-edaa54e1f810</podcast:guid>
+    <podcast:medium>podcast</podcast:medium>
+    <podcast:complete>no</podcast:complete>
+    <podcast:block>no</podcast:block>
+    <podcast:block id="apple">yes</podcast:block>
+    <podcast:block id="spotify">yes</podcast:block>
+    <podcast:block id="amazon">yes</podcast:block>
+    <podcast:person href="http://curry.com/" img="https://feeds.podcastindex.org/adam_avatar.jpg" group="cast" role="host">Adam Curry</podcast:person>
+    <podcast:person href="http://dave.sobr.org" img="https://feeds.podcastindex.org/dave_avatar.jpg" group="cast" role="host">Dave Jones</podcast:person>
+    <category><![CDATA[News & Politics]]></category>
+    <category>Technology</category>
+    <podcast:podroll>
+      <podcast:remoteItem feedGuid="ae38e5df-3281-5138-b120-b07cb835cac5" feedUrl="https://newmediashow.com/feed/audio/"/>
+      <podcast:remoteItem feedGuid="396d9ae0-da7e-5557-b894-b606231fa3ea" feedUrl="https://feeds.buzzsprout.com/1538779.rss"/>
+      <podcast:remoteItem feedGuid="856cd618-7f34-57ea-9b84-3600f1f65e7f" feedUrl="http://feed.nashownotes.com/rss.xml"/>
+      <podcast:remoteItem feedGuid="e722d2b3-0a9a-5ecc-ba3f-a5de968c18d4" feedUrl="https://feeds.rssblue.com/phantom-power-business-hour"/>
+      <podcast:remoteItem feedGuid="55b53584-4219-4fb0-b916-075ce23f714e" feedUrl="https://serve.podhome.fm/rss/55b53584-4219-4fb0-b916-075ce23f714e"/>
+      <podcast:remoteItem feedGuid="1ebc8445-f337-5150-a82a-48ec3e759e46" feedUrl="https://anchor.fm/s/101adcf44/podcast/rss"/>
+      <podcast:remoteItem feedGuid="d35a8293-f3dd-4186-959f-e0f1211da2df" feedUrl="https://feeds.redcircle.com/d35a8293-f3dd-4186-959f-e0f1211da2df"/>
+      <podcast:remoteItem feedGuid="29cdca4a-32d8-56ba-b48b-09a011c5daa9" feedUrl="https://feeds.buzzsprout.com/231452.rss"/>
+    </podcast:podroll>
+    <podcast:liveItem status="ended" start="2026-10-16T17:20:00.000Z" chat="irc.zeronode.net" end="2026-10-16T19:50:00.000Z">
+      <title>PC2.0 275 Live October 16th 2026</title>
+      <description><![CDATA[<p><strong>PC2.0 Episode #275 October 16th 2026 Live!</strong></p>
+<p><strong>Pre-Boost Us!</strong></p>
+<p>Get Podcast Addict, Podcast Guru, CurioCaster, Podverse, Fountain and Truefans from <a href="http://newpodcastapp.com">newpodcastapps.com</a></p>]]></description>
+      <enclosure length="33" type="audio/mpeg" url="https://op3.dev/e/live.noagendastream.com/noagenda"/>
+      <guid isPermaLink="false">39b0fc19-1719-4c87-8c7d-a248fe396eae</guid>
+      <itunes:image href="https://behindthesch3m3s.com/wp-content/uploads/2023/01/v4v-storm-good-quality.gif"/>
+      <itunes:subtitle>PC2.0 275 Live October 16th 2026</itunes:subtitle>
+      <itunes:summary><![CDATA[<p><strong>PC2.0 Episode #275 October 16th 2026 Live!</strong></p>
+<p><strong>Pre-Boost Us!</strong></p>
+<p>Get Podcast Addict, Podcast Guru, CurioCaster, Podverse, Fountain and Truefans from <a href="http://newpodcastapp.com">newpodcastapps.com</a></p>]]></itunes:summary>
+      <podcast:contentLink href="http://adam.curry.com/html/NoAgendaStreamandCha-1414965812.html">Listen Live in the Chat Room</podcast:contentLink>
+      <podcast:value type="lightning" method="keysend" suggested="0.00000005000">
+        <podcast:valueRecipient name="Sovereign Feeds" type="lnaddress" address="steven@getalby.com" split="10"/>
+        <podcast:valueRecipient name="boostbot@fountain.fm" type="lnaddress" address="boostbot@fountain.fm" split="2"/>
+        <podcast:valueRecipient name="Dreb Scott - Chapters" type="lnaddress" address="drebscott@getalby.com" split="5"/>
+        <podcast:valueRecipient name="Podping" type="lnaddress" address="Podping@sats.v4v.app" split="2"/>
+        <podcast:valueRecipient name="Boost AC" type="lnaddress" address="adam@getalby.com" split="3"/>
+        <podcast:valueRecipient name="Alecks Gates Strike" type="lnaddress" address="agates@strike.me" split="20"/>
+        <podcast:valueRecipient name="PodcastIndex LN Wallet Test" type="lnaddress" address="podcastindex@getalby.com" split="58"/>
+      </podcast:value>
+      <podcast:chat server="irc.zeronode.net" protocol="irc" accountId="adamc1999" space="#Podcasting20" embedUrl="https://kiwiirc.com/nextclient/irc.zeronode.net/?nick=webtroll?#Podcasting20"/>
+      <podcast:socialInteract uri="https://podcastindex.social/@dave/110634382833124876" protocol="activitypub" accountId="adam" accountUrl="https://podcastindex.social/users/dave"/>
+      <podcast:liveValue uri="https://curiohoster.com/event?event_id=8a2cfa5a-7a4d-466a-9d32-362ad68f945e" protocol="socket.io"/>
+    </podcast:liveItem>
+<item>
+      <title><![CDATA[Episode 275: "Off The Rails"]]></title>
+      <description><![CDATA[<p><span style="font-size: 18pt;"><strong>Podcasting 2.0 October 16th 2026 Episode 275 - "Off The Rails"</strong></span></p>
+<div>
+<div>
+<p>What is the future of independent Podcast apps. OR any apps for the matter? Adam and Dave don't agree</p>
+<div>
+<p><strong>ShowNotes</strong></p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+<p>01 - 🎙️ THE ROBOT GOES ON PNWR &mdash; "I DON'T SEE THE NECESSITY FOR PODCAST APPS" (summary, no clips)</p>
+<p><a href="https://www.buzzsprout.com/1538779/episodes/19971325-adam-curry-s-ai-podcast-future" target="_blank" rel="noopener">Podnews Weekly Review, 16 Oct &mdash; "Adam Curry's AI Podcast Future" (1h29m; Adam, 4:00&ndash;53:45)</a></p>
+<p><strong>Sam's setup:</strong>&nbsp;on our last show Adam "changed Dave Jones' mind&hellip; from a skeptic to a believer". Adam: "I went back and listened&hellip;&nbsp;<strong>the first thing that Dave went to was advertising.</strong>&nbsp;It seems like anything with podcasting always evolves around advertising, even though&hellip; we don't have advertising on our podcast."</p>
+<p><strong>On Muse and the "spying" story:</strong>&nbsp;"Muse is collecting all this data, it's making files of every single one of your friends&hellip;&nbsp;<strong>That is a feature, not a bug.</strong>" &mdash; and the five machines at home running local models.</p>
+<p><strong>Sam:</strong>&nbsp;Reddit removed RSS and charged for its API ($43M from selling data); Lightning/L402 "worked for a while, but then&hellip; legislation and technical challenges." Will clients pay x402 to reach the Index through the MCP?&nbsp;<strong>Adam:</strong>&nbsp;"I don't see the necessity for YouTube apps, podcast apps, email apps&hellip; all clients that access all data will be some version of an agent working on the user's behalf." And: "<strong>Amazon did the stupidest thing ever by blocking Muse.</strong>"</p>
+<p><strong>On the newsletter:</strong>&nbsp;"40% of all value for value revenue always comes after we send the newsletter."</p>
+<p><strong>On RSS:</strong>&nbsp;"RSS stays. It's a perfect format&hellip; no different from HTTP or SMTP." Podcast Index Robot "goes into this structured RSS feed, which is very low overhead."</p>
+<p><strong>On podcast apps:</strong>&nbsp;"Podcast apps has been probably the crappiest part of the entire podcasting business. It's truly a labor of love&hellip; Do you want to be an interim step in between the data and the user? Maybe, but I don't know." And on Godcaster: "We're in the app business too&hellip; same issues apply."</p>
+<p><strong>The clean-feed line:</strong>&nbsp;Adam had his Omarchy box build a Cleanfeed-equivalent into his playout &mdash; "I'm gonna probably cancel my subscription, which is only $36."</p>
+<p><strong>Sam's close:</strong>&nbsp;TrueFans is building "Kevin and Kelly" as experimental agents on the Index fire hose. Afterward, to James: "Adam Curry is very smart and he can use it" &mdash; but normal people won't. James: "I don't think normal people will be doing that, will they?"</p>
+<p><a href="https://podcastindex.social/@adam/117444815477511023" target="_blank" rel="noopener"><strong>And the follow-up on Mastodon.</strong>&nbsp;Sam posted a Fintech Times piece on agentic payments "after all the chat with Adam and Dave about micropayments 2.0 using X.402"; Adam: "<strong>The power will shift to consumer power with agentic negotiation between vendors of goods and services.</strong>"</a></p>
+<p><a href="https://thefintechtimes.com/news-views-podcast-the-real-barrier-to-agentic-payments-is-not-the-ai/" target="_blank" rel="noopener">Fintech Times: the real barrier to agentic payments is not the AI</a></p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+<p>02 - 🚫 WILL APPLE LET THE ROBOT SKIP THE ADS?</p>
+<p><a href="https://podcastindex.social/@aegrumet/117424368148654254" target="_blank" rel="noopener"><strong>aegrumet, under Adam's 274 post:</strong>&nbsp;"I still think you're underestimating the pressure that will fall on platforms to create and enforce TOS that forbids this stuff&hellip;&nbsp;<strong>the tech is ahead of the policy, and&hellip; the latter will eventually catch up.</strong>"</a></p>
+<p><a href="https://podcastindex.social/@dave/117427465672916264" target="_blank" rel="noopener"><strong>Dave:</strong>&nbsp;"You're saying you think Apple will change their terms to prohibit local on device models from assisting in ad skipping?" &hellip; "<strong>Ad blockers are already allowed on the AppStore and PlayStore</strong>&hellip; a popular Reddit ad/nag blocker and things like 1Blocker for Safari&hellip;&nbsp;<strong>Neither Apple, nor Google serve podcast ads</strong>."</a></p>
+<p><strong>aegrumet's last word:</strong>&nbsp;Google and Apple "are fundamentally different with respect to ads. Hence Chrome is much more aggressive with respect to blocking the blockers. I don't see the current moment as a policy so much as a lack of one."</p>
+<p><strong>Sam on PNWR:</strong>&nbsp;"This week Apple blocked Muse, and so did Amazon" &mdash; agents doing price checks and arbitrage. TrueFans built a web application firewall off JS's bot list because AI bots were running up its MongoDB bill.</p>
+<p><a href="https://tomkahe.com/@tom/117424481628102191" target="_blank" rel="noopener"><strong>Dave on Spotify, boosted:</strong>&nbsp;"Spotify harnessing hundreds of dev hours and the power of 3 supercomputers to change what the like button does again."</a></p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+<p>03 - 🏷️ NAMESPACE &mdash; A FEED FOR PEOPLE, AND VIDEO IN THE ALTERNATE ENCLOSURE</p>
+<p><a href="https://github.com/Podcastindex-org/podcast-namespace/discussions/498#discussioncomment-18772440" target="_blank" rel="noopener"><strong>podcast:person for fictional characters</strong>&nbsp;(discussion #498). Dave: "Makes great sense."</a></p>
+<p><a href="https://podcastindex.social/@dave/117413318081047105" target="_blank" rel="noopener"><strong>Nathan Gathright:</strong>&nbsp;propose a&nbsp;<strong>personGUID</strong>&nbsp;attribute pointing at a&nbsp;<strong>medium=person</strong>&nbsp;feed &mdash; so "Tap on a person, open up a list of their podcast appearances" works for every podcast:person tag. alecksgates: "the problem is no source of truth." Mitch: maybe a publisher or playlist feed referenced with a guid. Sam: TrueFans tried this two years ago and is "reliant on the hosts first implementing support for the person tag."</a></p>
+<p><a href="https://podcastindex.social/@mitch/117437255403581192" target="_blank" rel="noopener"><strong>Adam replied: "SOPML!!"</strong>&nbsp;Mitch asked the robot what Adam meant &mdash; "Adam Curry almost certainly meant SOPML = Social OPML" &mdash; and: "thanks to transcripts and BoK, you can now communicate in mere grunts." Dave: "lol!"</a></p>
+<p><a href="https://podcastindex.social/@dave/117444545984036459" target="_blank" rel="noopener"><strong>Podnews ships video through the alternate enclosure</strong>&nbsp;(Liquid Studios pilot): Spotify, LinkedIn, TrueFans, Pocket Casts, YouTube &mdash; "Not on Apple Podcasts, sadly." Podcast Guru: works, but now needs a switch-to-video toggle "since it's not HLS." Dave: "Assuming you chose mp4 since Apple Podcasts doesn't play HLS out of the alternate enclosure yet?" James: "mp4 because that's all I can produce&hellip; I don't really want to serve HLS, given it's massively more expensive to serve." Podcast Guru: "honestly you're the first podcaster we've seen doing it. 😆"</a></p>
+<p><a href="https://gist.github.com/nathangathright/23584bc9d32c31db58ec482e7cbf80f0" target="_blank" rel="noopener"><strong>partytime3:</strong>&nbsp;Nathan's agent listed the partytime parser bugs it hit; Dave: "I'll post the partytime3 code shortly and see what is still outstanding."</a></p>
+<p><a href="https://github.com/Podcastindex-org/podcast-namespace/pull/794" target="_blank" rel="noopener"><strong>#794 closed:</strong>&nbsp;JS fixed the podcast:guid example XML with a valid UUID.</a></p>
+<p>🔍&nbsp;<strong>For Dave:</strong>&nbsp;is partytime3 out?</p>
+</div>
+<div><small>Last Modified 10/16/2026 14:34:17 by&nbsp;<a href="http://freedomcontroller.com/">Freedom Controller</a></small>&nbsp;<a title="Link to the opml for this document." href="http://adam.curry.com/opml/Podcasting20Episode2-51DKTHvUXHYRmTjl2mJqPQ.opml">&nbsp;</a></div>
+</div>
+</div>]]></description>
+      <link>https://www.podpage.com/podcasting-20/off-the-rails/</link>
+      <guid isPermaLink="false">PC20-275</guid>
+      <pubDate>Fri, 16 Oct 2026 19:31:29 +0000</pubDate>
+      <podcast:chapters url="https://reflex.livewire.io/chapters/podcast/917393e3-1b1e-5cef-ace4-edaa54e1f810/item/PC20-275/chapters/https://mp3s.nashownotes.com/PC20-275-Chapters.json" type="application/json"/>
+      <podcast:transcript url="https://mp3s.nashownotes.com/PC20-275-Captions.srt" type="application/srt" rel="captions"/>
+      <itunes:subtitle><![CDATA[Episode 275: "Off The Rails"]]></itunes:subtitle>
+      <itunes:summary><![CDATA[<p><span style="font-size: 18pt;"><strong>Podcasting 2.0 October 16th 2026 Episode 275 - "Off The Rails"</strong></span></p>
+<div>
+<div>
+<p>What is the future of independent Podcast apps. OR any apps for the matter? Adam and Dave don't agree</p>
+<div>
+<p><strong>ShowNotes</strong></p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+<p>01 - 🎙️ THE ROBOT GOES ON PNWR &mdash; "I DON'T SEE THE NECESSITY FOR PODCAST APPS" (summary, no clips)</p>
+<p><a href="https://www.buzzsprout.com/1538779/episodes/19971325-adam-curry-s-ai-podcast-future" target="_blank" rel="noopener">Podnews Weekly Review, 16 Oct &mdash; "Adam Curry's AI Podcast Future" (1h29m; Adam, 4:00&ndash;53:45)</a></p>
+<p><strong>Sam's setup:</strong>&nbsp;on our last show Adam "changed Dave Jones' mind&hellip; from a skeptic to a believer". Adam: "I went back and listened&hellip;&nbsp;<strong>the first thing that Dave went to was advertising.</strong>&nbsp;It seems like anything with podcasting always evolves around advertising, even though&hellip; we don't have advertising on our podcast."</p>
+<p><strong>On Muse and the "spying" story:</strong>&nbsp;"Muse is collecting all this data, it's making files of every single one of your friends&hellip;&nbsp;<strong>That is a feature, not a bug.</strong>" &mdash; and the five machines at home running local models.</p>
+<p><strong>Sam:</strong>&nbsp;Reddit removed RSS and charged for its API ($43M from selling data); Lightning/L402 "worked for a while, but then&hellip; legislation and technical challenges." Will clients pay x402 to reach the Index through the MCP?&nbsp;<strong>Adam:</strong>&nbsp;"I don't see the necessity for YouTube apps, podcast apps, email apps&hellip; all clients that access all data will be some version of an agent working on the user's behalf." And: "<strong>Amazon did the stupidest thing ever by blocking Muse.</strong>"</p>
+<p><strong>On the newsletter:</strong>&nbsp;"40% of all value for value revenue always comes after we send the newsletter."</p>
+<p><strong>On RSS:</strong>&nbsp;"RSS stays. It's a perfect format&hellip; no different from HTTP or SMTP." Podcast Index Robot "goes into this structured RSS feed, which is very low overhead."</p>
+<p><strong>On podcast apps:</strong>&nbsp;"Podcast apps has been probably the crappiest part of the entire podcasting business. It's truly a labor of love&hellip; Do you want to be an interim step in between the data and the user? Maybe, but I don't know." And on Godcaster: "We're in the app business too&hellip; same issues apply."</p>
+<p><strong>The clean-feed line:</strong>&nbsp;Adam had his Omarchy box build a Cleanfeed-equivalent into his playout &mdash; "I'm gonna probably cancel my subscription, which is only $36."</p>
+<p><strong>Sam's close:</strong>&nbsp;TrueFans is building "Kevin and Kelly" as experimental agents on the Index fire hose. Afterward, to James: "Adam Curry is very smart and he can use it" &mdash; but normal people won't. James: "I don't think normal people will be doing that, will they?"</p>
+<p><a href="https://podcastindex.social/@adam/117444815477511023" target="_blank" rel="noopener"><strong>And the follow-up on Mastodon.</strong>&nbsp;Sam posted a Fintech Times piece on agentic payments "after all the chat with Adam and Dave about micropayments 2.0 using X.402"; Adam: "<strong>The power will shift to consumer power with agentic negotiation between vendors of goods and services.</strong>"</a></p>
+<p><a href="https://thefintechtimes.com/news-views-podcast-the-real-barrier-to-agentic-payments-is-not-the-ai/" target="_blank" rel="noopener">Fintech Times: the real barrier to agentic payments is not the AI</a></p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+<p>02 - 🚫 WILL APPLE LET THE ROBOT SKIP THE ADS?</p>
+<p><a href="https://podcastindex.social/@aegrumet/117424368148654254" target="_blank" rel="noopener"><strong>aegrumet, under Adam's 274 post:</strong>&nbsp;"I still think you're underestimating the pressure that will fall on platforms to create and enforce TOS that forbids this stuff&hellip;&nbsp;<strong>the tech is ahead of the policy, and&hellip; the latter will eventually catch up.</strong>"</a></p>
+<p><a href="https://podcastindex.social/@dave/117427465672916264" target="_blank" rel="noopener"><strong>Dave:</strong>&nbsp;"You're saying you think Apple will change their terms to prohibit local on device models from assisting in ad skipping?" &hellip; "<strong>Ad blockers are already allowed on the AppStore and PlayStore</strong>&hellip; a popular Reddit ad/nag blocker and things like 1Blocker for Safari&hellip;&nbsp;<strong>Neither Apple, nor Google serve podcast ads</strong>."</a></p>
+<p><strong>aegrumet's last word:</strong>&nbsp;Google and Apple "are fundamentally different with respect to ads. Hence Chrome is much more aggressive with respect to blocking the blockers. I don't see the current moment as a policy so much as a lack of one."</p>
+<p><strong>Sam on PNWR:</strong>&nbsp;"This week Apple blocked Muse, and so did Amazon" &mdash; agents doing price checks and arbitrage. TrueFans built a web application firewall off JS's bot list because AI bots were running up its MongoDB bill.</p>
+<p><a href="https://tomkahe.com/@tom/117424481628102191" target="_blank" rel="noopener"><strong>Dave on Spotify, boosted:</strong>&nbsp;"Spotify harnessing hundreds of dev hours and the power of 3 supercomputers to change what the like button does again."</a></p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+<p>03 - 🏷️ NAMESPACE &mdash; A FEED FOR PEOPLE, AND VIDEO IN THE ALTERNATE ENCLOSURE</p>
+<p><a href="https://github.com/Podcastindex-org/podcast-namespace/discussions/498#discussioncomment-18772440" target="_blank" rel="noopener"><strong>podcast:person for fictional characters</strong>&nbsp;(discussion #498). Dave: "Makes great sense."</a></p>
+<p><a href="https://podcastindex.social/@dave/117413318081047105" target="_blank" rel="noopener"><strong>Nathan Gathright:</strong>&nbsp;propose a&nbsp;<strong>personGUID</strong>&nbsp;attribute pointing at a&nbsp;<strong>medium=person</strong>&nbsp;feed &mdash; so "Tap on a person, open up a list of their podcast appearances" works for every podcast:person tag. alecksgates: "the problem is no source of truth." Mitch: maybe a publisher or playlist feed referenced with a guid. Sam: TrueFans tried this two years ago and is "reliant on the hosts first implementing support for the person tag."</a></p>
+<p><a href="https://podcastindex.social/@mitch/117437255403581192" target="_blank" rel="noopener"><strong>Adam replied: "SOPML!!"</strong>&nbsp;Mitch asked the robot what Adam meant &mdash; "Adam Curry almost certainly meant SOPML = Social OPML" &mdash; and: "thanks to transcripts and BoK, you can now communicate in mere grunts." Dave: "lol!"</a></p>
+<p><a href="https://podcastindex.social/@dave/117444545984036459" target="_blank" rel="noopener"><strong>Podnews ships video through the alternate enclosure</strong>&nbsp;(Liquid Studios pilot): Spotify, LinkedIn, TrueFans, Pocket Casts, YouTube &mdash; "Not on Apple Podcasts, sadly." Podcast Guru: works, but now needs a switch-to-video toggle "since it's not HLS." Dave: "Assuming you chose mp4 since Apple Podcasts doesn't play HLS out of the alternate enclosure yet?" James: "mp4 because that's all I can produce&hellip; I don't really want to serve HLS, given it's massively more expensive to serve." Podcast Guru: "honestly you're the first podcaster we've seen doing it. 😆"</a></p>
+<p><a href="https://gist.github.com/nathangathright/23584bc9d32c31db58ec482e7cbf80f0" target="_blank" rel="noopener"><strong>partytime3:</strong>&nbsp;Nathan's agent listed the partytime parser bugs it hit; Dave: "I'll post the partytime3 code shortly and see what is still outstanding."</a></p>
+<p><a href="https://github.com/Podcastindex-org/podcast-namespace/pull/794" target="_blank" rel="noopener"><strong>#794 closed:</strong>&nbsp;JS fixed the podcast:guid example XML with a valid UUID.</a></p>
+<p>🔍&nbsp;<strong>For Dave:</strong>&nbsp;is partytime3 out?</p>
+</div>
+<div><small>Last Modified 10/16/2026 14:34:17 by&nbsp;<a href="http://freedomcontroller.com/">Freedom Controller</a></small>&nbsp;<a title="Link to the opml for this document." href="http://adam.curry.com/opml/Podcasting20Episode2-51DKTHvUXHYRmTjl2mJqPQ.opml">&nbsp;</a></div>
+</div>
+</div>]]></itunes:summary>
+      <itunes:author>Podcast Index LLC</itunes:author>
+      <author>Podcast Index LLC</author>
+      <itunes:image href="https://noagendaassets.com/enc/1684513486.722_pcifeedimage.png"/>
+      <itunes:explicit>No</itunes:explicit>
+      <itunes:keywords>podcasting,curry,podfather,technology,developers</itunes:keywords>
+      <enclosure url="https://op3.dev/e/mp3s.nashownotes.com/PC20-275-2026-10-16-Final.mp3" type="audio/mpeg" length="71957106"/>
+      <podcast:person group="cast" role="host" img="https://feeds.podcastindex.org/adam_avatar.jpg" href="http://curry.com">Adam Curry</podcast:person>
+      <podcast:person href="http://dave.sobr.org" img="https://feeds.podcastindex.org/dave_avatar.jpg" group="cast" role="host">Dave Jones</podcast:person>
+      <podcast:value type="lightning" method="keysend" suggested="0.00000005000">
+        <podcast:valueRecipient name="Dreb Scott (Chapters)" type="lnaddress" address="drebscott@getalby.com" split="5"/>
+        <podcast:valueRecipient name="Sovereign Feeds" address="steven@getalby.com" type="lnaddress" split="10"/>
+        <podcast:valueRecipient name="Fountain Boost bot" type="lnaddress" address="boostbot@fountain.fm" split="1"/>
+        <podcast:valueRecipient name="Reflex.io" type="lnaddress" address="reflex@livewire.io" split="5"/>
+        <podcast:valueRecipient name="ericpp@getalby.com" type="lnaddress" address="ericpp@getalby.com" split="5"/>
+        <podcast:valueRecipient name="Strike Test" type="lnaddress" address="adamcurry@strike.me" split="3"/>
+        <podcast:valueRecipient name="Alecks Gates Strike" type="lnaddress" address="agates@strike.me" split="5"/>
+        <podcast:valueRecipient name="PodcastIndex LN Test Wallet" type="lnaddress" address="podcastindex@getalby.com" split="50"/>
+        <podcast:valueRecipient name="Pod Sage" type="lnaddress" address="dave@getalby.com" split="1"/>
+        <podcast:valueRecipient name="Boost Monitor" type="lnaddress" address="adam@getalby.com" split="5"/>
+      </podcast:value>
+      <podcast:socialInteract protocol="activitypub" uri="https://podcastindex.social/@adam/117452268966202772" accountId="@adam" accountUrl="https://podcastindex.social/users/adam"/>
+      <itunes:duration>5995</itunes:duration>
+      <podcast:funding url="https://www.paypal.com/donate?token=-hvWBEXZQfp7oSFJz0TwT3QXYcjYuemZRPIOml3nrL-EhtiUPAwuVHS6DPN5cBat9wjqwYEtyW-K8zSS">Support us with Value 4 Value</podcast:funding>
+    </item>
+<item>
+      <title><![CDATA[Episode 274: "Vibe Cloning"]]></title>
+      <description><![CDATA[<p><span style="font-size: 18pt;"><strong>Podcasting 2.0 October 9th 2026 Episode 274 - "Vibe Cloning"</strong></span></p>
+<div>
+<p>The Future is here! And so is the risk of spinning out. Adam &amp; Dave go deep</p>
+<div>
+<p>&lt;b&gt;ShowNotes&lt;/b&gt;</p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+<p>00 - 📜 1,088 LINES DOWN TO 168 &mdash; THE INDEX GETS NEW TERMS OF SERVICE</p>
+<p><a href="https://podcastindex.social/@dave/117389162908071298" target="_blank" rel="noopener">&lt;b&gt;Dave, 5 Oct:&lt;/b&gt; "Podcast Index terms of service updated (finally)&hellip; The old v1.x terms were &lt;b&gt;90% boilerplate legalese that never accurately reflected what we wanted. I get emails weekly asking for clarification.&lt;/b&gt;" &middot; "The old terms of service were &lt;b&gt;1088 lines. The new ones are 168 lines. It's a 2-3 minute read.&lt;/b&gt;"</a></p>
+<p><a href="https://api.podcastindex.org/tos_v2.0.html" target="_blank" rel="noopener">Terms of Service v2.0</a></p>
+<p><a href="https://github.com/Podcastindex-org/terms-of-service" target="_blank" rel="noopener">&lt;b&gt;And it is an open project:&lt;/b&gt; "The PI terms of service are an open project just like everything else. If you think something can be worded better&hellip; just open a PR."</a></p>
+<p><a href="https://podcastindex.social/@js/117396165431213710" target="_blank" rel="noopener">&lt;b&gt;JS found the best line:&lt;/b&gt; "&lt;b&gt;Since the Service is free, our total liability to you is zero dollars.&lt;/b&gt;" : )))))))</a></p>
+<p><a href="https://podcastindex.social/@dave/117378593908636237" target="_blank" rel="noopener">&lt;b&gt;Last week's bandwidth leak, follow-up.&lt;/b&gt; Dave to James, 3 Oct: "rotating URLs is a good solution&hellip; Part of the issue here is &lt;b&gt;linode not giving any visibility into per bucket/key stats&lt;/b&gt;. That alone probably means I need to change to a different solution." And on 6 Oct, Linode rebooted the utility server &lt;b&gt;in the middle of the weekly full database dump&lt;/b&gt; &mdash; it had uploaded; "Stand down."</a></p>
+<p>🔍 &lt;b&gt;For Dave:&lt;/b&gt; did R2 win? And did the object-storage safeguards break James's 24-hour feed report (4 Oct)?</p>
+<p><a href="https://podcastindex.social/@cisene/117393112912558854" target="_blank" rel="noopener">&lt;b&gt;Spam, the new tells&lt;/b&gt; (cisene): hijacked high-profile shows republished through &lt;b&gt;spreaker.com&lt;/b&gt; under a 2-5 letter owner name for ad insertion &mdash; "easy peasy spotted and killed"; and SEO spam from lawyers, dentists, roofers, gardeners treating the Index as "a cheap/free billboard". Chinese casino spam "has almost stopped". Dave flagged one himself on Apple, 8 Oct.</a></p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+<p>01 - ✂️ "DAI IS TOAST" &mdash; THE SKIP-DYNAMIC-ADS CHECKBOX IS COMING</p>
+<p><a href="https://podcastindex.social/@dave/117405077950830505" target="_blank" rel="noopener">&lt;b&gt;Dave, 8 Oct &mdash; the prediction:&lt;/b&gt; "By the end of 2027, one 'tier 2' podcast app (meaning Overcast, Podcast Addict, Castro, etc) will put a &lt;b&gt;'Skip Dynamic Ads' checkbox&lt;/b&gt; on their settings screen, which will remove DAI slots from podcast episodes on-device after download. And, as soon as one of them does it, &lt;b&gt;they will all do it.&lt;/b&gt;" &middot; "The writing is on the wall. DAI is too trashy and disruptive to the listening experience and the DAI ad load has become too high. &lt;b&gt;The podcast industrial complex will have nobody to blame but themselves.&lt;/b&gt;" (Adam boosted it.)</a></p>
+<p><a href="https://podcastindex.social/@dave/117406111492964320" target="_blank" rel="noopener">&lt;b&gt;How, per Dave (to mikek999):&lt;/b&gt; "On device transcription is already solid enough. Then you profile the mp3 waveform and look for anomalies that correspond to what the model thinks is an inserted advertisement&hellip; &lt;b&gt;Adam proved it works in real time on our last board meeting.&lt;/b&gt;" &middot; "You don't need to know the slot timings. It's all discernable from the transcript and waveform." &middot; "If the tech exists, it will happen&hellip; It's why the Brave browser and uBlock Origin exists."</a></p>
+<p><a href="https://podcastindex.social/@dave/117379871253416522" target="_blank" rel="noopener">&lt;b&gt;And on 4 Oct:&lt;/b&gt; "'Skip dynamic ads' will be a check box just like x2 speed or sleep timer&hellip; &lt;b&gt;I think baked in host read ads will continue. But DAI is toast imo.&lt;/b&gt;" Sam Sethi agreed: "apps make no money from ads&hellip; &lt;b&gt;Spotify has legitimised ad removal.&lt;/b&gt;"</a></p>
+<p><a href="https://omny.fm/shows/better-offline/monologue-australias-dodgiest-ai-ipo-is-a-pale-horse" target="_blank" rel="noopener">&lt;b&gt;Better Offline, "Monologue: Australia's Dodgiest AI IPO Is A Pale Horse"&lt;/b&gt; (Ed Zitron, iHeart / Cool Zone, 9 Oct). Adam: &lt;b&gt;"front ads cut, end ads remain."&lt;/b&gt;</a></p>
+<p>🧮 &lt;b&gt;What the raw feed served us this morning:&lt;/b&gt; the file is &lt;b&gt;15:40&lt;/b&gt;; the show is &lt;b&gt;10:08&lt;/b&gt; (2:56&ndash;13:04). &lt;b&gt;Front: 2:56&lt;/b&gt; &mdash; Oppenheimer, then four iHeart promos (What Happened to Her, Don't Lie to Me, Scam Goddess, Artists on Artists). &lt;b&gt;End: 2:25&lt;/b&gt; &mdash; Chase for Business, Hulu (Jamie Foxx), BET (Tyler Perry's Sisters), a credit union, and Crown Coins Casino. &lt;b&gt;About 34% of the file is ads.&lt;/b&gt; It opens and closes with "This is an iHeart Podcast. &lt;b&gt;Guaranteed human.&lt;/b&gt;" The feed's own duration says 619 seconds &mdash; the content only.</p>
+<p><a href="https://podcastindex.social/@dave/117360192289259978" target="_blank" rel="noopener">&lt;b&gt;Last week Dave counted&lt;/b&gt; 4.5 minutes of pre-rolls and 5 of post-rolls in a 17-minute Better Offline &mdash; "all pharma ads that don't apply to me."</a></p>
+<p><a href="https://github.com/ttlequals0/MinusPod" target="_blank" rel="noopener">&lt;b&gt;MinusPod is on the Index apps list&lt;/b&gt; (web-ui #569, merged 8 Oct): "a &lt;b&gt;self-hosted, open-source RSS proxy that removes ad segments from podcast audio and serves a re-cut feed&lt;/b&gt;." It mints a new podcast:guid per served feed, strips soundbite / integrity / alternateEnclosure / source / liveItem, and regenerates transcripts, chapters and duration from the cut audio.</a></p>
+<p><a href="https://github.com/ttlequals0/MinusPod/blob/main/docs/podcasting-2.0.md" target="_blank" rel="noopener">MinusPod &mdash; Podcasting 2.0 support notes</a></p>
+<p><a href="https://podnews.net/update/yellow-warning" target="_blank" rel="noopener">&lt;b&gt;The research, today (Podnews):&lt;/b&gt; ad load is "flashing a yellow light" &mdash; &lt;b&gt;54.8% of listeners say there are already too many ads; only 8.6% would tolerate more&lt;/b&gt; to keep shows free. Social media is &lt;b&gt;three times&lt;/b&gt; more effective at finding new podcasts than ads in other shows.</a></p>
+<p>&lt;b&gt;Same story &mdash; iHeart in Podtrac's September rankings:&lt;/b&gt; shows up from &lt;b&gt;20,861 to 32,741&lt;/b&gt; in a year, yet US audience &lt;b&gt;down 17%&lt;/b&gt; and US downloads &lt;b&gt;down 20%&lt;/b&gt;. None of the top 5 grew. And Rogan, renewed with Spotify: about &lt;b&gt;15 ads per show (8% ad load)&lt;/b&gt; per Podscribe.</p>
+<p><a href="https://podnews.net/update/ad-revenue-global-2026" target="_blank" rel="noopener">&lt;b&gt;Meanwhile the money is up&lt;/b&gt; (PNWR / Podnews): Podscribe US podcast ad spend &lt;b&gt;+20% from August, $41m&lt;/b&gt;; WARC: online audio &lt;b&gt;$16.6bn&lt;/b&gt; globally this year, +9.9%. Amazon, Alphabet and Meta take &lt;b&gt;60% of all ad revenue&lt;/b&gt;.</a></p>
+<p>&lt;b&gt;Libsyn now publishes its ad slots in the RSS feed&lt;/b&gt; &mdash; its own namespace: two pre-rolls, two mid-rolls, first mid-roll at 620 seconds. James: the timings are for the &lt;b&gt;raw file&lt;/b&gt;, so "you can't actually use this data for skipping ads"; probably for a third-party inserter like SoundStack. Sam: "Somebody has taken over Libsyn secretly&hellip; CEO of Libsyn, if you're in trouble, blink twice."</p>
+<p>&lt;b&gt;PNWR on our last show&lt;/b&gt; (today, 19:02): Sam &mdash; "Adam Curry and Dave Jones had quite an amazing show&hellip; It stripped out all the advertising, found the clip section&hellip; Dave Jones certainly felt could be &lt;b&gt;the end of advertising within podcasting&lt;/b&gt;." James (hadn't heard it): "anytime we hear the end of advertising is nigh&hellip; &lt;b&gt;there's no real change in consumer behavior.&lt;/b&gt;" Sam: "&lt;b&gt;Adam Curry will be on this show next week&lt;/b&gt; to talk about what's going on."</p>
+<p><a href="https://podcastindex.social/@csb/117395820352672458" target="_blank" rel="noopener">&lt;b&gt;Leo, per csb (6 Oct):&lt;/b&gt; TWiT's "ad sales are down to zero" after outsourcing ad sales; Club TWiT subscriptions are what keep it alive.</a></p>
+<p><a href="https://podcastindex.social/@marcjohanssen/117383798127235532" target="_blank" rel="noopener">&lt;b&gt;The arms race starts:&lt;/b&gt; marcjohanssen links "adversarial attacks" that hide audio from AI (no transcripts, no ad detection). Dave: "&lt;b&gt;If it can be heard it can be analyzed.&lt;/b&gt;"</a></p>
+<p>💡 The open feed was always the ad-skipper's friend. The industry spent ten years making DAI the business model &mdash; and the same transcript-and-waveform tools it sells for "brand safety" can find its slots.</p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+<p>02 - 🕸️ DAVE ON THE OTHER SHOW &mdash; THE PODPING MESH AND AN INDEX THAT GIVES ITSELF AWAY</p>
+<p><a href="https://www.buzzsprout.com/1538779/19903509" target="_blank" rel="noopener">&lt;b&gt;PNWR, 3 Oct, "In full: Dave Jones from Podcast Index"&lt;/b&gt; &mdash; Sam waited years for it.</a></p>
+<p>&lt;b&gt;The mesh:&lt;/b&gt; Podping keeps writing to the Hive blockchain "just like we always have"; the new part is &lt;b&gt;peer-to-peer gossip&lt;/b&gt; &mdash; "everybody's familiar with BitTorrent&hellip;" Sam: "You can't come out with words like a peer-to-peer gossip network over a mesh network and then say, that's it, ladies."</p>
+<p><a href="https://podcastindex.social/@dave/117382648185655120" target="_blank" rel="noopener">&lt;b&gt;To JS on Mastodon (4 Oct):&lt;/b&gt; "It's just the same podping hive schema but &lt;b&gt;over Iroh gossip as the transport&lt;/b&gt;&hellip; Any binary that speaks iroh over that gossip topic should see the traffic immediately. I can update the README with the schema and wire protocol details." &mdash; JS had asked: "is it an implementable network protocol? or does it only work with a specific binary?"</a></p>
+<p>&lt;b&gt;Tokens for everyone:&lt;/b&gt; "Right now you have to&hellip; email me and ask for a podping authorization token&hellip; &lt;b&gt;It feels too secretive, like you got to be in the club.&lt;/b&gt;" Within the next few months: an open registration. podping.cloud is five geolocated nodes; a host just sends a GET.</p>
+<p>&lt;b&gt;The big one:&lt;/b&gt; "I have this perfect vision of the future where the podcast index becomes very decentralized&hellip; &lt;b&gt;we sort of work ourselves out of a job&lt;/b&gt;, and we do not become just another directory run by a couple of dudes, instead, &lt;b&gt;everybody has a slice of the directory&lt;/b&gt;." He is rewriting the aggregator to distribute &lt;b&gt;chunks of the database through the Podping mesh&lt;/b&gt;, as gossip topics.</p>
+<p>&lt;b&gt;On marketing the namespace&lt;/b&gt; (Sam's "biggest disappointment" &mdash; and our section 01 last week): "I don't think that it's a marketing problem&hellip; marketing could actually produce the opposite result&hellip; &lt;b&gt;what you sell them with is what you sell them to.&lt;/b&gt;" Over-promise a tag, it doesn't pan out, and "the next time you come to me&hellip; you can take a hike."</p>
+<p>🔍 &lt;b&gt;For Dave:&lt;/b&gt; how far along is the aggregator rewrite, and what is in the first database topic?</p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+<p>03 - 🤖 PODCAST ROBOT &mdash; WEEK ONE</p>
+<p><a href="https://podcastindex.social/@ChadF/117372996761350704" target="_blank" rel="noopener">&lt;b&gt;It works in other robots.&lt;/b&gt; csb connected it to &lt;b&gt;Grok&lt;/b&gt; (2 Oct). ChadF got a &lt;b&gt;Podcasting Credit Score of 84&lt;/b&gt; &mdash; "Claude even told me what tags were missing and gave examples of how to add them." Adam: "a passing grade!!"</a></p>
+<p><a href="https://podcastindex.social/@Kolomona/117378504626105271" target="_blank" rel="noopener">&lt;b&gt;Kolomona&lt;/b&gt; sent the lookup URL patterns to add &lt;b&gt;v4vmusic.com&lt;/b&gt; app links (publisher, playlist, album).</a></p>
+<p><a href="https://podcastindex.social/@dave/117382766527541175" target="_blank" rel="noopener">&lt;b&gt;mitch:&lt;/b&gt; "Does the new MCP server open up the possibility for apps to add an AI option to their search pages?" Dave: "I think Adam's take is correct on this. &lt;b&gt;Not really intended for podcast apps unless they are already agentic based. API is still the correct thing&lt;/b&gt; for normal podcast apps."</a></p>
+<p><a href="https://podcastindex.social/@csb/117399736490584688" target="_blank" rel="noopener">&lt;b&gt;csb: "AC is genius"&lt;/b&gt; &mdash; the "SaaS-pocalypse": per-seat software subscriptions erode when MCP lets people run workflows inside their AI assistant. He also wants to interview Adam about it on his YouTube channel &lt;b&gt;any time after 16 Oct&lt;/b&gt;.</a></p>
+<p><a href="https://podcastindex.social/@adam/117374485634549381" target="_blank" rel="noopener">&lt;b&gt;Adam, to csb on decentralization:&lt;/b&gt; "its distributed by its very nature. &lt;b&gt;It's YOUR robot that does the work, we proved the gateway&lt;/b&gt;."</a></p>
+<p>&lt;b&gt;PNWR today, Sam:&lt;/b&gt; "originally Adam was like, no, we're never gonna do that&hellip; &lt;b&gt;They've changed their mind completely. There's lots of apologies&lt;/b&gt;, and thank you to you." James: he gets one or two AI clipping-service pitches a day.</p>
+<p><a href="https://podcastindex.social/@rademaker/117397027263964519" target="_blank" rel="noopener">&lt;b&gt;rademaker&lt;/b&gt; pointed Claude at our feed: "&lt;b&gt;199 episodes have a real transcript, about 3.47 million words&lt;/b&gt;."</a></p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+</div>
+<div><small>Last Modified 10/09/2026 14:46:16 by&nbsp;<a href="http://freedomcontroller.com/">Freedom Controller</a></small>&nbsp;<a title="Link to the opml for this document." href="http://adam.curry.com/opml/Podcasting20Episode2-nI2IkKrC8PwiEZ2w4YRgC1.opml">&nbsp;</a></div>
+</div>]]></description>
+      <link>https://www.podpage.com/podcasting-20/vibe-cloning/</link>
+      <guid isPermaLink="false">PC20-274</guid>
+      <pubDate>Fri, 09 Oct 2026 19:37:54 +0000</pubDate>
+      <podcast:chapters url="https://reflex.livewire.io/chapters/podcast/917393e3-1b1e-5cef-ace4-edaa54e1f810/item/PC20-274/chapters/https://mp3s.nashownotes.com/PC20-274-Chapters.json" type="application/json"/>
+      <podcast:transcript url="https://mp3s.nashownotes.com/PC20-274-Captions.srt" type="application/srt" rel="captions"/>
+      <itunes:subtitle><![CDATA[Episode 274: "Vibe Cloning"]]></itunes:subtitle>
+      <itunes:summary><![CDATA[<p><span style="font-size: 18pt;"><strong>Podcasting 2.0 October 9th 2026 Episode 274 - "Vibe Cloning"</strong></span></p>
+<div>
+<p>The Future is here! And so is the risk of spinning out. Adam &amp; Dave go deep</p>
+<div>
+<p>&lt;b&gt;ShowNotes&lt;/b&gt;</p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+<p>00 - 📜 1,088 LINES DOWN TO 168 &mdash; THE INDEX GETS NEW TERMS OF SERVICE</p>
+<p><a href="https://podcastindex.social/@dave/117389162908071298" target="_blank" rel="noopener">&lt;b&gt;Dave, 5 Oct:&lt;/b&gt; "Podcast Index terms of service updated (finally)&hellip; The old v1.x terms were &lt;b&gt;90% boilerplate legalese that never accurately reflected what we wanted. I get emails weekly asking for clarification.&lt;/b&gt;" &middot; "The old terms of service were &lt;b&gt;1088 lines. The new ones are 168 lines. It's a 2-3 minute read.&lt;/b&gt;"</a></p>
+<p><a href="https://api.podcastindex.org/tos_v2.0.html" target="_blank" rel="noopener">Terms of Service v2.0</a></p>
+<p><a href="https://github.com/Podcastindex-org/terms-of-service" target="_blank" rel="noopener">&lt;b&gt;And it is an open project:&lt;/b&gt; "The PI terms of service are an open project just like everything else. If you think something can be worded better&hellip; just open a PR."</a></p>
+<p><a href="https://podcastindex.social/@js/117396165431213710" target="_blank" rel="noopener">&lt;b&gt;JS found the best line:&lt;/b&gt; "&lt;b&gt;Since the Service is free, our total liability to you is zero dollars.&lt;/b&gt;" : )))))))</a></p>
+<p><a href="https://podcastindex.social/@dave/117378593908636237" target="_blank" rel="noopener">&lt;b&gt;Last week's bandwidth leak, follow-up.&lt;/b&gt; Dave to James, 3 Oct: "rotating URLs is a good solution&hellip; Part of the issue here is &lt;b&gt;linode not giving any visibility into per bucket/key stats&lt;/b&gt;. That alone probably means I need to change to a different solution." And on 6 Oct, Linode rebooted the utility server &lt;b&gt;in the middle of the weekly full database dump&lt;/b&gt; &mdash; it had uploaded; "Stand down."</a></p>
+<p>🔍 &lt;b&gt;For Dave:&lt;/b&gt; did R2 win? And did the object-storage safeguards break James's 24-hour feed report (4 Oct)?</p>
+<p><a href="https://podcastindex.social/@cisene/117393112912558854" target="_blank" rel="noopener">&lt;b&gt;Spam, the new tells&lt;/b&gt; (cisene): hijacked high-profile shows republished through &lt;b&gt;spreaker.com&lt;/b&gt; under a 2-5 letter owner name for ad insertion &mdash; "easy peasy spotted and killed"; and SEO spam from lawyers, dentists, roofers, gardeners treating the Index as "a cheap/free billboard". Chinese casino spam "has almost stopped". Dave flagged one himself on Apple, 8 Oct.</a></p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+<p>01 - ✂️ "DAI IS TOAST" &mdash; THE SKIP-DYNAMIC-ADS CHECKBOX IS COMING</p>
+<p><a href="https://podcastindex.social/@dave/117405077950830505" target="_blank" rel="noopener">&lt;b&gt;Dave, 8 Oct &mdash; the prediction:&lt;/b&gt; "By the end of 2027, one 'tier 2' podcast app (meaning Overcast, Podcast Addict, Castro, etc) will put a &lt;b&gt;'Skip Dynamic Ads' checkbox&lt;/b&gt; on their settings screen, which will remove DAI slots from podcast episodes on-device after download. And, as soon as one of them does it, &lt;b&gt;they will all do it.&lt;/b&gt;" &middot; "The writing is on the wall. DAI is too trashy and disruptive to the listening experience and the DAI ad load has become too high. &lt;b&gt;The podcast industrial complex will have nobody to blame but themselves.&lt;/b&gt;" (Adam boosted it.)</a></p>
+<p><a href="https://podcastindex.social/@dave/117406111492964320" target="_blank" rel="noopener">&lt;b&gt;How, per Dave (to mikek999):&lt;/b&gt; "On device transcription is already solid enough. Then you profile the mp3 waveform and look for anomalies that correspond to what the model thinks is an inserted advertisement&hellip; &lt;b&gt;Adam proved it works in real time on our last board meeting.&lt;/b&gt;" &middot; "You don't need to know the slot timings. It's all discernable from the transcript and waveform." &middot; "If the tech exists, it will happen&hellip; It's why the Brave browser and uBlock Origin exists."</a></p>
+<p><a href="https://podcastindex.social/@dave/117379871253416522" target="_blank" rel="noopener">&lt;b&gt;And on 4 Oct:&lt;/b&gt; "'Skip dynamic ads' will be a check box just like x2 speed or sleep timer&hellip; &lt;b&gt;I think baked in host read ads will continue. But DAI is toast imo.&lt;/b&gt;" Sam Sethi agreed: "apps make no money from ads&hellip; &lt;b&gt;Spotify has legitimised ad removal.&lt;/b&gt;"</a></p>
+<p><a href="https://omny.fm/shows/better-offline/monologue-australias-dodgiest-ai-ipo-is-a-pale-horse" target="_blank" rel="noopener">&lt;b&gt;Better Offline, "Monologue: Australia's Dodgiest AI IPO Is A Pale Horse"&lt;/b&gt; (Ed Zitron, iHeart / Cool Zone, 9 Oct). Adam: &lt;b&gt;"front ads cut, end ads remain."&lt;/b&gt;</a></p>
+<p>🧮 &lt;b&gt;What the raw feed served us this morning:&lt;/b&gt; the file is &lt;b&gt;15:40&lt;/b&gt;; the show is &lt;b&gt;10:08&lt;/b&gt; (2:56&ndash;13:04). &lt;b&gt;Front: 2:56&lt;/b&gt; &mdash; Oppenheimer, then four iHeart promos (What Happened to Her, Don't Lie to Me, Scam Goddess, Artists on Artists). &lt;b&gt;End: 2:25&lt;/b&gt; &mdash; Chase for Business, Hulu (Jamie Foxx), BET (Tyler Perry's Sisters), a credit union, and Crown Coins Casino. &lt;b&gt;About 34% of the file is ads.&lt;/b&gt; It opens and closes with "This is an iHeart Podcast. &lt;b&gt;Guaranteed human.&lt;/b&gt;" The feed's own duration says 619 seconds &mdash; the content only.</p>
+<p><a href="https://podcastindex.social/@dave/117360192289259978" target="_blank" rel="noopener">&lt;b&gt;Last week Dave counted&lt;/b&gt; 4.5 minutes of pre-rolls and 5 of post-rolls in a 17-minute Better Offline &mdash; "all pharma ads that don't apply to me."</a></p>
+<p><a href="https://github.com/ttlequals0/MinusPod" target="_blank" rel="noopener">&lt;b&gt;MinusPod is on the Index apps list&lt;/b&gt; (web-ui #569, merged 8 Oct): "a &lt;b&gt;self-hosted, open-source RSS proxy that removes ad segments from podcast audio and serves a re-cut feed&lt;/b&gt;." It mints a new podcast:guid per served feed, strips soundbite / integrity / alternateEnclosure / source / liveItem, and regenerates transcripts, chapters and duration from the cut audio.</a></p>
+<p><a href="https://github.com/ttlequals0/MinusPod/blob/main/docs/podcasting-2.0.md" target="_blank" rel="noopener">MinusPod &mdash; Podcasting 2.0 support notes</a></p>
+<p><a href="https://podnews.net/update/yellow-warning" target="_blank" rel="noopener">&lt;b&gt;The research, today (Podnews):&lt;/b&gt; ad load is "flashing a yellow light" &mdash; &lt;b&gt;54.8% of listeners say there are already too many ads; only 8.6% would tolerate more&lt;/b&gt; to keep shows free. Social media is &lt;b&gt;three times&lt;/b&gt; more effective at finding new podcasts than ads in other shows.</a></p>
+<p>&lt;b&gt;Same story &mdash; iHeart in Podtrac's September rankings:&lt;/b&gt; shows up from &lt;b&gt;20,861 to 32,741&lt;/b&gt; in a year, yet US audience &lt;b&gt;down 17%&lt;/b&gt; and US downloads &lt;b&gt;down 20%&lt;/b&gt;. None of the top 5 grew. And Rogan, renewed with Spotify: about &lt;b&gt;15 ads per show (8% ad load)&lt;/b&gt; per Podscribe.</p>
+<p><a href="https://podnews.net/update/ad-revenue-global-2026" target="_blank" rel="noopener">&lt;b&gt;Meanwhile the money is up&lt;/b&gt; (PNWR / Podnews): Podscribe US podcast ad spend &lt;b&gt;+20% from August, $41m&lt;/b&gt;; WARC: online audio &lt;b&gt;$16.6bn&lt;/b&gt; globally this year, +9.9%. Amazon, Alphabet and Meta take &lt;b&gt;60% of all ad revenue&lt;/b&gt;.</a></p>
+<p>&lt;b&gt;Libsyn now publishes its ad slots in the RSS feed&lt;/b&gt; &mdash; its own namespace: two pre-rolls, two mid-rolls, first mid-roll at 620 seconds. James: the timings are for the &lt;b&gt;raw file&lt;/b&gt;, so "you can't actually use this data for skipping ads"; probably for a third-party inserter like SoundStack. Sam: "Somebody has taken over Libsyn secretly&hellip; CEO of Libsyn, if you're in trouble, blink twice."</p>
+<p>&lt;b&gt;PNWR on our last show&lt;/b&gt; (today, 19:02): Sam &mdash; "Adam Curry and Dave Jones had quite an amazing show&hellip; It stripped out all the advertising, found the clip section&hellip; Dave Jones certainly felt could be &lt;b&gt;the end of advertising within podcasting&lt;/b&gt;." James (hadn't heard it): "anytime we hear the end of advertising is nigh&hellip; &lt;b&gt;there's no real change in consumer behavior.&lt;/b&gt;" Sam: "&lt;b&gt;Adam Curry will be on this show next week&lt;/b&gt; to talk about what's going on."</p>
+<p><a href="https://podcastindex.social/@csb/117395820352672458" target="_blank" rel="noopener">&lt;b&gt;Leo, per csb (6 Oct):&lt;/b&gt; TWiT's "ad sales are down to zero" after outsourcing ad sales; Club TWiT subscriptions are what keep it alive.</a></p>
+<p><a href="https://podcastindex.social/@marcjohanssen/117383798127235532" target="_blank" rel="noopener">&lt;b&gt;The arms race starts:&lt;/b&gt; marcjohanssen links "adversarial attacks" that hide audio from AI (no transcripts, no ad detection). Dave: "&lt;b&gt;If it can be heard it can be analyzed.&lt;/b&gt;"</a></p>
+<p>💡 The open feed was always the ad-skipper's friend. The industry spent ten years making DAI the business model &mdash; and the same transcript-and-waveform tools it sells for "brand safety" can find its slots.</p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+<p>02 - 🕸️ DAVE ON THE OTHER SHOW &mdash; THE PODPING MESH AND AN INDEX THAT GIVES ITSELF AWAY</p>
+<p><a href="https://www.buzzsprout.com/1538779/19903509" target="_blank" rel="noopener">&lt;b&gt;PNWR, 3 Oct, "In full: Dave Jones from Podcast Index"&lt;/b&gt; &mdash; Sam waited years for it.</a></p>
+<p>&lt;b&gt;The mesh:&lt;/b&gt; Podping keeps writing to the Hive blockchain "just like we always have"; the new part is &lt;b&gt;peer-to-peer gossip&lt;/b&gt; &mdash; "everybody's familiar with BitTorrent&hellip;" Sam: "You can't come out with words like a peer-to-peer gossip network over a mesh network and then say, that's it, ladies."</p>
+<p><a href="https://podcastindex.social/@dave/117382648185655120" target="_blank" rel="noopener">&lt;b&gt;To JS on Mastodon (4 Oct):&lt;/b&gt; "It's just the same podping hive schema but &lt;b&gt;over Iroh gossip as the transport&lt;/b&gt;&hellip; Any binary that speaks iroh over that gossip topic should see the traffic immediately. I can update the README with the schema and wire protocol details." &mdash; JS had asked: "is it an implementable network protocol? or does it only work with a specific binary?"</a></p>
+<p>&lt;b&gt;Tokens for everyone:&lt;/b&gt; "Right now you have to&hellip; email me and ask for a podping authorization token&hellip; &lt;b&gt;It feels too secretive, like you got to be in the club.&lt;/b&gt;" Within the next few months: an open registration. podping.cloud is five geolocated nodes; a host just sends a GET.</p>
+<p>&lt;b&gt;The big one:&lt;/b&gt; "I have this perfect vision of the future where the podcast index becomes very decentralized&hellip; &lt;b&gt;we sort of work ourselves out of a job&lt;/b&gt;, and we do not become just another directory run by a couple of dudes, instead, &lt;b&gt;everybody has a slice of the directory&lt;/b&gt;." He is rewriting the aggregator to distribute &lt;b&gt;chunks of the database through the Podping mesh&lt;/b&gt;, as gossip topics.</p>
+<p>&lt;b&gt;On marketing the namespace&lt;/b&gt; (Sam's "biggest disappointment" &mdash; and our section 01 last week): "I don't think that it's a marketing problem&hellip; marketing could actually produce the opposite result&hellip; &lt;b&gt;what you sell them with is what you sell them to.&lt;/b&gt;" Over-promise a tag, it doesn't pan out, and "the next time you come to me&hellip; you can take a hike."</p>
+<p>🔍 &lt;b&gt;For Dave:&lt;/b&gt; how far along is the aggregator rewrite, and what is in the first database topic?</p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+<p>03 - 🤖 PODCAST ROBOT &mdash; WEEK ONE</p>
+<p><a href="https://podcastindex.social/@ChadF/117372996761350704" target="_blank" rel="noopener">&lt;b&gt;It works in other robots.&lt;/b&gt; csb connected it to &lt;b&gt;Grok&lt;/b&gt; (2 Oct). ChadF got a &lt;b&gt;Podcasting Credit Score of 84&lt;/b&gt; &mdash; "Claude even told me what tags were missing and gave examples of how to add them." Adam: "a passing grade!!"</a></p>
+<p><a href="https://podcastindex.social/@Kolomona/117378504626105271" target="_blank" rel="noopener">&lt;b&gt;Kolomona&lt;/b&gt; sent the lookup URL patterns to add &lt;b&gt;v4vmusic.com&lt;/b&gt; app links (publisher, playlist, album).</a></p>
+<p><a href="https://podcastindex.social/@dave/117382766527541175" target="_blank" rel="noopener">&lt;b&gt;mitch:&lt;/b&gt; "Does the new MCP server open up the possibility for apps to add an AI option to their search pages?" Dave: "I think Adam's take is correct on this. &lt;b&gt;Not really intended for podcast apps unless they are already agentic based. API is still the correct thing&lt;/b&gt; for normal podcast apps."</a></p>
+<p><a href="https://podcastindex.social/@csb/117399736490584688" target="_blank" rel="noopener">&lt;b&gt;csb: "AC is genius"&lt;/b&gt; &mdash; the "SaaS-pocalypse": per-seat software subscriptions erode when MCP lets people run workflows inside their AI assistant. He also wants to interview Adam about it on his YouTube channel &lt;b&gt;any time after 16 Oct&lt;/b&gt;.</a></p>
+<p><a href="https://podcastindex.social/@adam/117374485634549381" target="_blank" rel="noopener">&lt;b&gt;Adam, to csb on decentralization:&lt;/b&gt; "its distributed by its very nature. &lt;b&gt;It's YOUR robot that does the work, we proved the gateway&lt;/b&gt;."</a></p>
+<p>&lt;b&gt;PNWR today, Sam:&lt;/b&gt; "originally Adam was like, no, we're never gonna do that&hellip; &lt;b&gt;They've changed their mind completely. There's lots of apologies&lt;/b&gt;, and thank you to you." James: he gets one or two AI clipping-service pitches a day.</p>
+<p><a href="https://podcastindex.social/@rademaker/117397027263964519" target="_blank" rel="noopener">&lt;b&gt;rademaker&lt;/b&gt; pointed Claude at our feed: "&lt;b&gt;199 episodes have a real transcript, about 3.47 million words&lt;/b&gt;."</a></p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+</div>
+<div><small>Last Modified 10/09/2026 14:46:16 by&nbsp;<a href="http://freedomcontroller.com/">Freedom Controller</a></small>&nbsp;<a title="Link to the opml for this document." href="http://adam.curry.com/opml/Podcasting20Episode2-nI2IkKrC8PwiEZ2w4YRgC1.opml">&nbsp;</a></div>
+</div>]]></itunes:summary>
+      <itunes:author>Podcast Index LLC</itunes:author>
+      <author>Podcast Index LLC</author>
+      <itunes:image href="https://noagendaassets.com/enc/1684513486.722_pcifeedimage.png"/>
+      <itunes:explicit>No</itunes:explicit>
+      <itunes:keywords>podcasting,curry,podfather,technology,developers</itunes:keywords>
+      <enclosure url="https://op3.dev/e/mp3s.nashownotes.com/PC20-274-2026-10-09-Final.mp3" type="audio/mpeg" length="72798142"/>
+      <podcast:person group="cast" role="host" img="https://feeds.podcastindex.org/adam_avatar.jpg" href="http://curry.com">Adam Curry</podcast:person>
+      <podcast:person href="http://dave.sobr.org" img="https://feeds.podcastindex.org/dave_avatar.jpg" group="cast" role="host">Dave Jones</podcast:person>
+      <podcast:value type="lightning" method="keysend" suggested="0.00000005000">
+        <podcast:valueRecipient name="Dreb Scott (Chapters)" type="lnaddress" address="drebscott@getalby.com" split="5"/>
+        <podcast:valueRecipient name="Sovereign Feeds" address="steven@getalby.com" type="lnaddress" split="10"/>
+        <podcast:valueRecipient name="Fountain Boost bot" type="lnaddress" address="boostbot@fountain.fm" split="1"/>
+        <podcast:valueRecipient name="Reflex.io" type="lnaddress" address="reflex@livewire.io" split="5"/>
+        <podcast:valueRecipient name="ericpp@getalby.com" type="lnaddress" address="ericpp@getalby.com" split="5"/>
+        <podcast:valueRecipient name="Strike Test" type="lnaddress" address="adamcurry@strike.me" split="3"/>
+        <podcast:valueRecipient name="Alecks Gates Strike" type="lnaddress" address="agates@strike.me" split="5"/>
+        <podcast:valueRecipient name="PodcastIndex LN Test Wallet" type="lnaddress" address="podcastindex@getalby.com" split="50"/>
+        <podcast:valueRecipient name="Pod Sage" type="lnaddress" address="dave@getalby.com" split="1"/>
+        <podcast:valueRecipient name="Boost Monitor" type="lnaddress" address="adam@getalby.com" split="5"/>
+      </podcast:value>
+      <podcast:socialInteract protocol="activitypub" uri="https://podcastindex.social/@samsethi/117412398628484808" accountId="@adam" accountUrl="https://podcastindex.social/users/adam"/>
+      <itunes:duration>6065</itunes:duration>
+      <podcast:funding url="https://www.paypal.com/donate?token=-hvWBEXZQfp7oSFJz0TwT3QXYcjYuemZRPIOml3nrL-EhtiUPAwuVHS6DPN5cBat9wjqwYEtyW-K8zSS">Support us with Value 4 Value</podcast:funding>
+    </item>
+<item>
+      <title><![CDATA[Episode 273: "Advertising is the Horse and Buggies of Podcasting"]]></title>
+      <description><![CDATA[<p><span style="font-size: 18pt;"><strong>Podcasting 2.0 October 2nd 2026 Episode 273 - "Advertising is The Horse and Buggies of Podcasting"</strong></span></p>
+<p>One topic only today - Big changes coming to podcast discovery!</p>
+<div>
+<p>05 - 🤖 PODCAST ROBOT &mdash; ADAM'S MCP SERVER FOR THE INDEX</p>
+<p>Discovery</p>
+<p>New Tag adoption</p>
+<p>podroll trailer peson location etc</p>
+<p>AEO - Ask Engine Optimization</p>
+<p>AI Assistants - Robots - Muse</p>
+<p><a href="https://podcastindexrobot.com/" target="_blank" rel="noopener">podcastindexrobot.com &mdash; Podcast Robot, part of Podcast Index</a></p>
+<p>&lt;b&gt;What it says it is:&lt;/b&gt; "Podcast Robot is a plug-in for AI assistants like Claude, ChatGPT or your own agent. Once connected, your assistant can &lt;b&gt;see every podcast in the world through Podcast Index&lt;/b&gt;&hellip; plus the live signals that say when something new drops or a show goes live. &lt;b&gt;No account, no key, nothing to install.&lt;/b&gt; Your podcast app stays your podcast app: Podcast Robot hands you links that open right in it."</p>
+<p>&lt;b&gt;The asks it handles:&lt;/b&gt; "What's new in my shows?" &middot; "Find the part where they talk about X" (transcript search, link to the moment) &middot; "Who was that guest? Where else is she?" (podcast:person) &middot; "Surprise me" / what other podcasters recommend (podroll) &middot; "What's made in Austin?" (&lt;b&gt;18,000 shows carry location&lt;/b&gt;) &middot; "How do I support this show?" (funding / Value4Value).</p>
+<p>&lt;b&gt;Let it keep watch:&lt;/b&gt; "Tell me when [show] goes live" &middot; "Watch for any episode where [person] is a guest" &mdash; it tells the assistant to check only what changed, so one check costs one or two calls. The page is honest: hosted assistants schedule hourly at best (ChatGPT, Claude Routines, &lt;b&gt;Dots&lt;/b&gt;); a true every-15-minutes needs your own agent, &lt;b&gt;such as Muse&lt;/b&gt;.</p>
+<p>&lt;b&gt;💡 For podcasters: "grade my feed"&lt;/b&gt; &mdash; Podcast Robot "tells you which Podcasting 2.0 tags you are missing and &lt;b&gt;what each one would let assistants do for your listeners&lt;/b&gt;." &lt;b&gt;That is an answer to Sam's marketing thread in section 01:&lt;/b&gt; not a version number, a reason &mdash; every tag is now something an assistant can do.</p>
+<p><a href="https://github.com/Podcastindex-org/podcast-platform-links" target="_blank" rel="noopener">Its links out use podcast-platform-links (GitHub)</a></p>
+<p>csb's prediction this morning: "AC today on Podcasting 2.0 will say: Podcast player app developers, please abandon your apps because future of Podcasting are: &lt;b&gt;Always-On AI Agents&lt;/b&gt;." The page says the opposite: &lt;b&gt;your podcast app stays your podcast app.&lt;/b&gt;</p>
+</div>
+<div><small>Last Modified 10/02/2026 14:17:57 by&nbsp;<a href="http://freedomcontroller.com/">Freedom Controller</a></small>&nbsp;<a title="Link to the opml for this document." href="http://adam.curry.com/opml/Podcasting20Episode2-PNACKml5MNR4ACEeWrO17B.opml">&nbsp;</a></div>]]></description>
+      <link>https://www.podpage.com/podcasting-20/horse-and-buggies/</link>
+      <guid isPermaLink="false">PC20-273</guid>
+      <pubDate>Fri, 02 Oct 2026 19:18:08 +0000</pubDate>
+      <podcast:chapters url="https://reflex.livewire.io/chapters/podcast/917393e3-1b1e-5cef-ace4-edaa54e1f810/item/PC20-273/chapters/https://mp3s.nashownotes.com/PC20-273-Chapters.json" type="application/json"/>
+      <podcast:transcript url="https://mp3s.nashownotes.com/PC20-273-Captions.srt" type="application/srt" rel="captions"/>
+      <itunes:subtitle><![CDATA[Episode 273: "Advertising is the Horse and Buggies of Podcasting"]]></itunes:subtitle>
+      <itunes:summary><![CDATA[<p><span style="font-size: 18pt;"><strong>Podcasting 2.0 October 2nd 2026 Episode 273 - "Advertising is The Horse and Buggies of Podcasting"</strong></span></p>
+<p>One topic only today - Big changes coming to podcast discovery!</p>
+<div>
+<p>05 - 🤖 PODCAST ROBOT &mdash; ADAM'S MCP SERVER FOR THE INDEX</p>
+<p>Discovery</p>
+<p>New Tag adoption</p>
+<p>podroll trailer peson location etc</p>
+<p>AEO - Ask Engine Optimization</p>
+<p>AI Assistants - Robots - Muse</p>
+<p><a href="https://podcastindexrobot.com/" target="_blank" rel="noopener">podcastindexrobot.com &mdash; Podcast Robot, part of Podcast Index</a></p>
+<p>&lt;b&gt;What it says it is:&lt;/b&gt; "Podcast Robot is a plug-in for AI assistants like Claude, ChatGPT or your own agent. Once connected, your assistant can &lt;b&gt;see every podcast in the world through Podcast Index&lt;/b&gt;&hellip; plus the live signals that say when something new drops or a show goes live. &lt;b&gt;No account, no key, nothing to install.&lt;/b&gt; Your podcast app stays your podcast app: Podcast Robot hands you links that open right in it."</p>
+<p>&lt;b&gt;The asks it handles:&lt;/b&gt; "What's new in my shows?" &middot; "Find the part where they talk about X" (transcript search, link to the moment) &middot; "Who was that guest? Where else is she?" (podcast:person) &middot; "Surprise me" / what other podcasters recommend (podroll) &middot; "What's made in Austin?" (&lt;b&gt;18,000 shows carry location&lt;/b&gt;) &middot; "How do I support this show?" (funding / Value4Value).</p>
+<p>&lt;b&gt;Let it keep watch:&lt;/b&gt; "Tell me when [show] goes live" &middot; "Watch for any episode where [person] is a guest" &mdash; it tells the assistant to check only what changed, so one check costs one or two calls. The page is honest: hosted assistants schedule hourly at best (ChatGPT, Claude Routines, &lt;b&gt;Dots&lt;/b&gt;); a true every-15-minutes needs your own agent, &lt;b&gt;such as Muse&lt;/b&gt;.</p>
+<p>&lt;b&gt;💡 For podcasters: "grade my feed"&lt;/b&gt; &mdash; Podcast Robot "tells you which Podcasting 2.0 tags you are missing and &lt;b&gt;what each one would let assistants do for your listeners&lt;/b&gt;." &lt;b&gt;That is an answer to Sam's marketing thread in section 01:&lt;/b&gt; not a version number, a reason &mdash; every tag is now something an assistant can do.</p>
+<p><a href="https://github.com/Podcastindex-org/podcast-platform-links" target="_blank" rel="noopener">Its links out use podcast-platform-links (GitHub)</a></p>
+<p>csb's prediction this morning: "AC today on Podcasting 2.0 will say: Podcast player app developers, please abandon your apps because future of Podcasting are: &lt;b&gt;Always-On AI Agents&lt;/b&gt;." The page says the opposite: &lt;b&gt;your podcast app stays your podcast app.&lt;/b&gt;</p>
+</div>
+<div><small>Last Modified 10/02/2026 14:17:57 by&nbsp;<a href="http://freedomcontroller.com/">Freedom Controller</a></small>&nbsp;<a title="Link to the opml for this document." href="http://adam.curry.com/opml/Podcasting20Episode2-PNACKml5MNR4ACEeWrO17B.opml">&nbsp;</a></div>]]></itunes:summary>
+      <itunes:author>Podcast Index LLC</itunes:author>
+      <author>Podcast Index LLC</author>
+      <itunes:image href="https://noagendaassets.com/enc/1684513486.722_pcifeedimage.png"/>
+      <itunes:explicit>No</itunes:explicit>
+      <itunes:keywords>podcasting,curry,podfather,technology,developers</itunes:keywords>
+      <enclosure url="https://op3.dev/e/mp3s.nashownotes.com/PC20-273-2026-10-02-Final.mp3" type="audio/mpeg" length="64648222"/>
+      <podcast:person group="cast" role="host" img="https://feeds.podcastindex.org/adam_avatar.jpg" href="http://curry.com">Adam Curry</podcast:person>
+      <podcast:person href="http://dave.sobr.org" img="https://feeds.podcastindex.org/dave_avatar.jpg" group="cast" role="host">Dave Jones</podcast:person>
+      <podcast:value type="lightning" method="keysend" suggested="0.00000005000">
+        <podcast:valueRecipient name="Dreb Scott (Chapters)" type="lnaddress" address="drebscott@getalby.com" split="5"/>
+        <podcast:valueRecipient name="Sovereign Feeds" address="steven@getalby.com" type="lnaddress" split="10"/>
+        <podcast:valueRecipient name="Fountain Boost bot" type="lnaddress" address="boostbot@fountain.fm" split="1"/>
+        <podcast:valueRecipient name="Reflex.io" type="lnaddress" address="reflex@livewire.io" split="5"/>
+        <podcast:valueRecipient name="ericpp@getalby.com" type="lnaddress" address="ericpp@getalby.com" split="5"/>
+        <podcast:valueRecipient name="Strike Test" type="lnaddress" address="adamcurry@strike.me" split="3"/>
+        <podcast:valueRecipient name="Alecks Gates Strike" type="lnaddress" address="agates@strike.me" split="5"/>
+        <podcast:valueRecipient name="PodcastIndex LN Test Wallet" type="lnaddress" address="podcastindex@getalby.com" split="50"/>
+        <podcast:valueRecipient name="Pod Sage" type="lnaddress" address="dave@getalby.com" split="1"/>
+        <podcast:valueRecipient name="Boost Monitor" type="lnaddress" address="adam@getalby.com" split="5"/>
+      </podcast:value>
+      <podcast:socialInteract protocol="activitypub" uri="https://podcastindex.social/@dave/117372749874166353" accountId="@adam" accountUrl="https://podcastindex.social/users/adam"/>
+      <itunes:duration>5385</itunes:duration>
+      <podcast:funding url="https://www.paypal.com/donate?token=-hvWBEXZQfp7oSFJz0TwT3QXYcjYuemZRPIOml3nrL-EhtiUPAwuVHS6DPN5cBat9wjqwYEtyW-K8zSS">Support us with Value 4 Value</podcast:funding>
+    </item>
+<item>
+      <title><![CDATA[Episode 272: "Is this Y'all?"]]></title>
+      <description><![CDATA[<p><span style="font-size: 18pt;"><strong>Podcasting 2.0 September 25th 2026 Episode 272 - "Is this Y'all?"</strong></span></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<div>
+<p>00 - 🗄️ THE SCHEMA IS LIVE &mdash; AND THEN THE AGGREGATORS PICKED A FIGHT</p>
+<p>&lt;b&gt;Dave has already told us this one is his: "Will explain in the board meeting tomorrow."&lt;/b&gt;</p>
+<p>&lt;b&gt;Mon 22 Sep &mdash; the cutover lands:&lt;/b&gt; "#api &lt;b&gt;All api endpoints are now live with the new database schema.&lt;/b&gt; Bug reports welcome. I'm tired. 😅"</p>
+<p><a href="https://podcastindex.social/@dave" target="_blank" rel="noopener">@dave &mdash; all endpoints live on the new schema</a></p>
+<p>&lt;b&gt;Tue 23 Sep &mdash; and now the real work:&lt;/b&gt; "Now comes the post-deploy quality testing of the Index as a whole. &lt;b&gt;Now that we have an audit trail for every feed&lt;/b&gt; we will need to &lt;b&gt;walk every podcast in the Index&lt;/b&gt; to see where it stands and what metadata needs reconciling."</p>
+<p>&lt;b&gt;New tables in the dump:&lt;/b&gt; "@js There are new tables in the ndjson dump now. 😉" &middot; "@js You're the guinea pig. Let me know if anything looks off."</p>
+<p>&lt;b&gt;On breakage, to Mitch (Podverse):&lt;/b&gt; "Any additional parameters should be additive. &lt;b&gt;The overall shape of the response should not change.&lt;/b&gt; There *shouldn't* be any breakage unless the client is doing a Rust style strict type coercion. But, I wouldn't expect that to be common since JSON is fragile."</p>
+<p>&lt;b&gt;Thu 24 Sep &mdash; the brawl, in four posts:&lt;/b&gt;</p>
+<p>12:10 &mdash; "#api &lt;b&gt;Adding 2 new indexes on the feeds table.&lt;/b&gt; Expect the api to choke for a few minutes until this completes."</p>
+<p>14:38 &mdash; "#api &lt;b&gt;All out brawl with the feed aggregators this morning. I'm about to win though.&lt;/b&gt;"</p>
+<p>17:08 &mdash; "&lt;b&gt;Battle is over. The war is ongoing.&lt;/b&gt;"</p>
+<p>20:02 &mdash; "#api I fixed a huge problem with the feed aggregators. Based on this snapshot of our database metrics, &lt;b&gt;can you guess at roughly what time that happened?&lt;/b&gt;" &middot; 20:03 &mdash; "&lt;b&gt;Network throughput up. CPU and disk rate down. It's a win-win.&lt;/b&gt;"</p>
+<p>&lt;b&gt;🔍 The question for Dave:&lt;/b&gt; what were the aggregators actually doing &mdash; hammering the feeds, or something subtler that the new audit trail made visible for the first time? And what did the two indexes fix?</p>
+<p>&lt;b&gt;19:13 &mdash; the bug he flagged for today:&lt;/b&gt; "#api There was a problem with &lt;b&gt;search ranking in the search/byterm endpoint&lt;/b&gt; after switching the db schema. This should be fixed now. &lt;b&gt;Will explain in the board meeting tomorrow.&lt;/b&gt;"</p>
+<p>&lt;b&gt;Loose end:&lt;/b&gt; @ChadF, 24 Sep &mdash; "@dave looks like &lt;b&gt;podcaster wallet is returning the old node address&lt;/b&gt;." Not visibly answered yet.</p>
+<p><a href="https://github.com/Podcastindex-org/docs-api/issues/160" target="_blank" rel="noopener">&lt;b&gt;Also closed this week:&lt;/b&gt; docs-api #160, "BUG: Wrong season number in some episodes" &mdash; season 14 coming back as 4.</a></p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+<p>01 - 🎤 GUEST: SAM SETHI &mdash; TRUEFANS, AND THE THREE FEEDS HE ASKED TO TALK ABOUT</p>
+<p>&lt;b&gt;He set this agenda himself.&lt;/b&gt; 22 Sep, to Dave: "thank you my friend. When are we going to get you back on PWR and equally &lt;b&gt;I would love to come back on P2.0 to talk about SuperFeeds, Publisher Feeds and Network Feeds&lt;/b&gt;."</p>
+<p><a href="https://podcastindex.social/@samsethi" target="_blank" rel="noopener">@samsethi &mdash; the ask (22 Sep)</a></p>
+<p>&lt;b&gt;📦 1. SUPERFEEDS &mdash; what he has actually shipped&lt;/b&gt;</p>
+<p>His own definition, 19 Jul: "Traditional RSS feeds were designed to distribute podcast episodes, with the audio attached using the enclosure tag. Then came Podcasting 2.0, introducing &lt;b&gt;more than 30 new namespace tags&lt;/b&gt;&hellip; A SuperFeed lets you combine much more than audio or video. Alongside your podcast episodes you can include &lt;b&gt;blog posts, publisher updates, events, premium paid content &mdash; all delivered through a single RSS feed&lt;/b&gt;."</p>
+<p>&lt;b&gt;The bit that matters for the Index:&lt;/b&gt; SuperFeeds started (Jul 2024) as "the ability for a podcaster to &lt;b&gt;add any new Podcasting 2.0 tag to their existing RSS feed&lt;/b&gt; and then publish the new TrueFans RSS feed to the Podcast Index &lt;b&gt;while staying with their existing host&lt;/b&gt;" &mdash; a free claim-and-enrich service that keeps the enclosure with the original host.</p>
+<p>&lt;b&gt;Where it is now:&lt;/b&gt; two experimental tags added Apr 2026 &mdash; &lt;b&gt;podcast:pinned&lt;/b&gt; and &lt;b&gt;podcast:store&lt;/b&gt; &mdash; plus podroll and publisher feeds, with events and merch built on the publisher-feed pattern. "Our goal is to allow creators to &lt;b&gt;build a SuperFeed by picking what elements are added&lt;/b&gt; to their RSS feed."</p>
+<p>&lt;b&gt;And the anti-Patreon argument, 7 May:&lt;/b&gt; "Apple's proprietary API for HLS video doesn't use RSS. &lt;b&gt;TrueFans is going the other way.&lt;/b&gt; We are building Super RSS feeds with &lt;b&gt;Audio, Video and Freemium/Premium RSS in the same feed. No need for Patreon private feeds.&lt;/b&gt;"</p>
+<p>🔍 &lt;b&gt;Ask:&lt;/b&gt; if a SuperFeed is one feed containing podcast + blog + events + merch + premium, &lt;b&gt;what does an app do with the items it does not understand?&lt;/b&gt; Is there a medium or a filter, or does every app have to learn every type?</p>
+<p>&lt;b&gt;📡 2. PUBLISHER FEEDS &mdash; and the pattern he keeps reusing&lt;/b&gt;</p>
+<p>He builds everything on remote items off the publisher feed: "&lt;b&gt;We will add NEW Events and Merchant tags based on the publisher feed&lt;/b&gt;" &mdash; `&amp;lt;podcast:publisher&amp;gt;&amp;lt;podcast:remoteItem medium="publisher" feedUrl="https://feeds.truefans.fm/rss/publishers/&hellip;" /&amp;gt;&amp;lt;/podcast:publisher&amp;gt;`</p>
+<p><a href="https://truefans.fm/awards/cheerful-earful" target="_blank" rel="noopener">&lt;b&gt;Event feed proposal, 1 Aug:&lt;/b&gt; "We are proposing a &lt;b&gt;new EVENT feed based on the Publisher Feed&lt;/b&gt;" &mdash; events in the admin dashboard appear on the podcast page; tickets sold externally or in-app via Apple Pay / Stripe. Live example: the Cheerful Earful Comedy Festival on one page.</a></p>
+<p>&lt;b&gt;Merch &mdash; the StoreFront proposal, 31 Aug:&lt;/b&gt; "TrueFans recently added a new experimental tag for RSS feeds called &lt;b&gt;Podcast:StoreFront&lt;/b&gt;. The aim of this StoreFront tag is to &lt;b&gt;mirror the Funding tag&lt;/b&gt;" &mdash; a URL to a third-party store (Amazon, Sticker Mule, Shopify) puts a shop icon on the page. Later: products hosted in TrueFans, paid in fiat via Stripe or in SATs.</p>
+<p>🔍 &lt;b&gt;Ask Dave:&lt;/b&gt; is the publisher-feed-with-remote-items pattern the right substrate for events and merch, or is this three tags that each want their own medium?</p>
+<p>&lt;b&gt;🕸️ 3. NETWORK FEEDS &mdash; the one nobody has seen yet&lt;/b&gt;</p>
+<p>&lt;b&gt;This is new.&lt;/b&gt; He has posted publicly about SuperFeeds since 2024 and Publisher Feeds since 2024 &mdash; but &lt;b&gt;"Network Feeds" appears exactly once anywhere on podcastindex.social: in his 22 Sep ask&lt;/b&gt;. There is no proposal, no example feed, no thread. &lt;b&gt;This is the scoop of the segment &mdash; let him define it live.&lt;/b&gt;</p>
+<p>🔍 &lt;b&gt;Ask:&lt;/b&gt; what is a Network Feed, and how is it not just a publisher feed with more members? Who owns it &mdash; the network or the shows? What happens to a show that leaves?</p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+<p>02 - 💳 SAM ON PAYMENTS &mdash; "THE FUTURE IS MICROPAYMENTS&hellip; BUT MAYBE NOT BITCOIN"</p>
+<p>&lt;b&gt;🚨 This is the live wire of the episode.&lt;/b&gt; V4V was built on Lightning and SATs. Our guest &mdash; who has shipped a SATs wallet &mdash; is now saying the rail may be wrong.</p>
+<p>&lt;b&gt;24 Sep, in his own words:&lt;/b&gt; "We also just enabled &lt;b&gt;Paypal, Amazon Pay, Samsung Pay&lt;/b&gt; to go alongside Apple/Google Pay and Bank. I am now looking at &lt;b&gt;Stablecoin&lt;/b&gt; as an option. &lt;b&gt;I still [think] the future is micropayments direct from fan to creator but maybe not Bitcoin.&lt;/b&gt;"</p>
+<p>&lt;b&gt;Stripe Pay By Bank &mdash; TrueFans added support same day:&lt;/b&gt; "Pay by Bank is a single-use payment method that allows customers to &lt;b&gt;pay directly from their bank account instead of using a card&lt;/b&gt;&hellip; runs on banking infrastructure and takes advantage of &lt;b&gt;open banking APIs&lt;/b&gt;." Caveat he flagged: "only &lt;b&gt;Finland and UK&lt;/b&gt; which is odd but we will keep an eye and see if other countries get added."</p>
+<p>&lt;b&gt;25 Sep 00:29, the thesis:&lt;/b&gt; "there is still a &lt;b&gt;real need on the web for micropayments&lt;/b&gt;. I think when &lt;b&gt;mainstream banks give customers a current/chequing account and a digital account&lt;/b&gt; and make it easy for us to transfer money from one account to the other &lt;b&gt;will be the start of a wider adoption&lt;/b&gt;."</p>
+<p>&lt;b&gt;27 Jul, the post-mortem on v1:&lt;/b&gt; "Maybe &lt;b&gt;v1.0 was too complex with KYC, Nostr, Alby and Moonpay&lt;/b&gt;. I am watching &lt;b&gt;Stripe, Stablecoins and x.402&lt;/b&gt;, a new open payment protocol that makes internet-native micropayments&hellip;" &mdash; and the Dizzee Rascal quote: "Some people think I'm bonkers / But I just think I'm free."</p>
+<p>&lt;b&gt;💡 But his funding tag is the purest V4V in the ecosystem &mdash; give him credit for it:&lt;/b&gt; "The podcaster &lt;b&gt;only gets paid if they continue to publish&lt;/b&gt; more episodes&hellip; Platforms like Patreon or Substack will continue to take the monthly amount &lt;b&gt;even if the podcaster doesn't publish&lt;/b&gt;." The fan sets a monthly maximum; TrueFans draws from it per episode published. &lt;b&gt;That is value-for-value enforced in code.&lt;/b&gt;</p>
+<p>&lt;b&gt;Also:&lt;/b&gt; if a feed has no funding tag, TrueFans turns its own on and takes &lt;b&gt;10% of funding transactions&lt;/b&gt;. Worth asking how that sits with podcasters who did not ask for it.</p>
+<p>🔍 &lt;b&gt;The question for the room:&lt;/b&gt; if Pay By Bank and stablecoins do the job with less friction, &lt;b&gt;is Lightning still the point of V4V &mdash; or was the point always fan-to-creator with no intermediary, whatever the rail?&lt;/b&gt;</p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+<p>03 - 🏛️ SAM'S THESIS &mdash; "LESS LIKE PODCAST APPS AND MORE LIKE CREATOR PORTALS"</p>
+<p>&lt;b&gt;15 Sep, his four-part statement of direction:&lt;/b&gt; "The old model was simple: &lt;b&gt;one creator &rarr; one podcast &rarr; one audio app&lt;/b&gt;. That worked when podcasting was primarily about listening. But creators are building something much bigger now&hellip; the next generation of creator platforms will look &lt;b&gt;less like podcast apps and more like Creator Portals&lt;/b&gt; &mdash; a single place where creators can build, engage, communicate with and monetise their communities."</p>
+<p>&lt;b&gt;What is already live:&lt;/b&gt; host and stream audio or video, publish blogs, run live events, sell tickets, merch links, premium per-episode and per-blog pricing, a fan wallet.</p>
+<p>&lt;b&gt;New this month &mdash; newsletters:&lt;/b&gt; "Starting next week we're taking another step forward with the launch of the &lt;b&gt;NEW TrueFans Newsletter&lt;/b&gt;&hellip; the plan is to make the &lt;b&gt;same newsletter functionality available to every TrueFans creator&lt;/b&gt;" with subscriber / delivered / opened / clicked stats. "The goal is to give creators &lt;b&gt;one place to build, own, manage and monetise their entire relationship with their true fans&lt;/b&gt;."</p>
+<p>&lt;b&gt;Roadmap he published:&lt;/b&gt; customised domains &middot; new native iOS &amp;amp; Android apps &middot; CarPlay, Apple Watch, Apple TV.</p>
+<p>&lt;b&gt;Features built on P2.0 tags &mdash; the good citizen argument (31 Aug):&lt;/b&gt; "I'm excited that we are starting to see apps &lt;b&gt;building new features on top of Podcasting 2.0 tags&lt;/b&gt;&hellip; I'm now looking at &lt;b&gt;every tag&lt;/b&gt;, trying to see if we can build a new feature on top."</p>
+<p><a href="https://truefans.fm/search" target="_blank" rel="noopener">&bull; &lt;b&gt;Frequency tag&lt;/b&gt; &rarr; show the &lt;b&gt;NEXT&lt;/b&gt; publish date instead of the last one &middot; &bull; &lt;b&gt;Live Item tag&lt;/b&gt; &rarr; PENDING / LIVE NOW / END status on the page, localised &middot; &bull; &lt;b&gt;Person tag&lt;/b&gt; &rarr; aggregate every podcast where you are tagged into &lt;b&gt;one dynamically-updating playlist&lt;/b&gt; on your profile &middot; &bull; &lt;b&gt;Location&lt;/b&gt; &rarr; new location search built on @alberto's Radar.</a></p>
+<p>&lt;b&gt;Coming:&lt;/b&gt; "Our next big feature will be to use &lt;b&gt;AI to grab 5 clips&lt;/b&gt; from the audio and/or video&hellip; and &lt;b&gt;add those clips to the Podcasting 2.0 soundbite tag&lt;/b&gt;, as well as auto publishing those clips to the podcasters social media." 💡 Machine-generated soundbites written back into the namespace &mdash; that is a namespace question, not just a feature.</p>
+<p>&lt;b&gt;And the gamification layer:&lt;/b&gt; 30 activity verbs tracking fan behaviour, points to identify &lt;b&gt;SuperFans&lt;/b&gt;, fans can OAuth their socials and auto-publish chosen verbs &mdash; including &lt;b&gt;how long they played and percent completed&lt;/b&gt;, with a play-percentage slider.</p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+</div>
+<div><small>Last Modified 09/25/2026 14:52:38 by&nbsp;<a href="http://freedomcontroller.com/">Freedom Controller</a></small>&nbsp;<a title="Link to the opml for this document." href="http://adam.curry.com/opml/Podcasting20Episode2-NgV0lE2AVlLQ0HJlMnEOc2.opml">&nbsp;</a></div>]]></description>
+      <link>https://www.podpage.com/podcasting-20/is-thos-yall/</link>
+      <guid isPermaLink="false">PC20-272</guid>
+      <pubDate>Fri, 25 Sep 2026 19:15:48 +0000</pubDate>
+      <podcast:chapters url="https://reflex.livewire.io/chapters/podcast/917393e3-1b1e-5cef-ace4-edaa54e1f810/item/PC20-272/chapters/https://mp3s.nashownotes.com/PC20-272-Chapters.json" type="application/json"/>
+      <podcast:transcript url="https://mp3s.nashownotes.com/PC20-272-Captions.srt" type="application/srt" rel="captions"/>
+      <itunes:subtitle><![CDATA[Episode 272: "Is this Y'all?"]]></itunes:subtitle>
+      <itunes:summary><![CDATA[<p><span style="font-size: 18pt;"><strong>Podcasting 2.0 September 25th 2026 Episode 272 - "Is this Y'all?"</strong></span></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<div>
+<p>00 - 🗄️ THE SCHEMA IS LIVE &mdash; AND THEN THE AGGREGATORS PICKED A FIGHT</p>
+<p>&lt;b&gt;Dave has already told us this one is his: "Will explain in the board meeting tomorrow."&lt;/b&gt;</p>
+<p>&lt;b&gt;Mon 22 Sep &mdash; the cutover lands:&lt;/b&gt; "#api &lt;b&gt;All api endpoints are now live with the new database schema.&lt;/b&gt; Bug reports welcome. I'm tired. 😅"</p>
+<p><a href="https://podcastindex.social/@dave" target="_blank" rel="noopener">@dave &mdash; all endpoints live on the new schema</a></p>
+<p>&lt;b&gt;Tue 23 Sep &mdash; and now the real work:&lt;/b&gt; "Now comes the post-deploy quality testing of the Index as a whole. &lt;b&gt;Now that we have an audit trail for every feed&lt;/b&gt; we will need to &lt;b&gt;walk every podcast in the Index&lt;/b&gt; to see where it stands and what metadata needs reconciling."</p>
+<p>&lt;b&gt;New tables in the dump:&lt;/b&gt; "@js There are new tables in the ndjson dump now. 😉" &middot; "@js You're the guinea pig. Let me know if anything looks off."</p>
+<p>&lt;b&gt;On breakage, to Mitch (Podverse):&lt;/b&gt; "Any additional parameters should be additive. &lt;b&gt;The overall shape of the response should not change.&lt;/b&gt; There *shouldn't* be any breakage unless the client is doing a Rust style strict type coercion. But, I wouldn't expect that to be common since JSON is fragile."</p>
+<p>&lt;b&gt;Thu 24 Sep &mdash; the brawl, in four posts:&lt;/b&gt;</p>
+<p>12:10 &mdash; "#api &lt;b&gt;Adding 2 new indexes on the feeds table.&lt;/b&gt; Expect the api to choke for a few minutes until this completes."</p>
+<p>14:38 &mdash; "#api &lt;b&gt;All out brawl with the feed aggregators this morning. I'm about to win though.&lt;/b&gt;"</p>
+<p>17:08 &mdash; "&lt;b&gt;Battle is over. The war is ongoing.&lt;/b&gt;"</p>
+<p>20:02 &mdash; "#api I fixed a huge problem with the feed aggregators. Based on this snapshot of our database metrics, &lt;b&gt;can you guess at roughly what time that happened?&lt;/b&gt;" &middot; 20:03 &mdash; "&lt;b&gt;Network throughput up. CPU and disk rate down. It's a win-win.&lt;/b&gt;"</p>
+<p>&lt;b&gt;🔍 The question for Dave:&lt;/b&gt; what were the aggregators actually doing &mdash; hammering the feeds, or something subtler that the new audit trail made visible for the first time? And what did the two indexes fix?</p>
+<p>&lt;b&gt;19:13 &mdash; the bug he flagged for today:&lt;/b&gt; "#api There was a problem with &lt;b&gt;search ranking in the search/byterm endpoint&lt;/b&gt; after switching the db schema. This should be fixed now. &lt;b&gt;Will explain in the board meeting tomorrow.&lt;/b&gt;"</p>
+<p>&lt;b&gt;Loose end:&lt;/b&gt; @ChadF, 24 Sep &mdash; "@dave looks like &lt;b&gt;podcaster wallet is returning the old node address&lt;/b&gt;." Not visibly answered yet.</p>
+<p><a href="https://github.com/Podcastindex-org/docs-api/issues/160" target="_blank" rel="noopener">&lt;b&gt;Also closed this week:&lt;/b&gt; docs-api #160, "BUG: Wrong season number in some episodes" &mdash; season 14 coming back as 4.</a></p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+<p>01 - 🎤 GUEST: SAM SETHI &mdash; TRUEFANS, AND THE THREE FEEDS HE ASKED TO TALK ABOUT</p>
+<p>&lt;b&gt;He set this agenda himself.&lt;/b&gt; 22 Sep, to Dave: "thank you my friend. When are we going to get you back on PWR and equally &lt;b&gt;I would love to come back on P2.0 to talk about SuperFeeds, Publisher Feeds and Network Feeds&lt;/b&gt;."</p>
+<p><a href="https://podcastindex.social/@samsethi" target="_blank" rel="noopener">@samsethi &mdash; the ask (22 Sep)</a></p>
+<p>&lt;b&gt;📦 1. SUPERFEEDS &mdash; what he has actually shipped&lt;/b&gt;</p>
+<p>His own definition, 19 Jul: "Traditional RSS feeds were designed to distribute podcast episodes, with the audio attached using the enclosure tag. Then came Podcasting 2.0, introducing &lt;b&gt;more than 30 new namespace tags&lt;/b&gt;&hellip; A SuperFeed lets you combine much more than audio or video. Alongside your podcast episodes you can include &lt;b&gt;blog posts, publisher updates, events, premium paid content &mdash; all delivered through a single RSS feed&lt;/b&gt;."</p>
+<p>&lt;b&gt;The bit that matters for the Index:&lt;/b&gt; SuperFeeds started (Jul 2024) as "the ability for a podcaster to &lt;b&gt;add any new Podcasting 2.0 tag to their existing RSS feed&lt;/b&gt; and then publish the new TrueFans RSS feed to the Podcast Index &lt;b&gt;while staying with their existing host&lt;/b&gt;" &mdash; a free claim-and-enrich service that keeps the enclosure with the original host.</p>
+<p>&lt;b&gt;Where it is now:&lt;/b&gt; two experimental tags added Apr 2026 &mdash; &lt;b&gt;podcast:pinned&lt;/b&gt; and &lt;b&gt;podcast:store&lt;/b&gt; &mdash; plus podroll and publisher feeds, with events and merch built on the publisher-feed pattern. "Our goal is to allow creators to &lt;b&gt;build a SuperFeed by picking what elements are added&lt;/b&gt; to their RSS feed."</p>
+<p>&lt;b&gt;And the anti-Patreon argument, 7 May:&lt;/b&gt; "Apple's proprietary API for HLS video doesn't use RSS. &lt;b&gt;TrueFans is going the other way.&lt;/b&gt; We are building Super RSS feeds with &lt;b&gt;Audio, Video and Freemium/Premium RSS in the same feed. No need for Patreon private feeds.&lt;/b&gt;"</p>
+<p>🔍 &lt;b&gt;Ask:&lt;/b&gt; if a SuperFeed is one feed containing podcast + blog + events + merch + premium, &lt;b&gt;what does an app do with the items it does not understand?&lt;/b&gt; Is there a medium or a filter, or does every app have to learn every type?</p>
+<p>&lt;b&gt;📡 2. PUBLISHER FEEDS &mdash; and the pattern he keeps reusing&lt;/b&gt;</p>
+<p>He builds everything on remote items off the publisher feed: "&lt;b&gt;We will add NEW Events and Merchant tags based on the publisher feed&lt;/b&gt;" &mdash; `&amp;lt;podcast:publisher&amp;gt;&amp;lt;podcast:remoteItem medium="publisher" feedUrl="https://feeds.truefans.fm/rss/publishers/&hellip;" /&amp;gt;&amp;lt;/podcast:publisher&amp;gt;`</p>
+<p><a href="https://truefans.fm/awards/cheerful-earful" target="_blank" rel="noopener">&lt;b&gt;Event feed proposal, 1 Aug:&lt;/b&gt; "We are proposing a &lt;b&gt;new EVENT feed based on the Publisher Feed&lt;/b&gt;" &mdash; events in the admin dashboard appear on the podcast page; tickets sold externally or in-app via Apple Pay / Stripe. Live example: the Cheerful Earful Comedy Festival on one page.</a></p>
+<p>&lt;b&gt;Merch &mdash; the StoreFront proposal, 31 Aug:&lt;/b&gt; "TrueFans recently added a new experimental tag for RSS feeds called &lt;b&gt;Podcast:StoreFront&lt;/b&gt;. The aim of this StoreFront tag is to &lt;b&gt;mirror the Funding tag&lt;/b&gt;" &mdash; a URL to a third-party store (Amazon, Sticker Mule, Shopify) puts a shop icon on the page. Later: products hosted in TrueFans, paid in fiat via Stripe or in SATs.</p>
+<p>🔍 &lt;b&gt;Ask Dave:&lt;/b&gt; is the publisher-feed-with-remote-items pattern the right substrate for events and merch, or is this three tags that each want their own medium?</p>
+<p>&lt;b&gt;🕸️ 3. NETWORK FEEDS &mdash; the one nobody has seen yet&lt;/b&gt;</p>
+<p>&lt;b&gt;This is new.&lt;/b&gt; He has posted publicly about SuperFeeds since 2024 and Publisher Feeds since 2024 &mdash; but &lt;b&gt;"Network Feeds" appears exactly once anywhere on podcastindex.social: in his 22 Sep ask&lt;/b&gt;. There is no proposal, no example feed, no thread. &lt;b&gt;This is the scoop of the segment &mdash; let him define it live.&lt;/b&gt;</p>
+<p>🔍 &lt;b&gt;Ask:&lt;/b&gt; what is a Network Feed, and how is it not just a publisher feed with more members? Who owns it &mdash; the network or the shows? What happens to a show that leaves?</p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+<p>02 - 💳 SAM ON PAYMENTS &mdash; "THE FUTURE IS MICROPAYMENTS&hellip; BUT MAYBE NOT BITCOIN"</p>
+<p>&lt;b&gt;🚨 This is the live wire of the episode.&lt;/b&gt; V4V was built on Lightning and SATs. Our guest &mdash; who has shipped a SATs wallet &mdash; is now saying the rail may be wrong.</p>
+<p>&lt;b&gt;24 Sep, in his own words:&lt;/b&gt; "We also just enabled &lt;b&gt;Paypal, Amazon Pay, Samsung Pay&lt;/b&gt; to go alongside Apple/Google Pay and Bank. I am now looking at &lt;b&gt;Stablecoin&lt;/b&gt; as an option. &lt;b&gt;I still [think] the future is micropayments direct from fan to creator but maybe not Bitcoin.&lt;/b&gt;"</p>
+<p>&lt;b&gt;Stripe Pay By Bank &mdash; TrueFans added support same day:&lt;/b&gt; "Pay by Bank is a single-use payment method that allows customers to &lt;b&gt;pay directly from their bank account instead of using a card&lt;/b&gt;&hellip; runs on banking infrastructure and takes advantage of &lt;b&gt;open banking APIs&lt;/b&gt;." Caveat he flagged: "only &lt;b&gt;Finland and UK&lt;/b&gt; which is odd but we will keep an eye and see if other countries get added."</p>
+<p>&lt;b&gt;25 Sep 00:29, the thesis:&lt;/b&gt; "there is still a &lt;b&gt;real need on the web for micropayments&lt;/b&gt;. I think when &lt;b&gt;mainstream banks give customers a current/chequing account and a digital account&lt;/b&gt; and make it easy for us to transfer money from one account to the other &lt;b&gt;will be the start of a wider adoption&lt;/b&gt;."</p>
+<p>&lt;b&gt;27 Jul, the post-mortem on v1:&lt;/b&gt; "Maybe &lt;b&gt;v1.0 was too complex with KYC, Nostr, Alby and Moonpay&lt;/b&gt;. I am watching &lt;b&gt;Stripe, Stablecoins and x.402&lt;/b&gt;, a new open payment protocol that makes internet-native micropayments&hellip;" &mdash; and the Dizzee Rascal quote: "Some people think I'm bonkers / But I just think I'm free."</p>
+<p>&lt;b&gt;💡 But his funding tag is the purest V4V in the ecosystem &mdash; give him credit for it:&lt;/b&gt; "The podcaster &lt;b&gt;only gets paid if they continue to publish&lt;/b&gt; more episodes&hellip; Platforms like Patreon or Substack will continue to take the monthly amount &lt;b&gt;even if the podcaster doesn't publish&lt;/b&gt;." The fan sets a monthly maximum; TrueFans draws from it per episode published. &lt;b&gt;That is value-for-value enforced in code.&lt;/b&gt;</p>
+<p>&lt;b&gt;Also:&lt;/b&gt; if a feed has no funding tag, TrueFans turns its own on and takes &lt;b&gt;10% of funding transactions&lt;/b&gt;. Worth asking how that sits with podcasters who did not ask for it.</p>
+<p>🔍 &lt;b&gt;The question for the room:&lt;/b&gt; if Pay By Bank and stablecoins do the job with less friction, &lt;b&gt;is Lightning still the point of V4V &mdash; or was the point always fan-to-creator with no intermediary, whatever the rail?&lt;/b&gt;</p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+<p>03 - 🏛️ SAM'S THESIS &mdash; "LESS LIKE PODCAST APPS AND MORE LIKE CREATOR PORTALS"</p>
+<p>&lt;b&gt;15 Sep, his four-part statement of direction:&lt;/b&gt; "The old model was simple: &lt;b&gt;one creator &rarr; one podcast &rarr; one audio app&lt;/b&gt;. That worked when podcasting was primarily about listening. But creators are building something much bigger now&hellip; the next generation of creator platforms will look &lt;b&gt;less like podcast apps and more like Creator Portals&lt;/b&gt; &mdash; a single place where creators can build, engage, communicate with and monetise their communities."</p>
+<p>&lt;b&gt;What is already live:&lt;/b&gt; host and stream audio or video, publish blogs, run live events, sell tickets, merch links, premium per-episode and per-blog pricing, a fan wallet.</p>
+<p>&lt;b&gt;New this month &mdash; newsletters:&lt;/b&gt; "Starting next week we're taking another step forward with the launch of the &lt;b&gt;NEW TrueFans Newsletter&lt;/b&gt;&hellip; the plan is to make the &lt;b&gt;same newsletter functionality available to every TrueFans creator&lt;/b&gt;" with subscriber / delivered / opened / clicked stats. "The goal is to give creators &lt;b&gt;one place to build, own, manage and monetise their entire relationship with their true fans&lt;/b&gt;."</p>
+<p>&lt;b&gt;Roadmap he published:&lt;/b&gt; customised domains &middot; new native iOS &amp;amp; Android apps &middot; CarPlay, Apple Watch, Apple TV.</p>
+<p>&lt;b&gt;Features built on P2.0 tags &mdash; the good citizen argument (31 Aug):&lt;/b&gt; "I'm excited that we are starting to see apps &lt;b&gt;building new features on top of Podcasting 2.0 tags&lt;/b&gt;&hellip; I'm now looking at &lt;b&gt;every tag&lt;/b&gt;, trying to see if we can build a new feature on top."</p>
+<p><a href="https://truefans.fm/search" target="_blank" rel="noopener">&bull; &lt;b&gt;Frequency tag&lt;/b&gt; &rarr; show the &lt;b&gt;NEXT&lt;/b&gt; publish date instead of the last one &middot; &bull; &lt;b&gt;Live Item tag&lt;/b&gt; &rarr; PENDING / LIVE NOW / END status on the page, localised &middot; &bull; &lt;b&gt;Person tag&lt;/b&gt; &rarr; aggregate every podcast where you are tagged into &lt;b&gt;one dynamically-updating playlist&lt;/b&gt; on your profile &middot; &bull; &lt;b&gt;Location&lt;/b&gt; &rarr; new location search built on @alberto's Radar.</a></p>
+<p>&lt;b&gt;Coming:&lt;/b&gt; "Our next big feature will be to use &lt;b&gt;AI to grab 5 clips&lt;/b&gt; from the audio and/or video&hellip; and &lt;b&gt;add those clips to the Podcasting 2.0 soundbite tag&lt;/b&gt;, as well as auto publishing those clips to the podcasters social media." 💡 Machine-generated soundbites written back into the namespace &mdash; that is a namespace question, not just a feature.</p>
+<p>&lt;b&gt;And the gamification layer:&lt;/b&gt; 30 activity verbs tracking fan behaviour, points to identify &lt;b&gt;SuperFans&lt;/b&gt;, fans can OAuth their socials and auto-publish chosen verbs &mdash; including &lt;b&gt;how long they played and percent completed&lt;/b&gt;, with a play-percentage slider.</p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+</div>
+<div><small>Last Modified 09/25/2026 14:52:38 by&nbsp;<a href="http://freedomcontroller.com/">Freedom Controller</a></small>&nbsp;<a title="Link to the opml for this document." href="http://adam.curry.com/opml/Podcasting20Episode2-NgV0lE2AVlLQ0HJlMnEOc2.opml">&nbsp;</a></div>]]></itunes:summary>
+      <itunes:author>Podcast Index LLC</itunes:author>
+      <author>Podcast Index LLC</author>
+      <itunes:image href="https://noagendaassets.com/enc/1684513486.722_pcifeedimage.png"/>
+      <itunes:explicit>No</itunes:explicit>
+      <itunes:keywords>podcasting,curry,podfather,technology,developers</itunes:keywords>
+      <enclosure url="https://op3.dev/e/mp3s.nashownotes.com/PC20-272-2026-09-25-Final.mp3" type="audio/mpeg" length="66036310"/>
+      <podcast:person group="cast" role="host" img="https://feeds.podcastindex.org/adam_avatar.jpg" href="http://curry.com">Adam Curry</podcast:person>
+      <podcast:person href="http://dave.sobr.org" img="https://feeds.podcastindex.org/dave_avatar.jpg" group="cast" role="host">Dave Jones</podcast:person>
+      <podcast:person href="https://www.truefans.fm/" img="https://cdn.masto.host/podcastindexsocial/accounts/avatars/000/003/709/original/081f4d3c40f34d24.jpeg" group="cast" role="guest">Sam Sethi</podcast:person>
+      <podcast:value type="lightning" method="keysend" suggested="0.00000005000">
+        <podcast:valueRecipient name="Dreb Scott (Chapters)" type="lnaddress" address="drebscott@getalby.com" split="5"/>
+        <podcast:valueRecipient name="Sovereign Feeds" address="steven@getalby.com" type="lnaddress" split="10"/>
+        <podcast:valueRecipient name="Fountain Boost bot" type="lnaddress" address="boostbot@fountain.fm" split="1"/>
+        <podcast:valueRecipient name="Reflex.io" type="lnaddress" address="reflex@livewire.io" split="5"/>
+        <podcast:valueRecipient name="ericpp@getalby.com" type="lnaddress" address="ericpp@getalby.com" split="5"/>
+        <podcast:valueRecipient name="Strike Test" type="lnaddress" address="adamcurry@strike.me" split="3"/>
+        <podcast:valueRecipient name="Alecks Gates Strike" type="lnaddress" address="agates@strike.me" split="5"/>
+        <podcast:valueRecipient name="PodcastIndex LN Test Wallet" type="lnaddress" address="podcastindex@getalby.com" split="50"/>
+        <podcast:valueRecipient name="Pod Sage" type="lnaddress" address="dave@getalby.com" split="1"/>
+        <podcast:valueRecipient name="Boost Monitor" type="lnaddress" address="adam@getalby.com" split="5"/>
+      </podcast:value>
+      <podcast:socialInteract protocol="activitypub" uri="https://podcastindex.social/@samsethi/117332894514693888" accountId="@adam" accountUrl="https://podcastindex.social/users/adam"/>
+      <itunes:duration>5501</itunes:duration>
+      <podcast:funding url="https://www.paypal.com/donate?token=-hvWBEXZQfp7oSFJz0TwT3QXYcjYuemZRPIOml3nrL-EhtiUPAwuVHS6DPN5cBat9wjqwYEtyW-K8zSS">Support us with Value 4 Value</podcast:funding>
+    </item>
+<item>
+      <title>Episode 271: Foot Terminal</title>
+      <description><![CDATA[<h2>Podcasting 2.0 Episode 271 - "Foot Terminal"</h2>
+<p>Adam &amp; Dave have their SCBA's on and go deep into index refactoring and ad loads!</p>
+<div>
+<p>&lt;b&gt;ShowNotes&lt;/b&gt;</p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+<p>00 - 🔥 STEP TWO OF THE SCARY STUFF &mdash; THE ENDPOINTS FLIP TO THE IDENTITY LAYER</p>
+<p>&lt;b&gt;Last week the table went in. This week the API started using it &mdash; one endpoint at a time, four days running.&lt;/b&gt;</p>
+<p>&lt;b&gt;Sat 12 Sep:&lt;/b&gt; "#api I'm running a script to sync up podcasts.id and newsfeeds.id so that when a new feed is born they are in sync. During the cutover to podcasts.id as the canonical form, there were &lt;b&gt;about 11k feeds that drifted away from being in sync&lt;/b&gt; with their podcast because of a gap in the auto_increment values. This isn't strictly necessary, it just will make human review a little less cumbersome."</p>
+<p>&lt;b&gt;Mon night 14 Sep:&lt;/b&gt; "#api Making some final refinements to the new api endpoints before deploying. These will be the first ones using the new podcast identity layer. 😰"</p>
+<p>&lt;b&gt;Tue 15 Sep &mdash; the first flip:&lt;/b&gt; "#api The &lt;b&gt;podcasts/byfeedurl&lt;/b&gt; endpoint is deployed with the first changes to the new podcast identity layer. &lt;b&gt;We will do these one at a time, watching for problems.&lt;/b&gt; You will see nothing different in the response shape under normal circumstances. The response 'feed' object's &lt;b&gt;`id` property now means the podcast ID&lt;/b&gt;. The &lt;b&gt;`feedId` property now means the underlying feeds table row&lt;/b&gt; that podcast is treating as canonical."</p>
+<p><a href="https://podcastindex.social/@dave/117275712527471636" target="_blank" rel="noopener">@dave &mdash; byfeedurl flips (15 Sep)</a></p>
+<p>"It's not ideal to have the podcast id be represented as feeds.id in the new responses, but &lt;b&gt;anything else would have broken existing apps&lt;/b&gt;. And, the meaning is still faithful to what it was before. That was always meant to be the ID of the podcasts. We just didn't have a way to logically express that."</p>
+<p>&lt;b&gt;Same day:&lt;/b&gt; "#api The new &lt;b&gt;podcasts/byfeedid&lt;/b&gt; endpoint is deployed. That's all for today. Will watch the logs until tomorrow." &middot; "#api First run of the &lt;b&gt;itunes ID 404 reconciler&lt;/b&gt; under the new podcast identity regime. 🤞"</p>
+<p>&lt;b&gt;Thu 17 Sep:&lt;/b&gt; "#api The &lt;b&gt;podcasts/byguid&lt;/b&gt; and &lt;b&gt;podcasts/batch/byguid&lt;/b&gt; endpoints are now flipped to the new db schema." &middot; &lt;b&gt;Fri 18 Sep, this morning:&lt;/b&gt; "#api The new &lt;b&gt;podcasts/byitunesid&lt;/b&gt; endpoint is live."</p>
+<p><a href="https://podcastindex.social/@dave/117291866588250685" target="_blank" rel="noopener">@dave &mdash; byitunesid live (18 Sep)</a></p>
+<p>&lt;b&gt;📝 The app developers noticed.&lt;/b&gt; Mitch (Podverse): "listening to last week's P2.0... the &lt;b&gt;nextgen Podverse schema (and ogen) relies heavily on the Podcast Index IDs as basically the authority on feed uniqueness&lt;/b&gt;. It sounds like we may need/want to do a substantial rewrite to account for how Podcast Index API nextgen will handle ids?&hellip; after it is settled, &lt;b&gt;I'd appreciate any documentation&lt;/b&gt;."</p>
+<p><a href="https://podcastindex.social/@mitch" target="_blank" rel="noopener">@mitch &mdash; the Podverse question (15 Sep)</a></p>
+<p>Dave: "If I do my job right, &lt;b&gt;you will see nothing different and will not need to do anything&lt;/b&gt;. I made sure the starting point for every canonical podcast index 'podcast id' is the current live feed id. If you see some sort of drift or problem it would be a bug I need to fix&hellip; &lt;b&gt;the existing podcast ID's have always identified feeds, but now they will identify podcasts. The ID's themselves will not and have not changed.&lt;/b&gt; I'll definitely be producing docs to flesh this out further though."</p>
+<p>&lt;b&gt;😄 Then the drawing:&lt;/b&gt; "It's actually kind of confusing to explain. It's easier if I draw it out on paper. It sort of needs to be visualized." &rarr; "#api These might be very hard to follow. There are &lt;b&gt;two 'entrances' into the redirection chain&lt;/b&gt; and the Index follows whichever one you come in on." &rarr; "&lt;b&gt;Paper and pen was faster than some AI agent.&lt;/b&gt;"</p>
+<p><a href="https://podcastindex.social/@dave/117277226803519299" target="_blank" rel="noopener">@dave &mdash; the two entrances, drawn by hand (15 Sep)</a></p>
+<p>The rule as Dave wrote it: "If you come in on the &lt;b&gt;'byid'&lt;/b&gt; path, you start at the podcast layer and follow the redirection to the correct feed and serve it. If you come in on the &lt;b&gt;'byurl'&lt;/b&gt; path, you start at the feeds layer and follow up the chain to the podcasts layer and then follow the redirection to the current canonical feed and serve that."</p>
+<p>&lt;b&gt;And the MCP ask, parked:&lt;/b&gt; @csb asked for an MCP server. Dave: "Have to get through the rollout of the new schema first. &lt;b&gt;Adding MCP now would just be too much confusion.&lt;/b&gt; It's on the list for after all the new endpoints are delivered."</p>
+<p>&lt;b&gt;⭐ Board questions:&lt;/b&gt;</p>
+<p>&lt;b&gt;1.&lt;/b&gt; Four endpoints flipped in four days with nothing caught fire. &lt;b&gt;Which endpoints are left&lt;/b&gt;, and which one are you most worried about &mdash; search? episodes? podping?</p>
+<p>&lt;b&gt;2.&lt;/b&gt; Walk the two entrances on air. If I hit &lt;b&gt;byid&lt;/b&gt; with an old feed ID that has since been merged into another podcast &mdash; what comes back? The new canonical feed, silently? A redirect flag? Nothing?</p>
+<p>&lt;b&gt;3.&lt;/b&gt; Mitch's question is every app developer's question: &lt;b&gt;when do the docs land&lt;/b&gt;, and is there a test endpoint where a developer can throw a redirected/merged feed at it and see the new behaviour before it hits their users?</p>
+<p>&lt;b&gt;4.&lt;/b&gt; The itunes-ID 404 reconciler &mdash; what does it do now that a podcast can outlive its feed? Does a dead iTunes ID move to the podcast row or stay with the feed row?</p>
+<p>&lt;b&gt;5.&lt;/b&gt; The 11k drifted IDs &mdash; human review "a little less cumbersome." &lt;b&gt;How many merge decisions are sitting in the conflict queue&lt;/b&gt;, and who is the human?</p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+<p>08 - 🐧 OMARCHY, AND THE 'AI SUMMARIZER' EVERY PODCAST WEBSITE NOW HAS</p>
+<p>&lt;b&gt;Dave went Arch.&lt;/b&gt; Sat 12 Sep, to Aleck Gates ("Why is everyone using Omarchy? Did I miss something important? My Fedora desktop just keeps chugging along"): "There is no doubt some of it is &lt;b&gt;the DHH spell&lt;/b&gt; some people are under. I find him irritating so my draw was just having an easy starting point (config-wise) into Arch&hellip; I also wanted Hyprland and after I went to Ubuntu 24 on that box I saw Hyprland maintainers recommend against using it on Debian distros. It came down to Arch or Nix after that." (You told the NA audience on 1901 to give the kids an old laptop and "install Omarchy.")</p>
+<p><a href="https://podcastindex.social/@dave/117258713441752734" target="_blank" rel="noopener">@dave &mdash; the Omarchy thread (12 Sep)</a></p>
+<p>@csb's Omarchy facts of the week: "Lex has just reviewed Omarchy Linux creator" &middot; "uses Slavic-made font: JetBrains" &middot; "creator is EU citizen creating Omarchy in EU, you are welcome, Americans" &middot; "can be installed from USB stick under 60 seconds." @jaybrunet shipped an &lt;b&gt;llm-insert&lt;/b&gt; plugin for the micro editor &mdash; "non-destructive, precise editing of config files when you don't want to send your whole config to a model on OpenRouter."</p>
+<p>&lt;b&gt;📜 Dave Winer, 11 Sep 2001, reposted by JS on the anniversary:&lt;/b&gt; "Someday soon every home will have a weblog, and we'll have great aggregation tools that allow us to quickly assemble lists of loved ones who survived. A new button on cellphones that says 'I made it' and it flows the fact to all your concerned friends."</p>
+<p><a href="http://scripting.com/2001/09/11.html" target="_blank" rel="noopener">scripting.com &mdash; 11 Sep 2001</a></p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+<p>03 - 🗽 PODCAST WEEK NYC &mdash; WEBSTER'S 'FRONT OF THE STORE', THE IAB SAYS NO NEW FRAMEWORK, AND A 99-SECOND PNWR</p>
+<p>&lt;b&gt;The week:&lt;/b&gt; Sounds Profitable Business Summit (Mon&ndash;Tue, 400+ people, 200 buyers), the IAB Podcast Upfront (Wed), Podcast Movement (Thu&ndash;Fri). Podnews was there all week; PNWR was 99 seconds.</p>
+<p>&lt;b&gt;🛒 Tom Webster's keynote &mdash; 'Are podcasts at the front of the store?'&lt;/b&gt; Previewing The Podcast Landscape 2026: "for the first time, &lt;b&gt;the top three places where people have 'ever' consumed podcasts are not dedicated podcast apps&lt;/b&gt;. YouTube, Spotify and Netflix don't show podcasts front-and-centre&hellip; Webster compared &lt;b&gt;Netflix's podcasts category as the equivalent of the CD range in a Walmart&lt;/b&gt; &mdash; just the most popular titles in a small selection which is hard to find; while a real podcast app like Apple Podcasts or Pocket Casts was the equivalent of &lt;b&gt;Tower Records&lt;/b&gt;." Rob Walch, separately: "Netflix lists just &lt;b&gt;1 in 67,547&lt;/b&gt; podcasts. (And doesn't list yours.)"</p>
+<p><a href="https://podnews.net/update/podcasts-front-of-store" target="_blank" rel="noopener">Podnews &mdash; Are podcasts at the front of the store? (18 Sep)</a></p>
+<p>&lt;b&gt;📏 The IAB: a new framework is 'not needed'.&lt;/b&gt; Jason Adamski at the Upfront: the IAB "appears to reject a medium-agnostic measurement standard like the recently-released &lt;b&gt;AMP Accords&lt;/b&gt;, saying 'the solution is not to build a new framework from scratch', and instead suggests&hellip; two separate standards from the IAB Tech Lab &mdash; the Podcast Measurement Technical Guidelines v2.2 and the Digital Video Served Impression Guidelines." Cridland: "The guide &mdash; and even the full press release for it &mdash; &lt;b&gt;requires a registration with your email address to read. That's not how you set standards.&lt;/b&gt;" He hosts the PDF himself.</p>
+<p><a href="https://podnews.net/update/iab-framework" target="_blank" rel="noopener">Podnews &mdash; IAB: a new framework is 'not needed' (17 Sep)</a></p>
+<p>&lt;b&gt;Dave asked the question on the instance&lt;/b&gt; (16 Sep): "@samsethi &lt;b&gt;Do you still have to pay to see the actual spec?&lt;/b&gt;" James: "You've never had to pay to see the spec. (This isn't v2.2 &mdash; which has been out for a few years &mdash; just a guideline that as far as I can see rejects the AMP Accords entirely)." Dave: "I could have sworn there was something you had to pay for. The IP block lists or something maybe?" James: "&lt;b&gt;Certification and I think the IP blocks as well&hellip;&lt;/b&gt;"</p>
+<p>&lt;b&gt;📋 The Podcast Study 2026&lt;/b&gt; (Summit): "&lt;b&gt;45% of podcast listeners would be 'at least somewhat likely' to pay for a subscription tier to remove ads&lt;/b&gt;; and &lt;b&gt;64% would sign up for email&lt;/b&gt; from their favourite podcasters." Edison: topic, hosts and guests decide what people pick; trailer and cover art least.</p>
+<p>&lt;b&gt;🎬 Video, still not a platform:&lt;/b&gt; Podscribe at the Upfront &mdash; "&lt;b&gt;not one of the top 500 shows are available on all video platforms&lt;/b&gt;: YouTube, Spotify, Rumble and HLS via open RSS." Amazon Music adds ART19, Triton Omny and Flightcast video (via the &lt;b&gt;alternateEnclosure&lt;/b&gt; tag, HLS), six countries. Podscribe&ndash;Rumble attribution is "the first video platform to support all the signals required&hellip; under the &lt;b&gt;AMP attribution specification&lt;/b&gt;."</p>
+<p>&lt;b&gt;📻 Machine Gods:&lt;/b&gt; Kevin Roose and Casey Newton leave the NYT's Hard Fork for &lt;b&gt;NPR&lt;/b&gt; &mdash; a video show from October, on member stations from next year; the first deal under NPR's new content chief. ("We guess they like tote bags.")</p>
+<p><a href="https://podnews.net/update/machine-gods-newton-roose" target="_blank" rel="noopener">Podnews &mdash; A new home for Roose and Newton (16 Sep)</a></p>
+<p>&lt;b&gt;💰 Money moves:&lt;/b&gt; Substack adds a podcast tab &mdash; creators "collectively earn &lt;b&gt;over $200 million per year on Substack&lt;/b&gt;"; Spotify Partner Program expands to 35 more markets, "total monthly payouts to enrolled shows have increased by more than a third"; Megaphone quietly raised SPAN's bar to three published episodes, undocumented, no comment; Giggly Squad's SiriusXM renewal "multiple offers around $150 million"; a &lt;b&gt;Disctopia patent&lt;/b&gt; that checks whether you are listening by asking you questions mid-episode, "part of any payment to creators."</p>
+<p><a href="https://podnews.net/update/substack-podcast-tab" target="_blank" rel="noopener">Podnews &mdash; Substack podcast tab, $200M a year (11 Sep)</a></p>
+<p>&lt;b&gt;🛠 Tooling:&lt;/b&gt; &lt;b&gt;Podpage Agent-Built Websites&lt;/b&gt; &mdash; "work with an AI agent, like Claude or Codex, to design your websites; and then use Podpage to make it properly hosted"; PodAnalyst v3 lets you "connect Iris to your own Claude or ChatGPT account"; Headliner auto-clips for YouTube; Threads now unfurls Apple/Spotify/iHeart podcast links; the &lt;b&gt;Podcast Standards Project&lt;/b&gt; met Thursday 12:30 ET near the venue, open to non-members.</p>
+<p>&lt;b&gt;🏷 Our people at PM:&lt;/b&gt; Mike Dell (Blubrry): "I'm headed there too. Speaking about podcasting 2.0 stuff." Matt Medeiros was going "bearing Podcasting 2.0 gifts &mdash; I'm advocating for the &lt;b&gt;funding tag&lt;/b&gt;&hellip; Forget views &mdash; get the funding tag!" then: "Sadly I had to cancel my trip to podcast movement. But I'm thinking of doing a virtual event around fundingtag.link." Sam Sethi: "we featured you on Creators from TrueFans and talked about the three steps you need to undertake to make the Funding Tag work."</p>
+<p><a href="https://fundingtag.link/" target="_blank" rel="noopener">fundingtag.link</a></p>
+<p>&lt;b&gt;Sam Sethi's thread (15 Sep), the Creator Portal:&lt;/b&gt; "The old model was simple: one creator &rarr; one podcast &rarr; one audio app&hellip; the next generation of creator platforms will look less like podcast apps and more like Creator Portals" &mdash; TrueFans newsletter launching next week, subscriber/open/click data to creators; roadmap: custom domains, native iOS/Android, CarPlay/Watch/TV, &lt;b&gt;stablecoin support&lt;/b&gt;.</p>
+<p><a href="https://podcastindex.social/@samsethi" target="_blank" rel="noopener">@samsethi &mdash; the Creator Portal thread</a></p>
+<p>&lt;b&gt;⭐ Board questions:&lt;/b&gt; (1) Webster's Walmart-vs-Tower-Records: is the Index's answer to Netflix a better front of the store &mdash; newpodcastapps.com &mdash; or is it that we never wanted to be in Walmart? (2) The IAB keeps its guide behind an email wall and its certification behind a fee; the AMP Accords are open. &lt;b&gt;Does the Index endorse a measurement spec, or stay out?&lt;/b&gt; (3) Substack's $200M and Spotify's payouts are both closed-loop money. &lt;b&gt;Where is the V4V number for the week&lt;/b&gt; &mdash; stats.podcastindex.org/v4v.</p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+</div>
+<div><small>Last Modified 09/18/2026 14:36:08 by&nbsp;<a href="http://freedomcontroller.com/">Freedom Controller</a></small>&nbsp;<a title="Link to the opml for this document." href="http://adam.curry.com/opml/Podcasting20Episode2-YjPTXzqqxAWrTUNxsG3QAD.opml">&nbsp;</a></div>]]></description>
+      <link>https://www.podpage.com/podcasting-20/foot-terminal/</link>
+      <guid isPermaLink="false">PC20-271</guid>
+      <pubDate>Fri, 18 Sep 2026 19:26:22 +0000</pubDate>
+      <podcast:chapters url="https://reflex.livewire.io/chapters/podcast/917393e3-1b1e-5cef-ace4-edaa54e1f810/item/PC20-271/chapters/https://mp3s.nashownotes.com/PC20-271-Chapters.json" type="application/json"/>
+      <podcast:transcript url="https://mp3s.nashownotes.com/PC20-271-Captions.srt" type="application/srt" rel="captions"/>
+      <itunes:subtitle>Episode 271: Foot Terminal</itunes:subtitle>
+      <itunes:summary><![CDATA[<h2>Podcasting 2.0 Episode 271 - "Foot Terminal"</h2>
+<p>Adam &amp; Dave have their SCBA's on and go deep into index refactoring and ad loads!</p>
+<div>
+<p>&lt;b&gt;ShowNotes&lt;/b&gt;</p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+<p>00 - 🔥 STEP TWO OF THE SCARY STUFF &mdash; THE ENDPOINTS FLIP TO THE IDENTITY LAYER</p>
+<p>&lt;b&gt;Last week the table went in. This week the API started using it &mdash; one endpoint at a time, four days running.&lt;/b&gt;</p>
+<p>&lt;b&gt;Sat 12 Sep:&lt;/b&gt; "#api I'm running a script to sync up podcasts.id and newsfeeds.id so that when a new feed is born they are in sync. During the cutover to podcasts.id as the canonical form, there were &lt;b&gt;about 11k feeds that drifted away from being in sync&lt;/b&gt; with their podcast because of a gap in the auto_increment values. This isn't strictly necessary, it just will make human review a little less cumbersome."</p>
+<p>&lt;b&gt;Mon night 14 Sep:&lt;/b&gt; "#api Making some final refinements to the new api endpoints before deploying. These will be the first ones using the new podcast identity layer. 😰"</p>
+<p>&lt;b&gt;Tue 15 Sep &mdash; the first flip:&lt;/b&gt; "#api The &lt;b&gt;podcasts/byfeedurl&lt;/b&gt; endpoint is deployed with the first changes to the new podcast identity layer. &lt;b&gt;We will do these one at a time, watching for problems.&lt;/b&gt; You will see nothing different in the response shape under normal circumstances. The response 'feed' object's &lt;b&gt;`id` property now means the podcast ID&lt;/b&gt;. The &lt;b&gt;`feedId` property now means the underlying feeds table row&lt;/b&gt; that podcast is treating as canonical."</p>
+<p><a href="https://podcastindex.social/@dave/117275712527471636" target="_blank" rel="noopener">@dave &mdash; byfeedurl flips (15 Sep)</a></p>
+<p>"It's not ideal to have the podcast id be represented as feeds.id in the new responses, but &lt;b&gt;anything else would have broken existing apps&lt;/b&gt;. And, the meaning is still faithful to what it was before. That was always meant to be the ID of the podcasts. We just didn't have a way to logically express that."</p>
+<p>&lt;b&gt;Same day:&lt;/b&gt; "#api The new &lt;b&gt;podcasts/byfeedid&lt;/b&gt; endpoint is deployed. That's all for today. Will watch the logs until tomorrow." &middot; "#api First run of the &lt;b&gt;itunes ID 404 reconciler&lt;/b&gt; under the new podcast identity regime. 🤞"</p>
+<p>&lt;b&gt;Thu 17 Sep:&lt;/b&gt; "#api The &lt;b&gt;podcasts/byguid&lt;/b&gt; and &lt;b&gt;podcasts/batch/byguid&lt;/b&gt; endpoints are now flipped to the new db schema." &middot; &lt;b&gt;Fri 18 Sep, this morning:&lt;/b&gt; "#api The new &lt;b&gt;podcasts/byitunesid&lt;/b&gt; endpoint is live."</p>
+<p><a href="https://podcastindex.social/@dave/117291866588250685" target="_blank" rel="noopener">@dave &mdash; byitunesid live (18 Sep)</a></p>
+<p>&lt;b&gt;📝 The app developers noticed.&lt;/b&gt; Mitch (Podverse): "listening to last week's P2.0... the &lt;b&gt;nextgen Podverse schema (and ogen) relies heavily on the Podcast Index IDs as basically the authority on feed uniqueness&lt;/b&gt;. It sounds like we may need/want to do a substantial rewrite to account for how Podcast Index API nextgen will handle ids?&hellip; after it is settled, &lt;b&gt;I'd appreciate any documentation&lt;/b&gt;."</p>
+<p><a href="https://podcastindex.social/@mitch" target="_blank" rel="noopener">@mitch &mdash; the Podverse question (15 Sep)</a></p>
+<p>Dave: "If I do my job right, &lt;b&gt;you will see nothing different and will not need to do anything&lt;/b&gt;. I made sure the starting point for every canonical podcast index 'podcast id' is the current live feed id. If you see some sort of drift or problem it would be a bug I need to fix&hellip; &lt;b&gt;the existing podcast ID's have always identified feeds, but now they will identify podcasts. The ID's themselves will not and have not changed.&lt;/b&gt; I'll definitely be producing docs to flesh this out further though."</p>
+<p>&lt;b&gt;😄 Then the drawing:&lt;/b&gt; "It's actually kind of confusing to explain. It's easier if I draw it out on paper. It sort of needs to be visualized." &rarr; "#api These might be very hard to follow. There are &lt;b&gt;two 'entrances' into the redirection chain&lt;/b&gt; and the Index follows whichever one you come in on." &rarr; "&lt;b&gt;Paper and pen was faster than some AI agent.&lt;/b&gt;"</p>
+<p><a href="https://podcastindex.social/@dave/117277226803519299" target="_blank" rel="noopener">@dave &mdash; the two entrances, drawn by hand (15 Sep)</a></p>
+<p>The rule as Dave wrote it: "If you come in on the &lt;b&gt;'byid'&lt;/b&gt; path, you start at the podcast layer and follow the redirection to the correct feed and serve it. If you come in on the &lt;b&gt;'byurl'&lt;/b&gt; path, you start at the feeds layer and follow up the chain to the podcasts layer and then follow the redirection to the current canonical feed and serve that."</p>
+<p>&lt;b&gt;And the MCP ask, parked:&lt;/b&gt; @csb asked for an MCP server. Dave: "Have to get through the rollout of the new schema first. &lt;b&gt;Adding MCP now would just be too much confusion.&lt;/b&gt; It's on the list for after all the new endpoints are delivered."</p>
+<p>&lt;b&gt;⭐ Board questions:&lt;/b&gt;</p>
+<p>&lt;b&gt;1.&lt;/b&gt; Four endpoints flipped in four days with nothing caught fire. &lt;b&gt;Which endpoints are left&lt;/b&gt;, and which one are you most worried about &mdash; search? episodes? podping?</p>
+<p>&lt;b&gt;2.&lt;/b&gt; Walk the two entrances on air. If I hit &lt;b&gt;byid&lt;/b&gt; with an old feed ID that has since been merged into another podcast &mdash; what comes back? The new canonical feed, silently? A redirect flag? Nothing?</p>
+<p>&lt;b&gt;3.&lt;/b&gt; Mitch's question is every app developer's question: &lt;b&gt;when do the docs land&lt;/b&gt;, and is there a test endpoint where a developer can throw a redirected/merged feed at it and see the new behaviour before it hits their users?</p>
+<p>&lt;b&gt;4.&lt;/b&gt; The itunes-ID 404 reconciler &mdash; what does it do now that a podcast can outlive its feed? Does a dead iTunes ID move to the podcast row or stay with the feed row?</p>
+<p>&lt;b&gt;5.&lt;/b&gt; The 11k drifted IDs &mdash; human review "a little less cumbersome." &lt;b&gt;How many merge decisions are sitting in the conflict queue&lt;/b&gt;, and who is the human?</p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+<p>08 - 🐧 OMARCHY, AND THE 'AI SUMMARIZER' EVERY PODCAST WEBSITE NOW HAS</p>
+<p>&lt;b&gt;Dave went Arch.&lt;/b&gt; Sat 12 Sep, to Aleck Gates ("Why is everyone using Omarchy? Did I miss something important? My Fedora desktop just keeps chugging along"): "There is no doubt some of it is &lt;b&gt;the DHH spell&lt;/b&gt; some people are under. I find him irritating so my draw was just having an easy starting point (config-wise) into Arch&hellip; I also wanted Hyprland and after I went to Ubuntu 24 on that box I saw Hyprland maintainers recommend against using it on Debian distros. It came down to Arch or Nix after that." (You told the NA audience on 1901 to give the kids an old laptop and "install Omarchy.")</p>
+<p><a href="https://podcastindex.social/@dave/117258713441752734" target="_blank" rel="noopener">@dave &mdash; the Omarchy thread (12 Sep)</a></p>
+<p>@csb's Omarchy facts of the week: "Lex has just reviewed Omarchy Linux creator" &middot; "uses Slavic-made font: JetBrains" &middot; "creator is EU citizen creating Omarchy in EU, you are welcome, Americans" &middot; "can be installed from USB stick under 60 seconds." @jaybrunet shipped an &lt;b&gt;llm-insert&lt;/b&gt; plugin for the micro editor &mdash; "non-destructive, precise editing of config files when you don't want to send your whole config to a model on OpenRouter."</p>
+<p>&lt;b&gt;📜 Dave Winer, 11 Sep 2001, reposted by JS on the anniversary:&lt;/b&gt; "Someday soon every home will have a weblog, and we'll have great aggregation tools that allow us to quickly assemble lists of loved ones who survived. A new button on cellphones that says 'I made it' and it flows the fact to all your concerned friends."</p>
+<p><a href="http://scripting.com/2001/09/11.html" target="_blank" rel="noopener">scripting.com &mdash; 11 Sep 2001</a></p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+<p>03 - 🗽 PODCAST WEEK NYC &mdash; WEBSTER'S 'FRONT OF THE STORE', THE IAB SAYS NO NEW FRAMEWORK, AND A 99-SECOND PNWR</p>
+<p>&lt;b&gt;The week:&lt;/b&gt; Sounds Profitable Business Summit (Mon&ndash;Tue, 400+ people, 200 buyers), the IAB Podcast Upfront (Wed), Podcast Movement (Thu&ndash;Fri). Podnews was there all week; PNWR was 99 seconds.</p>
+<p>&lt;b&gt;🛒 Tom Webster's keynote &mdash; 'Are podcasts at the front of the store?'&lt;/b&gt; Previewing The Podcast Landscape 2026: "for the first time, &lt;b&gt;the top three places where people have 'ever' consumed podcasts are not dedicated podcast apps&lt;/b&gt;. YouTube, Spotify and Netflix don't show podcasts front-and-centre&hellip; Webster compared &lt;b&gt;Netflix's podcasts category as the equivalent of the CD range in a Walmart&lt;/b&gt; &mdash; just the most popular titles in a small selection which is hard to find; while a real podcast app like Apple Podcasts or Pocket Casts was the equivalent of &lt;b&gt;Tower Records&lt;/b&gt;." Rob Walch, separately: "Netflix lists just &lt;b&gt;1 in 67,547&lt;/b&gt; podcasts. (And doesn't list yours.)"</p>
+<p><a href="https://podnews.net/update/podcasts-front-of-store" target="_blank" rel="noopener">Podnews &mdash; Are podcasts at the front of the store? (18 Sep)</a></p>
+<p>&lt;b&gt;📏 The IAB: a new framework is 'not needed'.&lt;/b&gt; Jason Adamski at the Upfront: the IAB "appears to reject a medium-agnostic measurement standard like the recently-released &lt;b&gt;AMP Accords&lt;/b&gt;, saying 'the solution is not to build a new framework from scratch', and instead suggests&hellip; two separate standards from the IAB Tech Lab &mdash; the Podcast Measurement Technical Guidelines v2.2 and the Digital Video Served Impression Guidelines." Cridland: "The guide &mdash; and even the full press release for it &mdash; &lt;b&gt;requires a registration with your email address to read. That's not how you set standards.&lt;/b&gt;" He hosts the PDF himself.</p>
+<p><a href="https://podnews.net/update/iab-framework" target="_blank" rel="noopener">Podnews &mdash; IAB: a new framework is 'not needed' (17 Sep)</a></p>
+<p>&lt;b&gt;Dave asked the question on the instance&lt;/b&gt; (16 Sep): "@samsethi &lt;b&gt;Do you still have to pay to see the actual spec?&lt;/b&gt;" James: "You've never had to pay to see the spec. (This isn't v2.2 &mdash; which has been out for a few years &mdash; just a guideline that as far as I can see rejects the AMP Accords entirely)." Dave: "I could have sworn there was something you had to pay for. The IP block lists or something maybe?" James: "&lt;b&gt;Certification and I think the IP blocks as well&hellip;&lt;/b&gt;"</p>
+<p>&lt;b&gt;📋 The Podcast Study 2026&lt;/b&gt; (Summit): "&lt;b&gt;45% of podcast listeners would be 'at least somewhat likely' to pay for a subscription tier to remove ads&lt;/b&gt;; and &lt;b&gt;64% would sign up for email&lt;/b&gt; from their favourite podcasters." Edison: topic, hosts and guests decide what people pick; trailer and cover art least.</p>
+<p>&lt;b&gt;🎬 Video, still not a platform:&lt;/b&gt; Podscribe at the Upfront &mdash; "&lt;b&gt;not one of the top 500 shows are available on all video platforms&lt;/b&gt;: YouTube, Spotify, Rumble and HLS via open RSS." Amazon Music adds ART19, Triton Omny and Flightcast video (via the &lt;b&gt;alternateEnclosure&lt;/b&gt; tag, HLS), six countries. Podscribe&ndash;Rumble attribution is "the first video platform to support all the signals required&hellip; under the &lt;b&gt;AMP attribution specification&lt;/b&gt;."</p>
+<p>&lt;b&gt;📻 Machine Gods:&lt;/b&gt; Kevin Roose and Casey Newton leave the NYT's Hard Fork for &lt;b&gt;NPR&lt;/b&gt; &mdash; a video show from October, on member stations from next year; the first deal under NPR's new content chief. ("We guess they like tote bags.")</p>
+<p><a href="https://podnews.net/update/machine-gods-newton-roose" target="_blank" rel="noopener">Podnews &mdash; A new home for Roose and Newton (16 Sep)</a></p>
+<p>&lt;b&gt;💰 Money moves:&lt;/b&gt; Substack adds a podcast tab &mdash; creators "collectively earn &lt;b&gt;over $200 million per year on Substack&lt;/b&gt;"; Spotify Partner Program expands to 35 more markets, "total monthly payouts to enrolled shows have increased by more than a third"; Megaphone quietly raised SPAN's bar to three published episodes, undocumented, no comment; Giggly Squad's SiriusXM renewal "multiple offers around $150 million"; a &lt;b&gt;Disctopia patent&lt;/b&gt; that checks whether you are listening by asking you questions mid-episode, "part of any payment to creators."</p>
+<p><a href="https://podnews.net/update/substack-podcast-tab" target="_blank" rel="noopener">Podnews &mdash; Substack podcast tab, $200M a year (11 Sep)</a></p>
+<p>&lt;b&gt;🛠 Tooling:&lt;/b&gt; &lt;b&gt;Podpage Agent-Built Websites&lt;/b&gt; &mdash; "work with an AI agent, like Claude or Codex, to design your websites; and then use Podpage to make it properly hosted"; PodAnalyst v3 lets you "connect Iris to your own Claude or ChatGPT account"; Headliner auto-clips for YouTube; Threads now unfurls Apple/Spotify/iHeart podcast links; the &lt;b&gt;Podcast Standards Project&lt;/b&gt; met Thursday 12:30 ET near the venue, open to non-members.</p>
+<p>&lt;b&gt;🏷 Our people at PM:&lt;/b&gt; Mike Dell (Blubrry): "I'm headed there too. Speaking about podcasting 2.0 stuff." Matt Medeiros was going "bearing Podcasting 2.0 gifts &mdash; I'm advocating for the &lt;b&gt;funding tag&lt;/b&gt;&hellip; Forget views &mdash; get the funding tag!" then: "Sadly I had to cancel my trip to podcast movement. But I'm thinking of doing a virtual event around fundingtag.link." Sam Sethi: "we featured you on Creators from TrueFans and talked about the three steps you need to undertake to make the Funding Tag work."</p>
+<p><a href="https://fundingtag.link/" target="_blank" rel="noopener">fundingtag.link</a></p>
+<p>&lt;b&gt;Sam Sethi's thread (15 Sep), the Creator Portal:&lt;/b&gt; "The old model was simple: one creator &rarr; one podcast &rarr; one audio app&hellip; the next generation of creator platforms will look less like podcast apps and more like Creator Portals" &mdash; TrueFans newsletter launching next week, subscriber/open/click data to creators; roadmap: custom domains, native iOS/Android, CarPlay/Watch/TV, &lt;b&gt;stablecoin support&lt;/b&gt;.</p>
+<p><a href="https://podcastindex.social/@samsethi" target="_blank" rel="noopener">@samsethi &mdash; the Creator Portal thread</a></p>
+<p>&lt;b&gt;⭐ Board questions:&lt;/b&gt; (1) Webster's Walmart-vs-Tower-Records: is the Index's answer to Netflix a better front of the store &mdash; newpodcastapps.com &mdash; or is it that we never wanted to be in Walmart? (2) The IAB keeps its guide behind an email wall and its certification behind a fee; the AMP Accords are open. &lt;b&gt;Does the Index endorse a measurement spec, or stay out?&lt;/b&gt; (3) Substack's $200M and Spotify's payouts are both closed-loop money. &lt;b&gt;Where is the V4V number for the week&lt;/b&gt; &mdash; stats.podcastindex.org/v4v.</p>
+<p>-------------------------------------------------------------------------------------------------------------------------------------</p>
+</div>
+<div><small>Last Modified 09/18/2026 14:36:08 by&nbsp;<a href="http://freedomcontroller.com/">Freedom Controller</a></small>&nbsp;<a title="Link to the opml for this document." href="http://adam.curry.com/opml/Podcasting20Episode2-YjPTXzqqxAWrTUNxsG3QAD.opml">&nbsp;</a></div>]]></itunes:summary>
+      <itunes:author>Podcast Index LLC</itunes:author>
+      <author>Podcast Index LLC</author>
+      <itunes:image href="https://noagendaassets.com/enc/1684513486.722_pcifeedimage.png"/>
+      <itunes:explicit>No</itunes:explicit>
+      <itunes:keywords>podcasting,curry,podfather,technology,developers</itunes:keywords>
+      <enclosure url="https://op3.dev/e/mp3s.nashownotes.com/PC20-271-2026-09-18-Final.mp3" type="audio/mpeg" length="66238196"/>
+      <podcast:person group="cast" role="host" img="https://feeds.podcastindex.org/adam_avatar.jpg" href="http://curry.com">Adam Curry</podcast:person>
+      <podcast:person href="http://dave.sobr.org" img="https://feeds.podcastindex.org/dave_avatar.jpg" group="cast" role="host">Dave Jones</podcast:person>
+      <podcast:value type="lightning" method="keysend" suggested="0.00000005000">
+        <podcast:valueRecipient name="Dreb Scott (Chapters)" type="lnaddress" address="drebscott@getalby.com" split="5"/>
+        <podcast:valueRecipient name="Sovereign Feeds" address="steven@getalby.com" type="lnaddress" split="10"/>
+        <podcast:valueRecipient name="Fountain Boost bot" type="lnaddress" address="boostbot@fountain.fm" split="1"/>
+        <podcast:valueRecipient name="Reflex.io" type="lnaddress" address="reflex@livewire.io" split="5"/>
+        <podcast:valueRecipient name="ericpp@getalby.com" type="lnaddress" address="ericpp@getalby.com" split="5"/>
+        <podcast:valueRecipient name="Strike Test" type="lnaddress" address="adamcurry@strike.me" split="3"/>
+        <podcast:valueRecipient name="Alecks Gates Strike" type="lnaddress" address="agates@strike.me" split="5"/>
+        <podcast:valueRecipient name="PodcastIndex LN Test Wallet" type="lnaddress" address="podcastindex@getalby.com" split="50"/>
+        <podcast:valueRecipient name="Pod Sage" type="lnaddress" address="dave@getalby.com" split="1"/>
+        <podcast:valueRecipient name="Boost Monitor" type="lnaddress" address="adam@getalby.com" split="5"/>
+      </podcast:value>
+      <podcast:socialInteract protocol="activitypub" uri="https://podcastindex.social/@PodcastsLive/117293203069259332" accountId="@adam" accountUrl="https://podcastindex.social/users/adam"/>
+      <itunes:duration>5518</itunes:duration>
+      <podcast:funding url="https://www.paypal.com/donate?token=-hvWBEXZQfp7oSFJz0TwT3QXYcjYuemZRPIOml3nrL-EhtiUPAwuVHS6DPN5cBat9wjqwYEtyW-K8zSS">Support us with Value 4 Value</podcast:funding>
+    </item>
+  </channel>
+</rss>

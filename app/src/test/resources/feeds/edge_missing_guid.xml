@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
+  <channel>
+    <title>No Guid Show</title>
+    <link>https://noguid.example.com/</link>
+    <description>Items without guids</description>
+    <item>
+      <title>Has enclosure only</title>
+      <pubDate>Tue, 03 Jun 2025 08:00:00 GMT</pubDate>
+      <enclosure url="https://cdn.example.com/audio/a.mp3" length="1234" type="audio/mpeg"/>
+    </item>
+    <item>
+      <guid>   </guid>
+      <title>Blank guid falls back to enclosure</title>
+      <pubDate>Wed, 04 Jun 2025 08:00:00 GMT</pubDate>
+      <enclosure url="https://cdn.example.com/audio/b.mp3" length="99" type="audio/mpeg"/>
+    </item>
+    <item>
+      <title>No guid, no enclosure, no URL: skipped</title>
+      <pubDate>Thu, 05 Jun 2025 08:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>No guid and no enclosure but has itunes:duration: skipped</title>
+      <itunes:duration>10:00</itunes:duration>
+    </item>
+  </channel>
+</rss>

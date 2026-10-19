@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
+  <channel>
+    <title>Sloppy Dates Show</title>
+    <description>Date formats seen in the wild</description>
+    <item>
+      <guid>d1</guid>
+      <title>Missing day name, 1-digit day, 2-digit year, EST</title>
+      <pubDate>3 Jun 25 08:00:00 EST</pubDate>
+      <enclosure url="https://cdn.example.com/d1.mp3" length="1" type="audio/mpeg"/>
+    </item>
+    <item>
+      <guid>d2</guid>
+      <title>Day name, numeric offset, missing seconds</title>
+      <pubDate>Tue, 03 Jun 2025 08:00 -0500</pubDate>
+      <enclosure url="https://cdn.example.com/d2.mp3" length="1" type="audio/mpeg"/>
+    </item>
+    <item>
+      <guid>d3</guid>
+      <title>Extra whitespace and UT zone</title>
+      <pubDate>  Tue,   3  Jun   2025   08:00:00    UT  </pubDate>
+      <enclosure url="https://cdn.example.com/d3.mp3" length="1" type="audio/mpeg"/>
+    </item>
+    <item>
+      <guid>d4</guid>
+      <title>ISO-8601 fallback</title>
+      <pubDate>2025-06-03T08:00:00Z</pubDate>
+      <enclosure url="https://cdn.example.com/d4.mp3" length="1" type="audio/mpeg"/>
+    </item>
+    <item>
+      <guid>d5</guid>
+      <title>Unparseable date becomes null</title>
+      <pubDate>sometime last tuesday-ish</pubDate>
+      <enclosure url="https://cdn.example.com/d5.mp3" length="1" type="audio/mpeg"/>
+    </item>
+    <item>
+      <guid>d6</guid>
+      <title>No pubDate at all</title>
+      <enclosure url="https://cdn.example.com/d6.mp3" length="1" type="audio/mpeg"/>
+    </item>
+    <item>
+      <guid>d7</guid>
+      <title>PDT with 2-digit day and 4-digit year</title>
+      <pubDate>Fri, 06 Jun 2025 23:15:00 PDT</pubDate>
+      <enclosure url="https://cdn.example.com/d7.mp3" length="1" type="audio/mpeg"/>
+    </item>
+  </channel>
+</rss>
