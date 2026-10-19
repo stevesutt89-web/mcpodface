@@ -62,6 +62,7 @@ import com.steve.mcpodface.ui.theme.ThemePreviews
 private const val OPML_MIME_TYPE = "text/x-opml"
 private val IMPORT_MIME_TYPES = arrayOf("text/x-opml", "text/xml", "application/xml", "*/*")
 private const val EXPORT_FILE_NAME = "mcpodface-subscriptions.opml"
+private val BACKUP_IMPORT_MIME_TYPES = arrayOf(BackupFileNames.MIME_TYPE, "application/octet-stream")
 
 @Composable
 fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewModel()) {
@@ -70,6 +71,8 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
     val importHidden by viewModel.importHidden.collectAsStateWithLifecycle()
     val pendingCleanup by viewModel.pendingCleanup.collectAsStateWithLifecycle()
     val archive by viewModel.archive.collectAsStateWithLifecycle()
+    val backup: BackupViewModel = hiltViewModel()
+    val backupState by backup.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val batteryUnrestricted = rememberBatteryUnrestricted()
 
@@ -86,6 +89,13 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
         if (uri != null) viewModel.exportOpml(uri)
     }
 
+    val backupExportPicker = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(BackupFileNames.MIME_TYPE)) { uri ->
+        if (uri != null) backup.exportTo(uri) else backup.exportLocationCancelled()
+    }
+    val backupImportPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) backup.beginImport(uri)
+    }
+
     LaunchedEffect(viewModel) {
         viewModel.messages.collect { text -> Toast.makeText(context, text, Toast.LENGTH_LONG).show() }
     }
@@ -100,6 +110,8 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
         onOpenBatterySettings = { openBatterySettings(context) },
         archive = archive,
         onBackfillNow = viewModel::backfillNow,
+        onExportAll = backup::beginExport,
+        onImportAll = { backupImportPicker.launch(BACKUP_IMPORT_MIME_TYPES) },
     )
 
     // A setting change that would delete downloads waits here until the user confirms (PLAN.md §6.5).
@@ -111,6 +123,21 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
             onCancel = viewModel::cancelCleanup,
         )
     }
+
+    // Export and import all data: options, the Replace confirmation, progress and the result.
+    BackupDialogs(
+        state = backupState,
+        onIncludeArchive = backup::setIncludeArchive,
+        onExportOptionsConfirm = {
+            backup.confirmExportOptions()
+            backupExportPicker.launch(backup.exportFileName())
+        },
+        onImportModeChange = backup::setImportMode,
+        onImportConfirm = backup::startImport,
+        onReplaceConfirm = backup::confirmReplace,
+        onReplaceBack = backup::backFromReplace,
+        onDismiss = backup::dismiss,
+    )
 
     // Same progress and result dialogs as the Search tab's OPML import (the import runs in the app scope).
     val progress = importProgress
@@ -138,6 +165,8 @@ private fun SettingsContent(
     onOpenBatterySettings: () -> Unit = {},
     archive: ArchiveOverview = ArchiveOverview(),
     onBackfillNow: () -> Unit = {},
+    onExportAll: () -> Unit = {},
+    onImportAll: () -> Unit = {},
 ) {
     GlassPage {
         LargeTitleScaffold(
@@ -155,7 +184,7 @@ private fun SettingsContent(
                 playbackSection(settings, onUpdate)
                 refreshSection(settings, onUpdate)
                 archiveSection(settings, onUpdate, archive, onBackfillNow)
-                backupSection(onImportOpml, onExportOpml)
+                backupSection(onImportOpml, onExportOpml, onExportAll, onImportAll)
                 batterySection(batteryUnrestricted, onOpenBatterySettings)
                 aboutSection()
             }
@@ -409,14 +438,19 @@ private fun LazyListScope.archiveSection(
     }
 }
 
-private fun LazyListScope.backupSection(onImportOpml: () -> Unit, onExportOpml: () -> Unit) {
+private fun LazyListScope.backupSection(
+    onImportOpml: () -> Unit,
+    onExportOpml: () -> Unit,
+    onExportAll: () -> Unit,
+    onImportAll: () -> Unit,
+) {
     item(key = "header-backup") { SectionHeader("Backup and transfer", Icons.Rounded.ImportExport) }
     item(key = "card-backup") {
         SettingsCard {
             ActionRow(title = "Import OPML", onClick = onImportOpml)
             ActionRow(title = "Export OPML", onClick = onExportOpml)
-            ActionRow(title = "Export all data", onClick = {}, subtitle = "Coming soon", enabled = false)
-            ActionRow(title = "Import all data", onClick = {}, subtitle = "Coming soon", enabled = false, divider = false)
+            ActionRow(title = "Export all data", onClick = onExportAll)
+            ActionRow(title = "Import all data", onClick = onImportAll, divider = false)
         }
     }
 }
