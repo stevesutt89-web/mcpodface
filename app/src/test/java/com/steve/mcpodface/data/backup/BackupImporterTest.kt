@@ -114,7 +114,8 @@ class BackupImporterTest {
         val a = new.db.podcastDao().getByFeedUrl("https://a/feed")!!
         assertThat(a.isSubscribed).isTrue()
         assertThat(a.podcastIndexId).isEqualTo(9)
-        assertThat(a.authPassword).isEqualTo("p")
+        assertThat(a.authUser).isEqualTo("u")
+        assertThat(a.authPassword).isNull() // passwords are never put in backups
         val s = new.db.podcastSettingsDao().get(a.id)!!
         assertThat(s.keepLatestCount).isEqualTo(2)
         assertThat(s.sortOrder).isEqualTo(SortOrder.OLDEST_FIRST)

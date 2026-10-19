@@ -68,8 +68,9 @@ data class PodcastBackup(
     val artworkUrl: String? = null,
     val subscribedAt: Long? = null,
     val podcastIndexId: Long? = null,
-    /** HTTP basic auth for private feeds. */
+    /** HTTP basic auth user name for private feeds. */
     val authUser: String? = null,
+    /** Always null in new backups: passwords are left out and re-entered after a restore. Kept so old files still read. */
     val authPassword: String? = null,
     /** Per-podcast overrides. Null means every setting is inherited. */
     val settings: PodcastSettingsBackup? = null,

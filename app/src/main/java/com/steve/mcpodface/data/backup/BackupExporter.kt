@@ -84,7 +84,7 @@ class BackupExporter @Inject constructor(
                 subscribedAt = p.subscribedAt,
                 podcastIndexId = p.podcastIndexId,
                 authUser = p.authUser,
-                authPassword = p.authPassword,
+                authPassword = null, // never written: backups may sit in cloud storage
                 settings = podcastSettings[p.id]?.let { s ->
                     PodcastSettingsBackup(
                         autoDownload = s.autoDownload,

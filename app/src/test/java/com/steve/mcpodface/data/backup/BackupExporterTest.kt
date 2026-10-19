@@ -146,7 +146,8 @@ class BackupExporterTest {
         assertThat(data.podcasts).containsExactly(
             PodcastBackup(
                 feedUrl = FEED_A, title = "Alpha", artworkUrl = "https://a.example/art.jpg",
-                subscribedAt = 100, podcastIndexId = 42, authUser = "user", authPassword = "pass",
+                // The password is never exported.
+                subscribedAt = 100, podcastIndexId = 42, authUser = "user", authPassword = null,
                 settings = PodcastSettingsBackup(
                     autoDownload = false, keepLatestCount = 3, sortOrder = "OLDEST_FIRST",
                     playbackSpeed = 1.5f, skipIntroSec = 5, autoAddToQueue = "TOP",
