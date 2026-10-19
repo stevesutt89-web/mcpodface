@@ -12,7 +12,7 @@ task prompt should point them at this file plus `CLAUDE.md` (created in Phase 0)
 
 **Goals**
 - Search an open podcast catalogue and subscribe.
-- A clean, minimal, low-colour UI with light, dark and system themes.
+- A beautiful Liquid Glass (iOS 26 style) UI with light, dark and system themes.
 - Smart auto-download and auto-delete, set globally with per-podcast overrides.
 - Wi-Fi-only or Wi-Fi + cellular downloads.
 - **Fast offline full-text search** of episode titles and show notes, within one podcast or across
@@ -34,7 +34,7 @@ task prompt should point them at this file plus `CLAUDE.md` (created in Phase 0)
 | Concern | Choice | Why |
 |---|---|---|
 | Language | Kotlin (latest stable) | Standard |
-| UI | Jetpack Compose + Material 3, restyled to a neutral palette | Native, modern, and easy for agents to work with |
+| UI | Jetpack Compose + Material 3, restyled as Liquid Glass with Kyant `backdrop` + `shapes` (§11) | Native, modern, and easy for agents to work with |
 | Navigation | Navigation Compose with type-safe `@Serializable` routes | Well known; few surprises for Haiku |
 | DI | Hilt (KSP) | Standard and well documented |
 | Database | Room (KSP) with Flow queries, plus **FTS4** for search | Reactive UI, migrations, testable. Room supports FTS4 natively |
@@ -637,30 +637,42 @@ Room DB and DataStore automatically, while excluding the downloads folder.
 
 ---
 
-## 11. Visual design (clean, low-colour)
+## 11. Visual design (Liquid Glass, iOS 26 style)
 
-The look is neutral and quiet. **Podcast artwork provides the colour.** The interface itself is
-almost monochrome.
+*Changed 2026-10-19 at the owner's request, replacing the earlier quiet low-colour brief.* The app
+leans fully into Apple's **Liquid Glass** language: translucent, refractive glass controls that float
+over content, colour drawn from podcast artwork, springy motion. It should feel beautiful and alive.
 
-- **Palette:** greyscale surfaces and text, plus **one restrained accent**, a desaturated slate blue
-  (about `#4A6378` in light mode and `#9DB4C8` in dark mode). The accent is used *only* for the
-  active play/progress state, the selected tab indicator and toggles. Primary buttons use high-contrast
-  neutral colours (near-black on light, near-white on dark), not the accent.
-- **Light mode:** `#FFFFFF` background, `#F4F4F5` grouped and secondary surfaces, `#18181B` text,
-  `#71717A` secondary text, and `#E4E4E7` hairlines.
-- **Dark mode:** `#000000` background when pure black is on (otherwise `#121212`), `#18181B`
-  surfaces, `#F4F4F5` text, `#A1A1AA` secondary text, and `#27272A` hairlines.
-- **Material 3 restyling:** turn off tonal elevation and coloured containers. Chips, sheets and dialogs
-  use neutral surfaces. Use no gradients or drop shadows, apart from a faint one under the mini player.
-- **Typography:** System font (`FontFamily.Default` follows the Samsung font setting). Use a clear
-  hierarchy: 28sp bold screen titles that collapse into the top bar, 16sp body text, and 13sp secondary
-  text. Weight and size do the work instead of colour.
-- **Shapes and spacing:** 10dp rounded artwork, generous whitespace on a 16dp grid, hairline
-  separators inset to the text start, and no cards with borders and shadows.
-- **Motion:** The mini player expands into the full player with a shared-element artwork transition.
-  Keep animations subtle and short, with gentle haptics on play/pause.
-- Define all colors as tokens in `ui/theme`. **No hard-coded colors in screens.** Every screen
-  must look correct in light and dark mode, so add a Compose `@Preview` for both.
+**How glass works here** (Kyant `backdrop` library, Android 13+; both phones get the full effect):
+glass samples a *recorded backdrop layer*, refracts it through a lens at the edges, blurs it and adds
+a specular rim. **A glass element must never sample a layer it is drawn inside.** The building blocks
+in `ui/components/glass/` handle this; screens should only use them:
+
+| Piece | Use |
+|---|---|
+| `Modifier.glass(shape, style)` | Any glass surface. Styles: `Regular` (bars, sheets, cards), `Clear` (small controls over artwork), `Prominent` (accent-tinted primary actions). |
+| `GlassPage(background = …) { … }` | Wrap a screen so its glass controls refract the page background. Use `ArtworkAmbience(url)` as the background on podcast, episode and player pages. |
+| `LargeTitleScaffold` / `GlassTopBarScaffold` | Screen frames. Content scrolls *under* a top bar that turns to glass. Pass their `PaddingValues` as the list's **`contentPadding`** (never `Modifier.padding`), so content flows under the bars and the floating tab bar. |
+| `GlassButton`, `GlassIconButton`, `GlassChip` | Buttons, toolbar/icon buttons and filter chips with the springy press lens and haptics. `BackButton` is a glass circle. |
+| `GlassTabBar`, `MiniPlayer` | Floating capsules in the shell (already done). |
+| `rememberArtworkAccent(url)` | Vivid accent from the artwork for that page's Prominent glass and highlights. |
+
+- **Colour:** a vivid violet accent (`#6B4EFF` light / `#9B8CFF` dark) for selection, progress,
+  toggles and Prominent glass, overridden by the artwork's accent on podcast, episode and player
+  pages. Text and backgrounds stay neutral (white / true black) so the glass and artwork carry the colour.
+- **Shapes:** continuous-corner ("squircle") shapes from `com.kyant.shapes`: `Capsule()` for
+  buttons, chips and bars; `RoundedRectangle(28.dp)` for cards and sheets; 12–28dp on artwork.
+  Prefer them over Material's `RoundedCornerShape`.
+- **Surfaces:** lists stay solid and readable (no glass behind every row). Group settings and
+  secondary content in glass cards (`RoundedRectangle(28.dp)`). Floating chrome may cast a soft
+  shadow; nothing else needs one.
+- **Typography:** system font; bold large titles (28sp collapsing), 16sp body, 13sp secondary.
+- **Motion:** springs everywhere (`GlassPressSpring`: damping ~0.55). Controls swell and their lens
+  bulges while pressed; the tab-bar lens slides between tabs; the full player's artwork shrinks a
+  little when paused. Haptics on play/pause, tab changes and toggles.
+- **Tokens:** all colours come from `MaterialTheme.colorScheme`, `AppTheme.colors` or `glassTint()`.
+  No hard-coded colours in screens. Every screen gets light and dark `@ThemePreviews` (previews show
+  the translucent fallback, because previews can't render the real glass).
 
 ---
 
@@ -867,7 +879,7 @@ Report back: files changed, test output summary, any open questions.
 - 5 tabs: Latest · Library · Downloads · Up Next · Search.
 - Keep the latest 5 episodes per podcast.
 - An episode counts as played at more than 95%, and is deleted 24h after being played.
-- A clean, low-colour, neutral design rather than an Apple clone.
+- Liquid Glass (iOS 26 style) design, chosen 2026-10-19 (see §11); replaced the earlier low-colour brief.
 - A local full-text episode search, plus slow archive backfill.
 
 **Defaults chosen (change if you disagree):**

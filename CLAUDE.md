@@ -10,8 +10,10 @@
 ## Rules
 - **Never add dependencies or change versions.** Everything is pinned in `gradle/libs.versions.toml`. Ask the orchestrator.
 - Only edit the files your task lists.
-- **No hard-coded colours in screens.** Use `MaterialTheme.colorScheme.*` or `AppTheme.colors.*` (accent, textSecondary, hairline, surfaceGrouped…). Filled primary buttons use `colors = AppButtonDefaults.primaryColors()` (neutral, not accent).
-- Typography: `headlineMedium` screen titles (28sp bold), `titleMedium` row titles, `bodyLarge` body, `bodySmall` secondary (13sp). Spacing from `Spacing`, artwork corners `ArtworkShape`.
+- **Design = Liquid Glass (PLAN.md §11).** Use the pieces in `ui/components/glass/` (`Modifier.glass`, `GlassPage`, `GlassButton`, `GlassIconButton`, `GlassChip`, `ArtworkAmbience`, `rememberArtworkAccent`) and continuous shapes from `com.kyant.shapes` (`Capsule()`, `RoundedRectangle(28.dp)`). Never make glass sample a layer it is inside: only use the provided frames.
+- `LargeTitleScaffold` / `GlassTopBarScaffold` padding goes into the list's **`contentPadding`**, never `Modifier.padding`, so content scrolls under the glass bars and the floating tab bar.
+- **No hard-coded colours in screens.** Use `MaterialTheme.colorScheme.*`, `AppTheme.colors.*` or `glassTint()`.
+- Typography: `headlineMedium` screen titles (28sp bold), `titleMedium` row titles, `bodyLarge` body, `bodySmall` secondary (13sp). Spacing from `Spacing`.
 - Every screen/component gets a `@ThemePreviews` preview (light + dark).
 - Screens draw their own top bar; the shell Scaffold passes zero content insets.
 - `domain/policy` is pure Kotlin: no `android.*` imports.
