@@ -4,6 +4,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,6 +37,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kyant.shapes.Capsule
 import com.steve.mcpodface.ui.theme.AppTheme
+import com.steve.mcpodface.ui.theme.ThemePreviews
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.ui.tooling.preview.Preview
 
 data class GlassTab(val label: String, val icon: ImageVector)
 
@@ -88,7 +96,8 @@ fun GlassTabBar(
                     Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .clickable(
+                        .selectable(
+                            selected = selected,
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null,
                             role = Role.Tab,
@@ -99,6 +108,7 @@ fun GlassTabBar(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
+                    // Icon is decorative: the visible label is what TalkBack reads for the tab.
                     Icon(tab.icon, contentDescription = null, tint = color, modifier = Modifier.size(24.dp))
                     Text(
                         tab.label,
@@ -106,10 +116,47 @@ fun GlassTabBar(
                         style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
                         fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
                         maxLines = 1,
-                        overflow = TextOverflow.Clip,
+                        // Labels shrink to ellipsis at large font scales; the icon always stays.
+                        overflow = TextOverflow.Ellipsis,
+                        softWrap = false,
                     )
                 }
             }
         }
     }
 }
+
+@ThemePreviews
+@Composable
+private fun GlassTabBarPreview() {
+    AppTheme {
+        Box(Modifier.fillMaxWidth().padding(16.dp)) {
+            GlassTabBar(
+                tabs = previewTabs(),
+                selectedIndex = 1,
+                onSelect = {},
+            )
+        }
+    }
+}
+
+@Preview(name = "Font 200%", fontScale = 2f, showBackground = true)
+@Composable
+private fun GlassTabBarFontScalePreview() {
+    AppTheme {
+        Box(Modifier.fillMaxWidth().padding(16.dp)) {
+            GlassTabBar(
+                tabs = previewTabs(),
+                selectedIndex = 0,
+                onSelect = {},
+            )
+        }
+    }
+}
+
+private fun previewTabs(): List<GlassTab> = listOf(
+    GlassTab("Latest", Icons.Rounded.Home),
+    GlassTab("Library", Icons.Rounded.Download),
+    GlassTab("Search", Icons.Rounded.Search),
+    GlassTab("Settings", Icons.Rounded.Settings),
+)

@@ -24,11 +24,17 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -231,13 +237,14 @@ fun FullPlayerContent(
                 color = colors.textPrimary,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.semantics { heading() },
             )
             Spacer(Modifier.height(2.dp))
             Text(
                 text = state.podcastTitle,
                 style = MaterialTheme.typography.bodyLarge,
                 color = colors.textSecondary,
-                maxLines = 1,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
             if (state.chapters.isNotEmpty()) {
@@ -311,7 +318,8 @@ fun FullPlayerContent(
                         .clickable(remember { MutableInteractionSource() }, indication = null, role = Role.Button) {
                             showSpeedSheet = true
                         }
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                        .semantics { contentDescription = "Playback speed ${formatSpeed(state.speed)}" },
                 )
                 if (state.chapters.isNotEmpty()) {
                     CapsuleIcon(Icons.AutoMirrored.Rounded.FormatListBulleted, "Chapters") { showChaptersSheet = true }
@@ -332,6 +340,7 @@ fun FullPlayerContent(
                         onClick = { showTranscriptSheet = true },
                         leadingIcon = Icons.Outlined.Subject,
                         accent = accent,
+                        selectable = false,
                     )
                     Spacer(Modifier.width(Spacing.s))
                 }
@@ -341,6 +350,7 @@ fun FullPlayerContent(
                     onClick = onShare,
                     leadingIcon = Icons.Rounded.Share,
                     accent = accent,
+                    selectable = false,
                 )
             }
 
@@ -356,6 +366,7 @@ fun FullPlayerContent(
                         text = "Show notes",
                         style = MaterialTheme.typography.titleMedium,
                         color = colors.textPrimary,
+                        modifier = Modifier.semantics { heading() },
                     )
                     Spacer(Modifier.height(Spacing.s))
                     ShowNotes(html = state.descriptionHtml, onTimestampClick = onSeek)
@@ -390,10 +401,11 @@ fun FullPlayerContent(
 /** Moon icon, plus the time left while a timer runs. Reads the timer itself so its 1s ticks redraw only this. */
 @Composable
 private fun SleepButton(timer: () -> SleepTimerUi, accent: Color, onClick: () -> Unit) {
-    val label = sleepLabel(timer())
+    val current = timer()
+    val label = sleepLabel(current)
     Row(
         Modifier
-            .height(44.dp)
+            .heightIn(min = 44.dp)
             .clip(Capsule())
             .clickable(remember { MutableInteractionSource() }, indication = null, role = Role.Button, onClick = onClick)
             .padding(horizontal = 11.dp),
@@ -401,7 +413,7 @@ private fun SleepButton(timer: () -> SleepTimerUi, accent: Color, onClick: () ->
     ) {
         Icon(
             Icons.Outlined.Bedtime,
-            contentDescription = if (label == null) "Sleep timer" else "Sleep timer, $label",
+            contentDescription = sleepDescription(current),
             tint = if (label == null) AppTheme.colors.textPrimary.copy(alpha = 0.9f) else accent,
             modifier = Modifier.size(22.dp),
         )
@@ -439,6 +451,15 @@ private fun Timeline(
                 dragFraction = null
             },
             enabled = durationMs > 0,
+            modifier = Modifier.semantics {
+                contentDescription = "Playback position"
+                stateDescription = if (durationMs > 0) {
+                    "${formatClock(shownPositionMs)} played, " +
+                        "${formatRemaining(durationMs, shownPositionMs, speed).removePrefix("-")} remaining"
+                } else {
+                    "Length unknown"
+                }
+            },
             colors = SliderDefaults.colors(
                 thumbColor = accent,
                 activeTrackColor = accent,
@@ -478,6 +499,16 @@ private fun CapsuleIcon(icon: ImageVector, description: String, enabled: Boolean
     }
 }
 
+/**
+ * What TalkBack says for the sleep button: "Sleep timer" when off, otherwise the time left
+ * (or the end-of-episode stop).
+ */
+internal fun sleepDescription(timer: SleepTimerUi): String = when (timer) {
+    SleepTimerUi.Off -> "Sleep timer"
+    SleepTimerUi.EndOfEpisode -> "Sleep timer, stops at end of episode"
+    is SleepTimerUi.Remaining -> "Sleep timer, ${formatClock(timer.ms)} left"
+}
+
 /** Back icon matching the configured interval; falls back to a generic replay icon. */
 private fun skipBackIcon(seconds: Int): ImageVector = when (seconds) {
     10 -> Icons.Rounded.Replay10
@@ -495,6 +526,22 @@ private fun openOutputSwitcher(context: Context) {
 @ThemePreviews
 @Composable
 private fun FullPlayerPlayingPreview() {
+    AppTheme {
+        FullPlayerContent(
+            state = previewPlayerState(isPlaying = true),
+            onSeek = {},
+            onTogglePlayPause = {},
+            onSkipBack = {},
+            onSkipForward = {},
+            onSpeedChange = { _, _ -> },
+            onOpenOutputSwitcher = {},
+        )
+    }
+}
+
+@Preview(name = "Font 200%", fontScale = 2f, showBackground = true)
+@Composable
+private fun FullPlayerFontScalePreview() {
     AppTheme {
         FullPlayerContent(
             state = previewPlayerState(isPlaying = true),

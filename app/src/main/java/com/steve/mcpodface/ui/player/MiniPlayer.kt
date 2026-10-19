@@ -7,8 +7,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -30,8 +30,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kyant.shapes.Capsule
 import com.kyant.shapes.RoundedRectangle
@@ -67,13 +72,25 @@ fun MiniPlayer(
     }
     val shape = remember { Capsule() }
 
+    val spokenTitle = if (state.podcastTitle.isBlank()) state.title else "${state.title}, ${state.podcastTitle}"
+    val playPauseLabel = if (state.isPlaying) "Pause" else "Play"
+    val skipLabel = "Skip forward ${state.skipForwardSec} seconds"
     Box(
         modifier
             .fillMaxWidth()
-            .height(MINI_PLAYER_HEIGHT)
+            // At least the design height; grows with the text at large font scales.
+            .heightIn(min = MINI_PLAYER_HEIGHT)
             .glass(shape, GlassStyle.Regular, backdrop = LocalChromeBackdrop.current, shadow = true)
             .clip(shape)
-            .clickable(remember { MutableInteractionSource() }, indication = null, role = Role.Button, onClick = onOpen),
+            .clickable(remember { MutableInteractionSource() }, indication = null, role = Role.Button, onClick = onOpen)
+            // One TalkBack item for the whole capsule; play/pause and skip are custom actions.
+            .semantics(mergeDescendants = true) {
+                contentDescription = "Now playing: $spokenTitle"
+                customActions = listOf(
+                    CustomAccessibilityAction(playPauseLabel) { onTogglePlayPause(); true },
+                    CustomAccessibilityAction(skipLabel) { onSkipForward(); true },
+                )
+            },
     ) {
         // Progress as a soft accent fill along the bottom edge of the capsule.
         Box(
@@ -84,7 +101,7 @@ fun MiniPlayer(
                 .background(colors.accent),
         )
         Row(
-            modifier = Modifier.fillMaxWidth().fillMaxHeight().padding(start = 8.dp, end = 8.dp),
+            modifier = Modifier.fillMaxWidth().heightIn(min = MINI_PLAYER_HEIGHT).padding(start = 8.dp, end = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
@@ -99,7 +116,7 @@ fun MiniPlayer(
                     text = state.title,
                     style = MaterialTheme.typography.titleSmall,
                     color = colors.textPrimary,
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
@@ -112,7 +129,7 @@ fun MiniPlayer(
             }
             Box(
                 Modifier
-                    .size(44.dp)
+                    .size(48.dp)
                     .clickable(remember { MutableInteractionSource() }, indication = null, role = Role.Button) {
                         haptics.performHapticFeedback(HapticFeedbackType.ContextClick)
                         onTogglePlayPause()
@@ -132,7 +149,7 @@ fun MiniPlayer(
             }
             Box(
                 Modifier
-                    .size(44.dp)
+                    .size(48.dp)
                     .clickable(remember { MutableInteractionSource() }, indication = null, role = Role.Button, onClick = onSkipForward),
                 contentAlignment = Alignment.Center,
             ) {
@@ -156,6 +173,22 @@ internal fun skipForwardIcon(seconds: Int): ImageVector = when (seconds) {
 @ThemePreviews
 @Composable
 private fun MiniPlayerPlayingPreview() {
+    AppTheme {
+        GlassPage {
+            MiniPlayer(
+                state = previewPlayerState(isPlaying = true),
+                onOpen = {},
+                onTogglePlayPause = {},
+                onSkipForward = {},
+                modifier = Modifier.padding(16.dp),
+            )
+        }
+    }
+}
+
+@Preview(name = "Font 200%", fontScale = 2f, showBackground = true)
+@Composable
+private fun MiniPlayerFontScalePreview() {
     AppTheme {
         GlassPage {
             MiniPlayer(

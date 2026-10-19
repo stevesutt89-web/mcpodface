@@ -56,6 +56,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -484,7 +486,7 @@ private fun SectionHeader(title: String) {
         text = title,
         style = MaterialTheme.typography.titleSmall,
         color = AppTheme.colors.textSecondary,
-        modifier = Modifier.padding(start = Spacing.m, top = Spacing.l, bottom = Spacing.xs),
+        modifier = Modifier.padding(start = Spacing.m, top = Spacing.l, bottom = Spacing.xs).semantics { heading() },
     )
 }
 

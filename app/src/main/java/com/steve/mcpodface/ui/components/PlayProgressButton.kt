@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.Icon
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -57,21 +58,27 @@ fun PlayProgressButton(
     val pressed by interaction.collectIsPressedAsState()
     val scale by animateFloatAsState(if (pressed) 0.9f else 1f, GlassPressSpring, label = "playPress")
 
+    // The touch target is at least 48dp; the visible circle stays 36dp and is centred in it.
     Box(
         modifier = modifier
-            .size(36.dp)
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-            }
-            .clip(CircleShape)
-            .background(colors.accent.copy(alpha = 0.14f))
+            .minimumInteractiveComponentSize()
             .clickable(interactionSource = interaction, indication = null, role = Role.Button) {
                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 onClick()
             },
         contentAlignment = Alignment.Center,
     ) {
+        Box(
+            Modifier
+                .size(36.dp)
+                .graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                }
+                .clip(CircleShape)
+                .background(colors.accent.copy(alpha = 0.14f)),
+            contentAlignment = Alignment.Center,
+        ) {
         if (ring != null) {
             Canvas(Modifier.fillMaxSize()) {
                 val stroke = 2.5.dp.toPx()
@@ -103,6 +110,7 @@ fun PlayProgressButton(
             tint = colors.accent,
             modifier = Modifier.size(18.dp),
         )
+        }
     }
 }
 

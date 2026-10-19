@@ -67,6 +67,7 @@ import com.steve.mcpodface.playback.NowPlaying
 import com.steve.mcpodface.ui.components.SearchButton
 import com.steve.mcpodface.ui.components.SettingsButton
 import com.steve.mcpodface.ui.components.EpisodeRow
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import com.steve.mcpodface.ui.components.LargeTitleScaffold
 import com.steve.mcpodface.ui.components.glass.GlassIconButton
 import com.steve.mcpodface.ui.components.glass.GlassPage
@@ -217,6 +218,14 @@ private fun UpNextContent(
                                 onDragStarted = { onDragStarted(item.episode.id) },
                                 onDragStopped = onDragStopped,
                                 showDivider = index < state.items.lastIndex,
+                                previousId = state.items.getOrNull(index - 1)?.episode?.id,
+                                nextId = state.items.getOrNull(index + 1)?.episode?.id,
+                                // TalkBack move: the same drag steps, one swap to the neighbour.
+                                onMoveTo = { target ->
+                                    onDragStarted(item.episode.id)
+                                    onDragMove(item.episode.id, target)
+                                    onDragStopped()
+                                },
                             )
                         }
                     }
@@ -260,6 +269,9 @@ private fun ReorderableCollectionItemScope.QueueRow(
     onDragStarted: () -> Unit,
     onDragStopped: () -> Unit,
     showDivider: Boolean,
+    previousId: Long?,
+    nextId: Long?,
+    onMoveTo: (Long) -> Unit,
 ) {
     val colors = AppTheme.colors
     val haptics = LocalHapticFeedback.current
@@ -308,10 +320,20 @@ private fun ReorderableCollectionItemScope.QueueRow(
                     modifier = Modifier.weight(1f),
                     isPlaying = isPlaying,
                     now = now,
+                    customActions = buildList {
+                        // Drag and swipe can't be used with TalkBack, so these are the accessible equivalents.
+                        previousId?.let { target ->
+                            add(CustomAccessibilityAction("Move up") { onMoveTo(target); true })
+                        }
+                        nextId?.let { target ->
+                            add(CustomAccessibilityAction("Move down") { onMoveTo(target); true })
+                        }
+                        add(CustomAccessibilityAction("Remove from Up Next") { onRemove(); true })
+                    },
                 )
                 Icon(
                     imageVector = Icons.Rounded.DragHandle,
-                    contentDescription = "Drag to reorder",
+                    contentDescription = null,
                     tint = colors.textSecondary,
                     modifier = Modifier
                         .padding(end = Spacing.m, start = Spacing.xs)

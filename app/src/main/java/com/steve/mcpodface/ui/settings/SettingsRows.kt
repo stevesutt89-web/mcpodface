@@ -20,9 +20,11 @@ import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -32,6 +34,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.kyant.shapes.RoundedRectangle
 import com.steve.mcpodface.data.prefs.ThemeMode
@@ -82,6 +86,7 @@ internal fun SectionHeader(text: String, icon: ImageVector? = null) {
             text,
             style = MaterialTheme.typography.labelMedium,
             color = AppTheme.colors.textSecondary,
+            modifier = Modifier.semantics { heading() },
         )
     }
 }
@@ -233,6 +238,26 @@ internal fun SwitchRow(
             )
         },
     )
+}
+
+@Preview(name = "Font 200%", fontScale = 2f, showBackground = true)
+@Composable
+private fun SettingsRowsFontScalePreview() {
+    AppTheme {
+        Surface {
+            Column {
+                SettingsCard {
+                    SwitchRow(
+                        title = "Remember played episodes",
+                        checked = true,
+                        onChange = {},
+                        subtitle = "Keeps history on this phone",
+                    )
+                    ValueRow(title = "Requests used today", value = "12 of 100", divider = false)
+                }
+            }
+        }
+    }
 }
 
 /** A value-only row, e.g. "Requests used today". */

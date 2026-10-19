@@ -30,6 +30,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -94,7 +97,10 @@ internal fun SpeedSheetContent(
             style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.Bold),
             color = colors.accent,
             textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth().padding(top = Spacing.s),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = Spacing.s)
+                .semantics { contentDescription = "Playback speed ${formatSpeed(value)}" },
         )
         Slider(
             value = value,
@@ -102,6 +108,10 @@ internal fun SpeedSheetContent(
             onValueChangeFinished = { onSpeedChange(value, rememberForPodcast) },
             valueRange = MIN_SPEED..MAX_SPEED,
             steps = 24, // 0.5 to 3.0 in 0.1 steps
+            modifier = Modifier.semantics {
+                contentDescription = "Playback speed"
+                stateDescription = formatSpeed(value)
+            },
             colors = SliderDefaults.colors(
                 thumbColor = colors.accent,
                 activeTrackColor = colors.accent,

@@ -14,10 +14,12 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -113,11 +115,10 @@ fun GlassIconButton(
     val haptics = LocalHapticFeedback.current
     val shape = remember { Capsule() }
     val iconTint = tint ?: if (style == GlassStyle.Prominent) Color.White else AppTheme.colors.textPrimary
+    // Touch target is at least 48dp; the glass circle stays [size] and is centred in it.
     Box(
         modifier = modifier
-            .size(size)
-            .then(pressModifier)
-            .glass(shape, style, glassTint(style, accent), pressed = press)
+            .minimumInteractiveComponentSize()
             .clickable(interaction, indication = null, enabled = enabled, role = Role.Button) {
                 haptics.performHapticFeedback(HapticFeedbackType.ContextClick)
                 onClick()
@@ -125,11 +126,23 @@ fun GlassIconButton(
             .alpha(if (enabled) 1f else 0.45f),
         contentAlignment = Alignment.Center,
     ) {
-        Icon(icon, contentDescription, tint = iconTint, modifier = Modifier.size(iconSize))
+        Box(
+            Modifier
+                .size(size)
+                .then(pressModifier)
+                .glass(shape, style, glassTint(style, accent), pressed = press),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(icon, contentDescription, tint = iconTint, modifier = Modifier.size(iconSize))
+        }
     }
 }
 
-/** Glass filter chip: clear glass when off, accent glass when selected. */
+/**
+ * Glass filter chip: clear glass when off, accent glass when selected. With [selectable] (the
+ * default) it is a filter or option: TalkBack reads it as a selectable tab with its selected state.
+ * Pass false for a plain action chip (e.g. Share), which TalkBack reads as a button.
+ */
 @Composable
 fun GlassChip(
     label: String,
@@ -138,23 +151,42 @@ fun GlassChip(
     modifier: Modifier = Modifier,
     leadingIcon: ImageVector? = null,
     accent: Color = AppTheme.colors.accent,
+    selectable: Boolean = true,
 ) {
     val interaction = remember { MutableInteractionSource() }
     val (press, pressModifier) = rememberGlassPress(interaction)
     val style = if (selected) GlassStyle.Prominent else GlassStyle.Regular
     val contentColor = if (selected) Color.White else AppTheme.colors.textPrimary
     val shape = remember { Capsule() }
-    Row(
+    val touchModifier = if (selectable) {
+        Modifier.selectable(
+            selected = selected,
+            interactionSource = interaction,
+            indication = null,
+            role = Role.Tab,
+            onClick = onClick,
+        )
+    } else {
+        Modifier.clickable(interaction, indication = null, role = Role.Button, onClick = onClick)
+    }
+    // Touch target is at least 48dp; the chip itself stays compact and is centred in it.
+    Box(
         modifier = modifier
-            .then(pressModifier)
-            .glass(shape, style, glassTint(style, accent), pressed = press)
-            .clickable(interaction, indication = null, role = Role.Tab, onClick = onClick)
-            .defaultMinSize(minHeight = 36.dp)
-            .padding(horizontal = 14.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            .minimumInteractiveComponentSize()
+            .then(touchModifier),
+        contentAlignment = Alignment.Center,
     ) {
-        if (leadingIcon != null) Icon(leadingIcon, null, tint = contentColor, modifier = Modifier.size(16.dp))
-        Text(label, style = MaterialTheme.typography.labelLarge, color = contentColor)
+        Row(
+            modifier = Modifier
+                .then(pressModifier)
+                .glass(shape, style, glassTint(style, accent), pressed = press)
+                .defaultMinSize(minHeight = 36.dp)
+                .padding(horizontal = 14.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (leadingIcon != null) Icon(leadingIcon, null, tint = contentColor, modifier = Modifier.size(16.dp))
+            Text(label, style = MaterialTheme.typography.labelLarge, color = contentColor)
+        }
     }
 }

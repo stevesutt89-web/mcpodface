@@ -71,6 +71,7 @@ import com.steve.mcpodface.data.db.PlaylistKind
 import com.steve.mcpodface.ui.addpodcast.GlassDialogScope
 import com.steve.mcpodface.ui.components.BackButton
 import com.steve.mcpodface.ui.components.EpisodeRow
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import com.steve.mcpodface.ui.components.LargeTitleScaffold
 import com.steve.mcpodface.ui.components.glass.GlassButton
 import com.steve.mcpodface.ui.components.glass.GlassIconButton
@@ -241,6 +242,14 @@ private fun PlaylistContent(
                                 onDragStarted = { onDragStarted(item.episode.id) },
                                 onDragStopped = onDragStopped,
                                 showDivider = showDivider,
+                                previousId = state.items.getOrNull(index - 1)?.episode?.id,
+                                nextId = state.items.getOrNull(index + 1)?.episode?.id,
+                                // TalkBack move: the same drag steps, one swap to the neighbour.
+                                onMoveTo = { target ->
+                                    onDragStarted(item.episode.id)
+                                    onDragMove(item.episode.id, target)
+                                    onDragStopped()
+                                },
                             )
                         }
                     } else {
@@ -342,6 +351,9 @@ private fun ReorderableCollectionItemScope.SwipeRemovableRow(
     onDragStarted: () -> Unit,
     onDragStopped: () -> Unit,
     showDivider: Boolean,
+    previousId: Long?,
+    nextId: Long?,
+    onMoveTo: (Long) -> Unit,
 ) {
     val colors = AppTheme.colors
     val haptics = LocalHapticFeedback.current
@@ -386,10 +398,20 @@ private fun ReorderableCollectionItemScope.SwipeRemovableRow(
                     modifier = Modifier.weight(1f),
                     isPlaying = isPlaying,
                     now = now,
+                    customActions = buildList {
+                        // Drag and swipe can't be used with TalkBack, so these are the accessible equivalents.
+                        previousId?.let { target ->
+                            add(CustomAccessibilityAction("Move up") { onMoveTo(target); true })
+                        }
+                        nextId?.let { target ->
+                            add(CustomAccessibilityAction("Move down") { onMoveTo(target); true })
+                        }
+                        add(CustomAccessibilityAction("Remove from playlist") { onRemove(); true })
+                    },
                 )
                 Icon(
                     imageVector = Icons.Rounded.DragHandle,
-                    contentDescription = "Drag to reorder",
+                    contentDescription = null,
                     tint = colors.textSecondary,
                     modifier = Modifier
                         .padding(end = Spacing.m, start = Spacing.xs)

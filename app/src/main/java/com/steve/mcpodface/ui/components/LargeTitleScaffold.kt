@@ -24,6 +24,9 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
@@ -67,7 +70,7 @@ fun LargeTitleScaffold(
         glassAlpha = { scrollBehavior.state.collapsedFraction },
         topBar = {
             LargeTopAppBar(
-                title = { Text(title) }, // M3 animates headlineMedium (expanded) -> titleLarge (collapsed)
+                title = { Text(title, modifier = Modifier.semantics { heading() }) }, // M3 animates headlineMedium (expanded) -> titleLarge (collapsed)
                 navigationIcon = navigationIcon,
                 actions = actions,
                 scrollBehavior = scrollBehavior,
@@ -104,7 +107,7 @@ fun GlassTopBarScaffold(
         glassAlpha = { scrollBehavior.state.overlappedFraction },
         topBar = {
             TopAppBar(
-                title = { Text(title, maxLines = 1) },
+                title = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.semantics { heading() }) },
                 navigationIcon = navigationIcon,
                 actions = actions,
                 scrollBehavior = scrollBehavior,

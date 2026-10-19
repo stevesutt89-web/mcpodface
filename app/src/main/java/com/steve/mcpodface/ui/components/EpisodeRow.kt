@@ -29,6 +29,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -44,6 +48,7 @@ import com.steve.mcpodface.data.db.PlayState
 import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
 import com.steve.mcpodface.ui.theme.ThemePreviews
+import androidx.compose.ui.tooling.preview.Preview
 
 /**
  * One episode in a list (PLAN.md §8.2): artwork, meta line, title, summary or search snippet,
@@ -62,6 +67,8 @@ fun EpisodeRow(
     onLongClick: (() -> Unit)? = null,
     /** Replaces the publish date in the meta line, e.g. "Played 3h ago" in History. */
     dateLabel: String? = null,
+    /** Extra TalkBack actions for the row, e.g. Up Next or Move up / Move down. */
+    customActions: List<CustomAccessibilityAction> = emptyList(),
 ) {
     val colors = AppTheme.colors
     val episode = item.episode
@@ -70,9 +77,10 @@ fun EpisodeRow(
     val progress = if (inProgress) playProgress(episode.positionMs, episode.durationSec) else null
 
     val title = episode.title.ifBlank { "Untitled episode" }
+    val dateText = dateLabel ?: formatRelativeDate(episode.pubDate, now)
     val meta = buildList {
         if (showPodcastTitle && item.podcastTitle.isNotBlank()) add(item.podcastTitle)
-        add(dateLabel ?: formatRelativeDate(episode.pubDate, now))
+        add(dateText)
         if (!episode.inCurrentFeed) add("Archived")
     }.joinToString(" · ")
     val summary: AnnotatedString? = snippet?.takeIf { it.text.isNotBlank() }
@@ -82,11 +90,31 @@ fun EpisodeRow(
         PlayState.IN_PROGRESS -> formatTimeLeft(episode.durationSec, episode.positionMs)
         PlayState.PLAYED -> "Played"
     }
+    val spokenSummary = episodeSpokenSummary(
+        title = title,
+        podcastTitle = if (showPodcastTitle) item.podcastTitle else null,
+        dateText = dateText,
+        stateText = footer,
+        downloadLabel = item.downloadState?.let(::downloadStateLabel),
+        starred = episode.isStarred,
+        inUpNext = item.inQueue,
+        archived = !episode.inCurrentFeed,
+    )
+    val rowActions = buildList {
+        add(CustomAccessibilityAction(if (isPlaying) "Pause" else "Play") { onPlayClick(); true })
+        if (onLongClick != null) add(CustomAccessibilityAction("More options") { onLongClick(); true })
+        addAll(customActions)
+    }
 
     Column(
         modifier = modifier
             .fillMaxWidth()
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)
+            .semantics(mergeDescendants = true) {
+                contentDescription = spokenSummary
+                // `this.` because the parameter [customActions] shadows the semantics property.
+                this.customActions = rowActions
+            }
             .padding(horizontal = Spacing.m, vertical = 12.dp),
     ) {
         Row {
@@ -187,14 +215,53 @@ private fun playProgress(positionMs: Long, durationSec: Int?): Float? {
 @Composable
 private fun DownloadStateIcon(state: DownloadState) {
     val colors = AppTheme.colors
-    when (state) {
-        DownloadState.COMPLETED -> StateIcon(Icons.Rounded.DownloadDone, "Downloaded", colors.accent)
-        DownloadState.DOWNLOADING -> StateIcon(Icons.Rounded.Downloading, "Downloading", colors.textSecondary)
-        DownloadState.QUEUED -> StateIcon(Icons.Rounded.Downloading, "Download queued", colors.textSecondary)
-        DownloadState.FAILED -> StateIcon(Icons.Rounded.ErrorOutline, "Download failed", MaterialTheme.colorScheme.error)
-        DownloadState.PAUSED_NETWORK -> StateIcon(Icons.Rounded.WifiOff, "Paused, waiting for network", colors.textSecondary)
+    val icon = when (state) {
+        DownloadState.COMPLETED -> Icons.Rounded.DownloadDone
+        DownloadState.DOWNLOADING, DownloadState.QUEUED -> Icons.Rounded.Downloading
+        DownloadState.FAILED -> Icons.Rounded.ErrorOutline
+        DownloadState.PAUSED_NETWORK -> Icons.Rounded.WifiOff
     }
+    val tint = when (state) {
+        DownloadState.COMPLETED -> colors.accent
+        DownloadState.FAILED -> MaterialTheme.colorScheme.error
+        else -> colors.textSecondary
+    }
+    StateIcon(icon, downloadStateLabel(state), tint)
 }
+
+/** Spoken and screen-reader label for a download state. */
+internal fun downloadStateLabel(state: DownloadState): String = when (state) {
+    DownloadState.COMPLETED -> "Downloaded"
+    DownloadState.DOWNLOADING -> "Downloading"
+    DownloadState.QUEUED -> "Download queued"
+    DownloadState.FAILED -> "Download failed"
+    DownloadState.PAUSED_NETWORK -> "Paused, waiting for network"
+}
+
+/**
+ * The single spoken summary of an episode row for TalkBack: title, then podcast, date, the time
+ * state (duration, time left or "Played"), download state, and the Starred / Up Next / Archived flags.
+ * Blank parts are skipped.
+ */
+internal fun episodeSpokenSummary(
+    title: String,
+    podcastTitle: String?,
+    dateText: String,
+    stateText: String,
+    downloadLabel: String?,
+    starred: Boolean,
+    inUpNext: Boolean,
+    archived: Boolean,
+): String = listOfNotNull(
+    title.takeIf { it.isNotBlank() },
+    podcastTitle?.takeIf { it.isNotBlank() },
+    dateText.takeIf { it.isNotBlank() },
+    stateText.takeIf { it.isNotBlank() },
+    downloadLabel,
+    "Starred".takeIf { starred },
+    "In Up Next".takeIf { inUpNext },
+    "Archived".takeIf { archived },
+).joinToString(", ")
 
 @Composable
 private fun StateIcon(icon: ImageVector, description: String, tint: Color) {
@@ -322,6 +389,20 @@ private fun EpisodeRowSnippetPreview() {
                 snippet = snippet,
                 now = PREVIEW_NOW,
             )
+        }
+    }
+}
+
+@Preview(name = "Font 200%", fontScale = 2f, showBackground = true)
+@Composable
+private fun EpisodeRowFontScalePreview() {
+    AppTheme {
+        Surface {
+            Column {
+                previewEpisodeItems().take(3).forEach { item ->
+                    EpisodeRow(item = item, onClick = {}, onPlayClick = {}, now = PREVIEW_NOW)
+                }
+            }
         }
     }
 }

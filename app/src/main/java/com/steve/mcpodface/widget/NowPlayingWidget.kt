@@ -258,7 +258,8 @@ private class WidgetControls(
 @Composable
 private fun IconButton(icon: Int, description: String, action: Action) {
     Box(
-        modifier = GlanceModifier.size(40.dp).clickable(action),
+        // 48dp touch target (the icon itself stays 24dp).
+        modifier = GlanceModifier.size(48.dp).clickable(action),
         contentAlignment = Alignment.Center,
     ) {
         Image(
