@@ -21,6 +21,10 @@ Task IDs match the phases in [`PLAN.md` §14](../PLAN.md#14-phased-delivery).
 
 ## Next
 
+**Up next: a round of 14 changes from using the app. See [NEXT-ROUND.md](NEXT-ROUND.md)** (swipe
+animation, compact episode rows, playlist grid, tab changes, settings sub-screens, appearance options,
+customisable resume rewind, white icon background).
+
 Needs real phones:
 - Smoothness on the `fast` build, the first-run notification prompt on Samsung, and the widget's
   look on the home screen.

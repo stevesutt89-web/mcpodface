@@ -97,6 +97,7 @@ optionally, Listen Notes. Full steps are in [docs/BUILDING.md](docs/BUILDING.md)
 | [docs/BUILDING.md](docs/BUILDING.md) | Setup, API keys, signing, build types, tests, emulator |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Package layout, data flow, playback, downloads, glass rules |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | What's done and what's next |
+| [docs/NEXT-ROUND.md](docs/NEXT-ROUND.md) | The next batch of changes, with implementation notes |
 | [PLAN.md](PLAN.md) | The full product spec and task breakdown (source of truth) |
 | [CLAUDE.md](CLAUDE.md) | Conventions for AI coding agents working in this repo |
 | [TESTING.md](TESTING.md) | On-device testing checklist |
