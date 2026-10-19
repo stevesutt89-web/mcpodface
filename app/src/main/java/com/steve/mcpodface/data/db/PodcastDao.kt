@@ -30,4 +30,17 @@ interface PodcastDao {
 
     @Query("SELECT * FROM podcasts WHERE isSubscribed = 1 ORDER BY title COLLATE NOCASE")
     fun observeSubscribed(): Flow<List<PodcastEntity>>
+
+    /** Library grid (PLAN.md §8.3). Sorting by other modes happens in Kotlin. */
+    @Query(
+        """
+        SELECT p.*,
+               (SELECT COUNT(*) FROM episodes e
+                 WHERE e.podcastId = p.id AND e.playState = 'UNPLAYED') AS unplayedCount
+        FROM podcasts p
+        WHERE p.isSubscribed = 1
+        ORDER BY p.title COLLATE NOCASE
+        """,
+    )
+    fun observeLibrary(): Flow<List<LibraryPodcast>>
 }

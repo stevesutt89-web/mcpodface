@@ -21,4 +21,35 @@ interface DownloadDao {
 
     @Query("DELETE FROM downloads WHERE episodeId = :episodeId")
     suspend fun delete(episodeId: Long)
+
+    /** Downloads storage header, per-podcast sizes (PLAN.md §8.7), largest first. */
+    @Query(
+        """
+        SELECT p.id AS podcastId,
+               p.title AS podcastTitle,
+               COUNT(*) AS episodeCount,
+               SUM(COALESCE(d.totalBytes, d.bytesDownloaded)) AS totalBytes
+        FROM downloads d
+        INNER JOIN episodes e ON e.id = d.episodeId
+        INNER JOIN podcasts p ON p.id = e.podcastId
+        WHERE d.state = 'COMPLETED'
+        GROUP BY p.id
+        ORDER BY totalBytes DESC, p.title COLLATE NOCASE
+        """,
+    )
+    fun observeSizesByPodcast(): Flow<List<PodcastDownloadSize>>
+
+    /** Completed downloads totals. Always one row; totals are 0 when there are none. */
+    @Query(
+        """
+        SELECT COUNT(*) AS episodeCount,
+               COALESCE(SUM(COALESCE(totalBytes, bytesDownloaded)), 0) AS totalBytes
+        FROM downloads
+        WHERE state = 'COMPLETED'
+        """,
+    )
+    fun observeTotals(): Flow<DownloadTotals>
+
+    @Query("SELECT * FROM downloads WHERE state = :state")
+    suspend fun getByState(state: DownloadState): List<DownloadEntity>
 }
