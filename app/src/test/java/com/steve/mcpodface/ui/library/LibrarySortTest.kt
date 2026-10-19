@@ -63,12 +63,4 @@ class LibrarySortTest {
         assertThat(sortLibrary(podcasts, LibrarySort.RECENTLY_ADDED).titles())
             .containsExactly("C", "A", "B").inOrder()
     }
-
-    @Test fun badgeTextHidesZeroAndCapsAtNinetyNinePlus() {
-        assertThat(formatUnplayedBadge(0)).isNull()
-        assertThat(formatUnplayedBadge(1)).isEqualTo("1")
-        assertThat(formatUnplayedBadge(99)).isEqualTo("99")
-        assertThat(formatUnplayedBadge(100)).isEqualTo("99+")
-        assertThat(formatUnplayedBadge(1_500)).isEqualTo("99+")
-    }
 }

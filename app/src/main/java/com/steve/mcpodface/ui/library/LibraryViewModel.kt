@@ -54,13 +54,6 @@ fun sortLibrary(podcasts: List<LibraryPodcast>, sort: LibrarySort): List<Library
         podcasts.sortedWith(nullsLastDescending { it.podcast.subscribedAt }.then(byTitle))
 }
 
-/** Badge text for the unplayed count: null hides it (zero), and anything over 99 reads "99+". */
-fun formatUnplayedBadge(count: Int): String? = when {
-    count <= 0 -> null
-    count > 99 -> "99+"
-    else -> count.toString()
-}
-
 data class LibraryUiState(
     val podcasts: List<LibraryPodcast> = emptyList(),
     val sort: LibrarySort = LibrarySort.RECENTLY_UPDATED,

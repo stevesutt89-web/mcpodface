@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -69,7 +68,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.SubcomposeAsyncImage
-import com.kyant.shapes.Capsule
 import com.kyant.shapes.RoundedRectangle
 import com.steve.mcpodface.data.db.LibraryPodcast
 import com.steve.mcpodface.data.db.PodcastEntity
@@ -81,8 +79,6 @@ import com.steve.mcpodface.ui.components.SettingsButton
 import com.steve.mcpodface.ui.components.glass.GlassIconButton
 import com.steve.mcpodface.ui.components.glass.GlassPage
 import com.steve.mcpodface.ui.components.glass.GlassPressSpring
-import com.steve.mcpodface.ui.components.glass.GlassStyle
-import com.steve.mcpodface.ui.components.glass.glass
 import com.steve.mcpodface.ui.podcastsettings.PodcastSettingsSheet
 import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
@@ -264,7 +260,6 @@ private fun LibrarySort.label(): String = when (this) {
 
 @Composable
 private fun PodcastGridCell(item: LibraryPodcast, onClick: () -> Unit, onLongClick: () -> Unit) {
-    val badge = formatUnplayedBadge(item.unplayedCount)
     val shape = remember { RoundedRectangle(TILE_SHAPE_RADIUS) }
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
@@ -294,21 +289,12 @@ private fun PodcastGridCell(item: LibraryPodcast, onClick: () -> Unit, onLongCli
             shape = shape,
             modifier = Modifier.size(maxWidth),
         )
-        if (badge != null) {
-            UnplayedBadge(
-                text = badge,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .offset(x = 4.dp, y = (-6).dp),
-            )
-        }
     }
 }
 
 @Composable
 private fun PodcastListRow(item: LibraryPodcast, onClick: () -> Unit, onLongClick: () -> Unit) {
     val colors = AppTheme.colors
-    val badge = formatUnplayedBadge(item.unplayedCount)
     Row(
         Modifier
             .fillMaxWidth()
@@ -341,32 +327,7 @@ private fun PodcastListRow(item: LibraryPodcast, onClick: () -> Unit, onLongClic
                 )
             }
         }
-        if (badge != null) {
-            Spacer(Modifier.width(Spacing.s))
-            Text(
-                badge,
-                style = MaterialTheme.typography.bodySmall,
-                color = colors.textSecondary,
-            )
-        }
     }
-}
-
-/**
- * Small accent glass capsule in the top-end corner of a cover: the unplayed count (PLAN.md §8.3).
- * Prominent glass, so the text is white on the accent.
- */
-@Composable
-private fun UnplayedBadge(text: String, modifier: Modifier = Modifier) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelSmall,
-        color = Color.White,
-        maxLines = 1,
-        modifier = modifier
-            .glass(remember { Capsule() }, GlassStyle.Prominent)
-            .padding(horizontal = 7.dp, vertical = 2.dp),
-    )
 }
 
 /**
