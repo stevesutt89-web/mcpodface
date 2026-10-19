@@ -28,8 +28,11 @@ interface PlayerController {
     /** One-off messages for a Snackbar, e.g. "Streaming on mobile data is off". */
     val messages: SharedFlow<String>
 
-    /** Starts [episodeId] from its saved position (local file if downloaded, else stream). */
-    fun play(episodeId: Long)
+    /**
+     * Starts [episodeId] (local file if downloaded, else stream) from [startPositionMs], or from its
+     * saved position when null. Tappable show-notes timestamps pass a position.
+     */
+    fun play(episodeId: Long, startPositionMs: Long? = null)
 
     /** Plays [episodeId], or pauses/resumes it if it is the current episode. */
     fun togglePlayPause(episodeId: Long)
@@ -49,7 +52,7 @@ interface PlayerController {
 open class NoOpPlayerController @Inject constructor() : PlayerController {
     override val nowPlaying: StateFlow<NowPlaying?> = MutableStateFlow(null)
     override val messages: SharedFlow<String> = MutableSharedFlow()
-    override fun play(episodeId: Long) = Unit
+    override fun play(episodeId: Long, startPositionMs: Long?) = Unit
     override fun togglePlayPause(episodeId: Long) = Unit
     override fun pause() = Unit
     override fun seekTo(positionMs: Long) = Unit

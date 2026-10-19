@@ -30,6 +30,8 @@ class EpisodeRepository @Inject constructor(
     fun observeForPodcast(podcastId: Long, newestFirst: Boolean, hidePlayed: Boolean): Flow<List<EpisodeListItem>> =
         episodeDao.observeForPodcast(podcastId, newestFirst, hidePlayed)
 
+    fun observeStarred(): Flow<List<EpisodeListItem>> = episodeDao.observeStarred()
+
     fun observeEpisode(id: Long): Flow<EpisodeEntity?> = episodeDao.observeById(id)
 
     fun observePodcast(id: Long): Flow<PodcastEntity?> = podcastDao.observeById(id)

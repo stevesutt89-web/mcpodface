@@ -25,6 +25,24 @@ interface EpisodeDao {
     @Query("SELECT * FROM episodes WHERE podcastId = :podcastId")
     suspend fun getForPodcast(podcastId: Long): List<EpisodeEntity>
 
+    /** Starred episodes of any podcast, newest first (Library → Starred). */
+    @Query(
+        """
+        SELECT e.*,
+               p.title AS podcastTitle,
+               p.artworkUrl AS podcastArtworkUrl,
+               d.state AS downloadState,
+               COALESCE(d.totalBytes, d.bytesDownloaded) AS downloadBytes,
+               EXISTS (SELECT 1 FROM queue_items q WHERE q.episodeId = e.id) AS inQueue
+        FROM episodes e
+        INNER JOIN podcasts p ON p.id = e.podcastId
+        LEFT JOIN downloads d ON d.episodeId = e.id
+        WHERE e.isStarred = 1
+        ORDER BY e.pubDate DESC, e.id DESC
+        """,
+    )
+    fun observeStarred(): Flow<List<EpisodeListItem>>
+
     /** Most recently played episode, for playback resumption (Bluetooth play, notification resume). */
     @Query("SELECT * FROM episodes WHERE lastPlayedAt IS NOT NULL ORDER BY lastPlayedAt DESC LIMIT 1")
     suspend fun getLastPlayed(): EpisodeEntity?

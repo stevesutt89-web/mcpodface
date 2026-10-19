@@ -53,11 +53,13 @@ class Media3PlayerController @Inject constructor(
         launchMain { runCatching { controller() } }
     }
 
-    override fun play(episodeId: Long) {
+    override fun play(episodeId: Long, startPositionMs: Long?) {
         launchMain {
             if (!canPlay(episodeId)) return@launchMain
             val c = controller()
-            c.setMediaItem(MediaItem.Builder().setMediaId(episodeId.toString()).build())
+            val item = MediaItem.Builder().setMediaId(episodeId.toString()).build()
+            // Without a position the service picks the saved one (PlaybackService.onSetMediaItems).
+            if (startPositionMs != null) c.setMediaItem(item, startPositionMs) else c.setMediaItem(item)
             c.prepare()
             c.play()
         }

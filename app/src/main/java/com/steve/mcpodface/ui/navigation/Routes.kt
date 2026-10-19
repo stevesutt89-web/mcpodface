@@ -20,6 +20,8 @@ import kotlinx.serialization.Serializable
 @Serializable data object SettingsRoute
 @Serializable data class PodcastRoute(val podcastId: Long)
 @Serializable data class EpisodeRoute(val episodeId: Long)
+@Serializable data object StarredRoute
+@Serializable data object HistoryRoute
 
 /** The five bottom-bar tabs, in order (PLAN.md §8.1). */
 enum class TopLevelDestination(

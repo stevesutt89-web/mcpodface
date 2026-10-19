@@ -25,7 +25,9 @@ import com.steve.mcpodface.data.prefs.AppTab
 import com.steve.mcpodface.ui.downloads.DownloadsScreen
 import com.steve.mcpodface.ui.episode.EpisodeScreen
 import com.steve.mcpodface.ui.latest.LatestScreen
+import com.steve.mcpodface.ui.library.HistoryScreen
 import com.steve.mcpodface.ui.library.LibraryScreen
+import com.steve.mcpodface.ui.library.StarredScreen
 import com.steve.mcpodface.ui.podcast.PodcastScreen
 import com.steve.mcpodface.ui.queue.UpNextScreen
 import com.steve.mcpodface.ui.search.SearchScreen
@@ -93,7 +95,16 @@ fun AppShell(
             composable<LatestRoute> {
                 LatestScreen(onOpenSettings = openSettings, onOpenPodcast = openPodcast, onOpenEpisode = openEpisode)
             }
-            composable<LibraryRoute> { LibraryScreen(onOpenSettings = openSettings, onOpenPodcast = openPodcast) }
+            composable<LibraryRoute> {
+                LibraryScreen(
+                    onOpenSettings = openSettings,
+                    onOpenPodcast = openPodcast,
+                    onOpenStarred = { navController.navigate(StarredRoute) },
+                    onOpenHistory = { navController.navigate(HistoryRoute) },
+                )
+            }
+            composable<StarredRoute> { StarredScreen(onBack = back, onOpenEpisode = openEpisode) }
+            composable<HistoryRoute> { HistoryScreen(onBack = back, onOpenEpisode = openEpisode) }
             composable<DownloadsRoute> { DownloadsScreen() }
             composable<UpNextRoute> { UpNextScreen() }
             composable<SearchRoute> { SearchScreen(onOpenPodcast = openPodcast) }
