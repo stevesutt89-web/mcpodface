@@ -1,5 +1,8 @@
 package com.steve.mcpodface.ui.queue
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,17 +19,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.QueueMusic
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.DragHandle
-import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.automirrored.rounded.QueueMusic
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.DragHandle
+import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -48,16 +50,26 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kyant.shapes.Capsule
+import com.kyant.shapes.RoundedRectangle
 import com.steve.mcpodface.data.db.EpisodeListItem
 import com.steve.mcpodface.playback.NowPlaying
 import com.steve.mcpodface.ui.components.EpisodeRow
 import com.steve.mcpodface.ui.components.LargeTitleScaffold
+import com.steve.mcpodface.ui.components.glass.GlassIconButton
+import com.steve.mcpodface.ui.components.glass.GlassPage
+import com.steve.mcpodface.ui.components.glass.GlassStyle
+import com.steve.mcpodface.ui.components.glass.glass
 import com.steve.mcpodface.ui.components.previewEpisodeItems
 import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
@@ -126,75 +138,86 @@ private fun UpNextContent(
     }
     val playingId = state.nowPlaying?.takeIf { it.isPlaying }?.episodeId
 
-    LargeTitleScaffold(
-        title = "Up Next",
-        actions = {
-            if (state.items.isNotEmpty()) {
-                Box {
-                    IconButton(onClick = { menuOpen = true }) {
-                        Icon(Icons.Outlined.MoreVert, contentDescription = "More")
-                    }
-                    DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                        DropdownMenuItem(
-                            text = { Text("Clear queue") },
-                            onClick = {
-                                menuOpen = false
-                                showClearDialog = true
-                            },
-                        )
-                    }
-                }
-            }
-        },
-    ) { padding ->
-        Box(Modifier.fillMaxSize().padding(padding)) {
-            LazyColumn(
-                state = listState,
-                contentPadding = PaddingValues(bottom = Spacing.xl),
-            ) {
+    GlassPage {
+        LargeTitleScaffold(
+            title = "Up Next",
+            background = Color.Transparent,
+            actions = {
                 if (state.items.isNotEmpty()) {
-                    item(key = "summary") {
-                        Text(
-                            text = upNextSummary(state.items),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = AppTheme.colors.textSecondary,
-                            modifier = Modifier.padding(horizontal = Spacing.m, vertical = Spacing.xs),
+                    Box {
+                        GlassIconButton(
+                            icon = Icons.Rounded.MoreVert,
+                            contentDescription = "More",
+                            onClick = { menuOpen = true },
+                            size = 40.dp,
+                            iconSize = 20.dp,
+                            modifier = Modifier.padding(end = Spacing.s),
                         )
+                        DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                            DropdownMenuItem(
+                                text = { Text("Clear queue") },
+                                onClick = {
+                                    menuOpen = false
+                                    showClearDialog = true
+                                },
+                            )
+                        }
                     }
                 }
-                state.nowPlayingHeader?.let { header ->
-                    item(key = "now-playing") {
-                        NowPlayingHeader(
-                            item = header,
-                            isPlaying = state.nowPlaying?.isPlaying == true,
-                            now = state.now,
-                            onPlayClick = { onPlayClick(header.episode.id) },
-                        )
+            },
+        ) { padding ->
+            Box(Modifier.fillMaxSize()) {
+                LazyColumn(
+                    state = listState,
+                    contentPadding = PaddingValues(
+                        top = padding.calculateTopPadding(),
+                        bottom = padding.calculateBottomPadding() + Spacing.s,
+                    ),
+                ) {
+                    if (state.items.isNotEmpty()) {
+                        item(key = "summary") {
+                            Text(
+                                text = upNextSummary(state.items),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = AppTheme.colors.textSecondary,
+                                modifier = Modifier.padding(horizontal = Spacing.m, vertical = Spacing.xs),
+                            )
+                        }
+                    }
+                    state.nowPlayingHeader?.let { header ->
+                        item(key = "now-playing") {
+                            NowPlayingHeader(
+                                item = header,
+                                isPlaying = state.nowPlaying?.isPlaying == true,
+                                now = state.now,
+                                onPlayClick = { onPlayClick(header.episode.id) },
+                            )
+                        }
+                    }
+                    if (state.loaded && state.items.isEmpty()) {
+                        item(key = "empty") { EmptyState() }
+                    }
+                    itemsIndexed(state.items, key = { _, item -> item.episode.id }) { index, item ->
+                        ReorderableItem(reorderState, key = item.episode.id) { isDragging ->
+                            QueueRow(
+                                item = item,
+                                isDragging = isDragging,
+                                isPlaying = playingId == item.episode.id,
+                                now = state.now,
+                                onPlayClick = { onPlayClick(item.episode.id) },
+                                onRemove = { onRemove(item.episode.id) },
+                                onDragStarted = { onDragStarted(item.episode.id) },
+                                onDragStopped = onDragStopped,
+                                showDivider = index < state.items.lastIndex,
+                            )
+                        }
                     }
                 }
-                if (state.loaded && state.items.isEmpty()) {
-                    item(key = "empty") { EmptyState() }
-                }
-                itemsIndexed(state.items, key = { _, item -> item.episode.id }) { index, item ->
-                    ReorderableItem(reorderState, key = item.episode.id) { isDragging ->
-                        QueueRow(
-                            item = item,
-                            isDragging = isDragging,
-                            isPlaying = playingId == item.episode.id,
-                            now = state.now,
-                            onPlayClick = { onPlayClick(item.episode.id) },
-                            onRemove = { onRemove(item.episode.id) },
-                            onDragStarted = { onDragStarted(item.episode.id) },
-                            onDragStopped = onDragStopped,
-                            showDivider = index < state.items.lastIndex,
-                        )
-                    }
-                }
+                SnackbarHost(
+                    hostState = snackbarHostState,
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                )
             }
-            SnackbarHost(
-                hostState = snackbarHostState,
-                modifier = Modifier.align(Alignment.BottomCenter),
-            )
         }
     }
 
@@ -240,6 +263,13 @@ private fun ReorderableCollectionItemScope.QueueRow(
             dismissed
         },
     )
+    // A dragged row lifts: it grows slightly and casts a soft shadow, springing up and back down.
+    val lift by animateFloatAsState(
+        targetValue = if (isDragging) 1f else 0f,
+        animationSpec = spring(dampingRatio = 0.6f, stiffness = Spring.StiffnessMediumLow),
+        label = "lift",
+    )
+    val liftShape = remember { RoundedRectangle(20.dp) }
 
     Column {
         SwipeToDismissBox(
@@ -249,7 +279,18 @@ private fun ReorderableCollectionItemScope.QueueRow(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(if (isDragging) colors.surfaceGrouped else MaterialTheme.colorScheme.background),
+                    .graphicsLayer {
+                        val scale = 1f + 0.03f * lift
+                        scaleX = scale
+                        scaleY = scale
+                        shadowElevation = 12.dp.toPx() * lift
+                        shape = liftShape
+                        clip = false
+                    }
+                    .background(
+                        if (isDragging) colors.surfaceGrouped else MaterialTheme.colorScheme.background,
+                        if (isDragging) liftShape else RectangleShape,
+                    ),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 EpisodeRow(
@@ -261,7 +302,7 @@ private fun ReorderableCollectionItemScope.QueueRow(
                     now = now,
                 )
                 Icon(
-                    imageVector = Icons.Outlined.DragHandle,
+                    imageVector = Icons.Rounded.DragHandle,
                     contentDescription = "Drag to reorder",
                     tint = colors.textSecondary,
                     modifier = Modifier
@@ -286,22 +327,24 @@ private fun ReorderableCollectionItemScope.QueueRow(
     }
 }
 
-/** Neutral strip revealed while a row is swiped. */
+/** Neutral rounded strip revealed while a row is swiped; the bin icon uses the error colour. */
 @Composable
 private fun RemoveBackground(direction: SwipeToDismissBoxValue) {
     if (direction == SwipeToDismissBoxValue.Settled) return
     val fromStart = direction == SwipeToDismissBoxValue.StartToEnd
+    val shape = remember { RoundedRectangle(20.dp) }
     Box(
         Modifier
             .fillMaxSize()
-            .background(AppTheme.colors.surfaceGrouped)
+            .padding(8.dp)
+            .background(AppTheme.colors.surfaceGrouped, shape)
             .padding(horizontal = Spacing.l),
         contentAlignment = if (fromStart) Alignment.CenterStart else Alignment.CenterEnd,
     ) {
         Icon(
-            Icons.Outlined.Delete,
+            Icons.Rounded.Delete,
             contentDescription = "Remove",
-            tint = AppTheme.colors.textPrimary,
+            tint = MaterialTheme.colorScheme.error,
             modifier = Modifier.size(24.dp),
         )
     }
@@ -336,18 +379,30 @@ private fun EmptyState() {
             .padding(horizontal = Spacing.l, vertical = Spacing.xl),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Icon(
-            Icons.AutoMirrored.Outlined.QueueMusic,
-            contentDescription = null,
-            tint = colors.textSecondary,
-            modifier = Modifier.size(48.dp),
-        )
+        Box(
+            Modifier
+                .size(88.dp)
+                .glass(remember { Capsule() }, GlassStyle.Regular),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                Icons.AutoMirrored.Rounded.QueueMusic,
+                contentDescription = null,
+                tint = colors.accent,
+                modifier = Modifier.size(56.dp),
+            )
+        }
         Spacer(Modifier.height(Spacing.m))
-        Text("Nothing in Up Next", style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
+        Text(
+            "Nothing in Up Next",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+        )
         Spacer(Modifier.height(Spacing.xs))
         Text(
             "Swipe right on an episode in Latest to add it.",
-            style = MaterialTheme.typography.bodySmall,
+            style = MaterialTheme.typography.bodyLarge,
             color = colors.textSecondary,
             textAlign = TextAlign.Center,
         )

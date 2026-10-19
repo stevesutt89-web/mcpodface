@@ -13,8 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.PlaylistAdd
-import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -25,10 +25,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.kyant.shapes.RoundedRectangle
 import com.steve.mcpodface.data.db.EpisodeListItem
 import com.steve.mcpodface.ui.components.EpisodeRow
 import com.steve.mcpodface.ui.components.previewEpisodeItems
@@ -90,31 +93,38 @@ fun SwipeableEpisodeRow(
     }
 }
 
-/** The coloured strip revealed behind a row while it is swiped. Draws nothing when settled. */
+/**
+ * The rounded strip revealed behind a row while it is swiped (inset 8dp). Up Next is accent-tinted
+ * with white content; played/unplayed is neutral. Draws nothing when settled.
+ */
 @Composable
 internal fun SwipeActionBackground(direction: SwipeToDismissBoxValue, playedLabel: String) {
     if (direction == SwipeToDismissBoxValue.Settled) return
     val colors = AppTheme.colors
     val fromStart = direction == SwipeToDismissBoxValue.StartToEnd
-    val icon = if (fromStart) Icons.AutoMirrored.Outlined.PlaylistAdd else Icons.Outlined.CheckCircle
+    val icon = if (fromStart) Icons.AutoMirrored.Rounded.PlaylistAdd else Icons.Rounded.CheckCircle
     val label = if (fromStart) "Up Next" else playedLabel
+    val shape = remember { RoundedRectangle(20.dp) }
+    val container = if (fromStart) colors.accent else colors.surfaceGrouped
+    val content = if (fromStart) Color.White else colors.textPrimary
 
     Box(
         Modifier
             .fillMaxSize()
-            .background(colors.surfaceGrouped)
+            .padding(8.dp)
+            .background(container, shape)
             .padding(horizontal = Spacing.l),
         contentAlignment = if (fromStart) Alignment.CenterStart else Alignment.CenterEnd,
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (!fromStart) {
-                Text(label, style = MaterialTheme.typography.labelLarge, color = colors.textPrimary)
+                Text(label, style = MaterialTheme.typography.labelLarge, color = content)
                 Spacer(Modifier.width(Spacing.s))
             }
-            Icon(icon, contentDescription = label, tint = colors.textPrimary, modifier = Modifier.size(24.dp))
+            Icon(icon, contentDescription = label, tint = content, modifier = Modifier.size(24.dp))
             if (fromStart) {
                 Spacer(Modifier.width(Spacing.s))
-                Text(label, style = MaterialTheme.typography.labelLarge, color = colors.textPrimary)
+                Text(label, style = MaterialTheme.typography.labelLarge, color = content)
             }
         }
     }
