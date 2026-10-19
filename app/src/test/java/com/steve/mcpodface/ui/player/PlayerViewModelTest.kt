@@ -15,6 +15,8 @@ import com.steve.mcpodface.data.prefs.GlobalSettings
 import com.steve.mcpodface.data.prefs.SettingsRepository
 import com.steve.mcpodface.playback.NoOpPlayerController
 import com.steve.mcpodface.playback.NowPlaying
+import com.steve.mcpodface.playback.SleepTimer
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -55,6 +57,8 @@ class PlayerViewModelTest {
         episodeRepository = EpisodeRepository(db.episodeDao(), db.podcastDao(), clock),
         podcastSettingsDao = db.podcastSettingsDao(),
         settingsRepository = settings,
+        sleepTimer = SleepTimer(ApplicationProvider.getApplicationContext(), CoroutineScope(Dispatchers.Unconfined), clock),
+        clock = clock,
     )
 
     /** Inserts a subscribed podcast and one episode in it. Returns (podcastId, episodeId). */

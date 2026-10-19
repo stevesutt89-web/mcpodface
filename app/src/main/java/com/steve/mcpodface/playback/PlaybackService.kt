@@ -109,6 +109,7 @@ class PlaybackService : MediaLibraryService() {
             engine.savePosition()
             engine.endSession()
         }
+        engine.detach()
         session?.run {
             release()
             session = null

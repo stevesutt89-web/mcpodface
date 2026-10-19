@@ -10,6 +10,11 @@ import com.steve.mcpodface.data.episodes.EpisodeRepository
 import com.steve.mcpodface.data.prefs.SettingsRepository
 import com.steve.mcpodface.playback.NowPlaying
 import com.steve.mcpodface.playback.PlayerController
+import com.steve.mcpodface.playback.SleepTimer
+import com.steve.mcpodface.playback.SleepTimerState
+import com.steve.mcpodface.core.Clock
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -45,6 +50,21 @@ data class PlayerUiState(
     val skipForwardSec: Int,
 )
 
+/** What the sleep timer button shows. */
+sealed interface SleepTimerUi {
+    data object Off : SleepTimerUi
+    data class Remaining(val ms: Long) : SleepTimerUi
+    data object EndOfEpisode : SleepTimerUi
+}
+
+/** A choice from the sleep timer sheet. */
+sealed interface SleepChoice {
+    data class Minutes(val minutes: Int) : SleepChoice
+    data object EndOfEpisode : SleepChoice
+    data object Extend : SleepChoice
+    data object Off : SleepChoice
+}
+
 /**
  * Shared by the mini player and the full player. State is null when nothing is loaded in the player,
  * which hides the mini player.
@@ -56,7 +76,32 @@ class PlayerViewModel @Inject constructor(
     private val episodeRepository: EpisodeRepository,
     private val podcastSettingsDao: PodcastSettingsDao,
     private val settingsRepository: SettingsRepository,
+    private val sleepTimer: SleepTimer,
+    private val clock: Clock,
 ) : ViewModel() {
+
+    /** Sleep timer for the full player's button; counts down once a second while running. */
+    val sleepTimerUi: StateFlow<SleepTimerUi> = sleepTimer.state
+        .flatMapLatest { s ->
+            when (s) {
+                SleepTimerState.Off -> flowOf(SleepTimerUi.Off)
+                SleepTimerState.EndOfEpisode -> flowOf(SleepTimerUi.EndOfEpisode)
+                is SleepTimerState.Running -> flow {
+                    while (true) {
+                        emit(SleepTimerUi.Remaining((s.endsAt - clock.now()).coerceAtLeast(0)))
+                        delay(1_000)
+                    }
+                }
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SleepTimerUi.Off)
+
+    fun setSleepTimer(choice: SleepChoice) = when (choice) {
+        is SleepChoice.Minutes -> sleepTimer.start(choice.minutes)
+        SleepChoice.EndOfEpisode -> sleepTimer.stopAtEndOfEpisode()
+        SleepChoice.Extend -> sleepTimer.extend(SleepTimer.EXTEND_MS)
+        SleepChoice.Off -> sleepTimer.cancel()
+    }
 
     /** One-off messages for a Snackbar (PlayerController.messages). */
     val messages: SharedFlow<String> = playerController.messages

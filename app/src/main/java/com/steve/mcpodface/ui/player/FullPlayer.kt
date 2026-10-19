@@ -46,6 +46,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -114,6 +115,7 @@ fun FullPlayer(
     // the player gets a copy without it (equal between ticks, so Compose skips it) and the timeline
     // reads the live position through a lambda.
     val latest = rememberUpdatedState(state)
+    val sleep = viewModel.sleepTimerUi.collectAsState()
     Box(Modifier.fillMaxSize().graphicsLayer { translationY = dragY.value }) {
         FullPlayerContent(
             state = state.copy(positionMs = 0L),
@@ -125,6 +127,8 @@ fun FullPlayer(
             onSpeedChange = viewModel::setSpeed,
             onOpenOutputSwitcher = { openOutputSwitcher(context) },
             dismissDrag = dismissDrag,
+            sleepTimer = { sleep.value },
+            onSleepChoice = viewModel::setSleepTimer,
         )
     }
 }
@@ -141,11 +145,14 @@ fun FullPlayerContent(
     onOpenOutputSwitcher: () -> Unit,
     dismissDrag: Modifier = Modifier,
     positionMs: () -> Long = { state.positionMs },
+    sleepTimer: () -> SleepTimerUi = { SleepTimerUi.Off },
+    onSleepChoice: (SleepChoice) -> Unit = {},
 ) {
     val colors = AppTheme.colors
     val artworkAccent by rememberArtworkAccent(state.artworkUrl)
     val accent = artworkAccent ?: colors.accent
     var showSpeedSheet by rememberSaveable { mutableStateOf(false) }
+    var showSleepSheet by rememberSaveable { mutableStateOf(false) }
 
     // The artwork breathes: full size while playing, springs back a little when paused.
     val artScale by animateFloatAsState(
@@ -278,7 +285,7 @@ fun FullPlayerContent(
                         }
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                 )
-                CapsuleIcon(Icons.Outlined.Bedtime, "Sleep timer (coming soon)", enabled = false) {}
+                SleepButton(sleepTimer, accent) { showSleepSheet = true }
                 CapsuleIcon(Icons.Rounded.SpeakerGroup, "Output device", onClick = onOpenOutputSwitcher)
             }
 
@@ -308,6 +315,34 @@ fun FullPlayerContent(
             onSpeedChange = onSpeedChange,
             onDismiss = { showSpeedSheet = false },
         )
+    }
+    if (showSleepSheet) {
+        SleepTimerSheet(timer = sleepTimer(), onChoice = onSleepChoice, onDismiss = { showSleepSheet = false })
+    }
+}
+
+/** Moon icon, plus the time left while a timer runs. Reads the timer itself so its 1s ticks redraw only this. */
+@Composable
+private fun SleepButton(timer: () -> SleepTimerUi, accent: Color, onClick: () -> Unit) {
+    val label = sleepLabel(timer())
+    Row(
+        Modifier
+            .height(44.dp)
+            .clip(Capsule())
+            .clickable(remember { MutableInteractionSource() }, indication = null, role = Role.Button, onClick = onClick)
+            .padding(horizontal = 11.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            Icons.Outlined.Bedtime,
+            contentDescription = if (label == null) "Sleep timer" else "Sleep timer, $label",
+            tint = if (label == null) AppTheme.colors.textPrimary.copy(alpha = 0.9f) else accent,
+            modifier = Modifier.size(22.dp),
+        )
+        if (label != null) {
+            Spacer(Modifier.width(6.dp))
+            Text(label, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold, color = accent)
+        }
     }
 }
 

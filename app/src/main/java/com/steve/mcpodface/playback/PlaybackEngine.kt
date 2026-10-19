@@ -1,5 +1,8 @@
 package com.steve.mcpodface.playback
 
+import android.media.audiofx.LoudnessEnhancer
+import android.util.Log
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
@@ -40,6 +43,7 @@ class PlaybackEngine @Inject constructor(
     private val resolver: EpisodeMediaResolver,
     private val clock: Clock,
     private val listeningSessionDao: ListeningSessionDao,
+    private val sleepTimer: SleepTimer,
 ) {
     private val sessions = ListeningSessionRecorder(clock)
 
@@ -54,6 +58,7 @@ class PlaybackEngine @Inject constructor(
     private var completing = false
     private var ticker: Job? = null
     private var lastSavedAt = 0L
+    private var loudness: LoudnessEnhancer? = null
 
     fun attach(player: ExoPlayer, skipPlayer: SkipForwardingPlayer, scope: CoroutineScope) {
         this.player = player
@@ -65,9 +70,36 @@ class PlaybackEngine @Inject constructor(
                 skipPlayer.skipBackMs = s.skipBackSec * 1_000L
                 skipPlayer.skipForwardMs = s.skipForwardSec * 1_000L
                 player.skipSilenceEnabled = s.trimSilence
+                applyVoiceBoost()
             }
         }
+        // Sleep timer: fade the volume over its last seconds, then pause.
+        sleepTimer.onExpire = { player.pause() }
+        scope.launch { sleepTimer.volume.collect { player.volume = it } }
         player.addListener(listener)
+    }
+
+    /** Releases audio effects. Called when the service is destroyed. */
+    fun detach() {
+        sleepTimer.onExpire = {}
+        loudness?.release()
+        loudness = null
+    }
+
+    /** Voice boost (PLAN.md §8.6): a gentle loudness lift on the player's audio session. */
+    private fun applyVoiceBoost() {
+        val session = player.audioSessionId
+        if (!settings.voiceBoost || session == C.AUDIO_SESSION_ID_UNSET) {
+            loudness?.enabled = false
+            return
+        }
+        try {
+            val effect = loudness ?: LoudnessEnhancer(session).also { loudness = it }
+            effect.setTargetGain(VOICE_BOOST_MB)
+            effect.enabled = true
+        } catch (e: RuntimeException) {
+            Log.w("PlaybackEngine", "Voice boost unavailable", e) // some devices lack the effect
+        }
     }
 
     private val listener = object : Player.Listener {
@@ -87,6 +119,12 @@ class PlaybackEngine @Inject constructor(
                     endSession()
                 }
             }
+        }
+
+        override fun onAudioSessionIdChanged(audioSessionId: Int) {
+            loudness?.release()
+            loudness = null
+            applyVoiceBoost()
         }
 
         override fun onPlaybackStateChanged(playbackState: Int) {
@@ -164,14 +202,20 @@ class PlaybackEngine @Inject constructor(
         episodeDao.updatePosition(id, 0, PlayState.PLAYED, now)
         markedPlayed = true
         queue.remove(id)
-        // TODO(5.2): trigger the cleanup policy; TODO(4.4): honour "sleep at end of episode".
 
-        val next = queue.observeIds().first().firstOrNull() ?: nextInPodcast(id)
+        val next = if (sleepTimer.consumeEndOfEpisode()) null else nextEpisode(id)
         if (next == null) {
             player.pause()
             player.seekTo(0)
             return
         }
+        playNext(next, now)
+    }
+
+    private suspend fun nextEpisode(id: Long): Long? =
+        queue.observeIds().first().firstOrNull() ?: nextInPodcast(id)
+
+    private suspend fun playNext(next: Long, now: Long) {
         val item = resolver.resolve(next) ?: return
         val episode = episodeDao.getById(next) ?: return
         val start = PlaybackDecisions.startPosition(
@@ -193,5 +237,7 @@ class PlaybackEngine @Inject constructor(
 
     companion object {
         const val SAVE_INTERVAL_MS = 10_000L
+        /** Voice boost gain in millibels (+6 dB). */
+        const val VOICE_BOOST_MB = 600
     }
 }
