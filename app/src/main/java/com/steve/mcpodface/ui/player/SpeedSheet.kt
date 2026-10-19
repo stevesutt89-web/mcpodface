@@ -19,6 +19,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -33,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kyant.shapes.RoundedRectangle
+import com.steve.mcpodface.ui.components.glass.LocalGlassBackdrop
 import com.steve.mcpodface.ui.components.glass.GlassButton
 import com.steve.mcpodface.ui.components.glass.GlassChip
 import com.steve.mcpodface.ui.components.glass.GlassStyle
@@ -64,7 +66,10 @@ fun SpeedSheet(
         shape = sheetShape,
         containerColor = MaterialTheme.colorScheme.background,
     ) {
-        SpeedSheetContent(speed = speed, onSpeedChange = onSpeedChange, onDone = onDismiss)
+        // The sheet is its own window: don't let its glass sample the player page's layer.
+        CompositionLocalProvider(LocalGlassBackdrop provides null) {
+            SpeedSheetContent(speed = speed, onSpeedChange = onSpeedChange, onDone = onDismiss)
+        }
     }
 }
 
