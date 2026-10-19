@@ -6,17 +6,21 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.steve.mcpodface.core.Clock
 import com.steve.mcpodface.data.db.DownloadDao
+import com.steve.mcpodface.data.db.DownloadEntity
+import com.steve.mcpodface.data.db.DownloadSource
 import com.steve.mcpodface.data.db.DownloadState
 import com.steve.mcpodface.data.db.EpisodeEntity
 import com.steve.mcpodface.data.db.PlayState
 import com.steve.mcpodface.data.db.PodcastEntity
 import com.steve.mcpodface.data.episodes.EpisodeRepository
 import com.steve.mcpodface.data.queue.QueueRepository
+import com.steve.mcpodface.download.DownloadManager
 import com.steve.mcpodface.playback.NowPlaying
 import com.steve.mcpodface.playback.PlayerController
 import com.steve.mcpodface.ui.navigation.EpisodeRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -35,13 +39,17 @@ data class EpisodeUiState(
     val episode: EpisodeEntity? = null,
     val podcast: PodcastEntity? = null,
     val inQueue: Boolean = false,
-    /** Null when there is no downloads row. Downloads are not implemented yet (PLAN.md §14, task 5.4). */
-    val downloadState: DownloadState? = null,
+    /** Null when there is no downloads row. */
+    val download: DownloadEntity? = null,
+    /** The "Download on mobile data?" prompt is up (PLAN.md §6.6). */
+    val showCellularPrompt: Boolean = false,
     val nowPlaying: NowPlaying? = null,
     val now: Long = 0L,
 ) {
     val isLoading: Boolean get() = !loaded
     val notFound: Boolean get() = loaded && episode == null
+
+    val downloadState: DownloadState? get() = download?.state
 
     /** This episode is loaded in the player, playing or paused. */
     val isCurrent: Boolean get() = episode != null && nowPlaying?.episodeId == episode.id
@@ -73,6 +81,7 @@ class EpisodeViewModel @Inject constructor(
     private val episodeRepository: EpisodeRepository,
     private val queueRepository: QueueRepository,
     private val downloadDao: DownloadDao,
+    private val downloadManager: DownloadManager,
     private val playerController: PlayerController,
     private val clock: Clock,
 ) : ViewModel() {
@@ -92,24 +101,29 @@ class EpisodeViewModel @Inject constructor(
         .map { episodeId in it }
         .distinctUntilChanged()
 
-    private val downloadState: Flow<DownloadState?> = downloadDao.observe(episodeId)
-        .map { it?.state }
-        .distinctUntilChanged()
+    private val showCellularPrompt = MutableStateFlow(false)
+
+    /** The download row paired with the prompt flag, so the combine below stays at five sources. */
+    private val downloadAndPrompt: Flow<Pair<DownloadEntity?, Boolean>> = combine(
+        downloadDao.observe(episodeId).distinctUntilChanged(),
+        showCellularPrompt,
+    ) { download, prompt -> download to prompt }
 
     /** Emits once every source has emitted, so `loaded` is true from then on. */
     val uiState: StateFlow<EpisodeUiState> = combine(
         episode,
         podcast,
         inQueue,
-        downloadState,
+        downloadAndPrompt,
         playerController.nowPlaying,
-    ) { ep, pod, queued, download, nowPlaying ->
+    ) { ep, pod, queued, downloadAndPrompt, nowPlaying ->
         EpisodeUiState(
             loaded = true,
             episode = ep,
             podcast = pod,
             inQueue = queued,
-            downloadState = download,
+            download = downloadAndPrompt.first,
+            showCellularPrompt = downloadAndPrompt.second,
             nowPlaying = nowPlaying,
             now = clock.now(),
         )
@@ -150,5 +164,42 @@ class EpisodeViewModel @Inject constructor(
         } else {
             playerController.play(episodeId, positionMs)
         }
+    }
+
+    /**
+     * The download button. Asks first when a manual download would run on mobile data (PLAN.md §6.6);
+     * otherwise queues it straight away.
+     */
+    fun requestDownload() {
+        viewModelScope.launch {
+            if (downloadManager.needsCellularPrompt(episodeId)) {
+                showCellularPrompt.value = true
+            } else {
+                downloadManager.enqueue(episodeId, DownloadSource.MANUAL)
+            }
+        }
+    }
+
+    /** The prompt's choice: "Download now" passes true, "Wait for Wi-Fi" passes false. */
+    fun confirmCellularDownload(allowCellular: Boolean) {
+        showCellularPrompt.value = false
+        viewModelScope.launch { downloadManager.enqueue(episodeId, DownloadSource.MANUAL, allowCellular) }
+    }
+
+    fun dismissCellularPrompt() {
+        showCellularPrompt.value = false
+    }
+
+    fun cancelDownload() {
+        viewModelScope.launch { downloadManager.cancel(episodeId) }
+    }
+
+    /** "Remove download", after the screen has confirmed it. */
+    fun deleteDownload() {
+        viewModelScope.launch { downloadManager.delete(episodeId) }
+    }
+
+    fun retryDownload() {
+        viewModelScope.launch { downloadManager.retry(episodeId) }
     }
 }

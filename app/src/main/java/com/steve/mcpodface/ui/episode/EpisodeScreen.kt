@@ -19,8 +19,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.automirrored.rounded.PlaylistAddCheck
-import androidx.compose.material.icons.rounded.Download
-import androidx.compose.material.icons.rounded.DownloadDone
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
@@ -56,6 +54,8 @@ import com.steve.mcpodface.data.db.EpisodeEntity
 import com.steve.mcpodface.data.db.PlayState
 import com.steve.mcpodface.data.db.PodcastEntity
 import com.steve.mcpodface.ui.components.BackButton
+import com.steve.mcpodface.ui.components.CellularPromptDialog
+import com.steve.mcpodface.ui.components.DownloadButton
 import com.steve.mcpodface.ui.components.GlassTopBarScaffold
 import com.steve.mcpodface.ui.components.formatDuration
 import com.steve.mcpodface.ui.components.formatRelativeDate
@@ -99,7 +99,18 @@ fun EpisodeScreen(episodeId: Long, onBack: () -> Unit, onOpenPodcast: (Long) -> 
         onToggleQueue = viewModel::toggleQueue,
         onToggleStarred = viewModel::toggleStarred,
         onTimestampClick = viewModel::onTimestampClick,
+        onDownload = viewModel::requestDownload,
+        onCancelDownload = viewModel::cancelDownload,
+        onDeleteDownload = viewModel::deleteDownload,
+        onRetryDownload = viewModel::retryDownload,
     )
+    if (state.showCellularPrompt) {
+        CellularPromptDialog(
+            onDownloadNow = { viewModel.confirmCellularDownload(allowCellular = true) },
+            onWaitForWifi = { viewModel.confirmCellularDownload(allowCellular = false) },
+            onDismiss = viewModel::dismissCellularPrompt,
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -114,6 +125,10 @@ private fun EpisodeContent(
     onToggleQueue: () -> Unit,
     onToggleStarred: () -> Unit,
     onTimestampClick: (Long) -> Unit,
+    onDownload: () -> Unit = {},
+    onCancelDownload: () -> Unit = {},
+    onDeleteDownload: () -> Unit = {},
+    onRetryDownload: () -> Unit = {},
 ) {
     val episode = state.episode
     val podcast = state.podcast
@@ -192,6 +207,10 @@ private fun EpisodeContent(
                     onToggleQueue = onToggleQueue,
                     onToggleStarred = onToggleStarred,
                     onTimestampClick = onTimestampClick,
+                    onDownload = onDownload,
+                    onCancelDownload = onCancelDownload,
+                    onDeleteDownload = onDeleteDownload,
+                    onRetryDownload = onRetryDownload,
                 )
             }
         }
@@ -210,6 +229,10 @@ private fun EpisodeBody(
     onToggleQueue: () -> Unit,
     onToggleStarred: () -> Unit,
     onTimestampClick: (Long) -> Unit,
+    onDownload: () -> Unit,
+    onCancelDownload: () -> Unit,
+    onDeleteDownload: () -> Unit,
+    onRetryDownload: () -> Unit,
 ) {
     val colors = AppTheme.colors
     val inProgress = state.isInProgress
@@ -300,12 +323,12 @@ private fun EpisodeBody(
                 )
                 Text(state.playLabel)
             }
-            // Downloads arrive in task 5.4; the button is shown disabled until then.
-            GlassIconButton(
-                icon = if (state.isDownloaded) Icons.Rounded.DownloadDone else Icons.Rounded.Download,
-                contentDescription = if (state.isDownloaded) "Downloaded" else "Download (coming soon)",
-                onClick = {},
-                enabled = false,
+            DownloadButton(
+                download = state.download,
+                onDownload = onDownload,
+                onCancel = onCancelDownload,
+                onDelete = onDeleteDownload,
+                onRetry = onRetryDownload,
             )
             GlassIconButton(
                 icon = if (state.inQueue) Icons.AutoMirrored.Rounded.PlaylistAddCheck else Icons.AutoMirrored.Rounded.PlaylistAdd,
