@@ -45,6 +45,32 @@ class DataStoreSettingsRepository @Inject constructor(
             .toMap()
     }
 
+    /**
+     * Restores settings from a backup's [backupEntries] map. Each value is parsed as its key's type;
+     * unknown keys, unparseable values, rate-limiter state and per-install keys are skipped.
+     */
+    suspend fun restoreEntries(entries: Map<String, String>) {
+        dataStore.updateData { prefs ->
+            val typed = emptyPreferences().toMutablePreferences().apply { write(prefs.toSettings()) }.asMap()
+            prefs.toMutablePreferences().apply {
+                for ((key, current) in typed) {
+                    if (key.name in RATE_LIMITER_KEY_NAMES || key.name in PER_INSTALL_KEY_NAMES) continue
+                    val raw = entries[key.name] ?: continue
+                    val value: Any = when (current) {
+                        is Boolean -> raw.toBooleanStrictOrNull()
+                        is Int -> raw.toIntOrNull()
+                        is Long -> raw.toLongOrNull()
+                        is Float -> raw.toFloatOrNull()
+                        is String -> raw
+                        else -> null
+                    } ?: continue
+                    @Suppress("UNCHECKED_CAST")
+                    this[key as Preferences.Key<Any>] = value
+                }
+            }
+        }
+    }
+
     private object K {
         val theme = stringPreferencesKey("theme")
         val pureBlack = booleanPreferencesKey("pureBlack")
@@ -170,5 +196,8 @@ class DataStoreSettingsRepository @Inject constructor(
 
     private companion object {
         val RATE_LIMITER_KEY_NAMES = setOf("apiRequestsToday", "apiBudgetDay", "apiPausedUntil")
+
+        /** Belong to this install, not the user: never restored from a backup. */
+        val PER_INSTALL_KEY_NAMES = setOf("notificationPermissionAsked")
     }
 }

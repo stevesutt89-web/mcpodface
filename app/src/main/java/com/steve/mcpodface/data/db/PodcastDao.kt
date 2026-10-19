@@ -29,6 +29,10 @@ interface PodcastDao {
     @Query("SELECT * FROM podcasts WHERE id = :id")
     fun observeById(id: Long): Flow<PodcastEntity?>
 
+    /** Backup "Replace" import: removes every podcast and, by cascade, its episodes and state. */
+    @Query("DELETE FROM podcasts")
+    suspend fun deleteAll()
+
     @Query("SELECT * FROM podcasts WHERE feedUrl = :feedUrl")
     suspend fun getByFeedUrl(feedUrl: String): PodcastEntity?
 
