@@ -20,6 +20,9 @@ interface PodcastDao {
     @Query("DELETE FROM podcasts WHERE id = :id AND isSubscribed = 0")
     suspend fun deleteIfUnsubscribed(id: Long)
 
+    @Query("UPDATE podcasts SET lastRefreshAt = :at, feedGone = :gone WHERE id = :id")
+    suspend fun markRefreshed(id: Long, at: Long, gone: Boolean)
+
     @Query("SELECT * FROM podcasts WHERE id = :id")
     suspend fun getById(id: Long): PodcastEntity?
 

@@ -4,7 +4,6 @@ import androidx.room.withTransaction
 import com.steve.mcpodface.core.Clock
 import com.steve.mcpodface.data.db.AppDatabase
 import com.steve.mcpodface.data.db.EpisodeOrigin
-import com.steve.mcpodface.data.db.PodcastEntity
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -50,15 +49,15 @@ class FeedRepository @Inject constructor(
         val now = clock.now()
         return when (result) {
             FetchResult.NotModified -> {
-                podcastDao.update(podcast.copy(lastRefreshAt = now, feedGone = false))
+                podcastDao.markRefreshed(podcastId, now, gone = false)
                 RefreshResult.NotModified(podcastId)
             }
             FetchResult.Gone -> {
-                podcastDao.update(podcast.copy(lastRefreshAt = now, feedGone = true))
+                podcastDao.markRefreshed(podcastId, now, gone = true)
                 RefreshResult.Gone(podcastId)
             }
             is FetchResult.Failed -> RefreshResult.Failed(podcastId, result.message)
-            is FetchResult.Success -> applyFeed(podcast, result, now)
+            is FetchResult.Success -> applyFeed(podcastId, result, now)
         }
     }
 
@@ -75,9 +74,13 @@ class FeedRepository @Inject constructor(
         }
     }
 
-    private suspend fun applyFeed(podcast: PodcastEntity, fetched: FetchResult.Success, now: Long): RefreshResult {
+    private suspend fun applyFeed(podcastId: Long, fetched: FetchResult.Success, now: Long): RefreshResult {
         val feed = fetched.feed
         return db.withTransaction {
+            // Re-read inside the transaction: the user may have (un)subscribed or changed the podcast
+            // while the fetch was in flight, and writing back a stale copy would undo that.
+            val podcast = podcastDao.getById(podcastId)
+                ?: return@withTransaction RefreshResult.Failed(podcastId, "Podcast was removed")
             val movedTo = fetched.movedPermanentlyTo?.takeIf { podcastDao.getByFeedUrl(it) == null }
             val existing = episodeDao.getForPodcast(podcast.id)
             val merge = merger.merge(podcast.id, existing, feed.episodes, EpisodeOrigin.FEED, now)
