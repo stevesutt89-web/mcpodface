@@ -11,15 +11,9 @@ Task IDs match the phases in [`PLAN.md` §14](../PLAN.md#14-phased-delivery).
 | 2 Discover | Podcast Index + iTunes + Listen Notes search, trending, categories, podcast preview and subscribe, add by URL, OPML import/export |
 | 3 Browsing | Shared components, Latest, Library, episode detail with tappable timestamps |
 | 4 Playback | Media3 service, mini and full player, Up Next with drag reorder, sleep timer, trim silence, voice boost, resume rewind, listening sessions |
-| 5 Downloads | Resumable download worker, background refresh and cleanup with notifications |
-| 7.1 | Global settings screen |
+| 5 Downloads | Resumable download worker, background refresh and cleanup with notifications, Downloads tab (storage, sizes, "deletes in…" labels, bulk actions), download buttons with a mobile-data prompt |
+| 7.1–7.2 | Global settings screen and per-podcast settings sheet |
 | Design | Liquid Glass pass across the app |
-
-## In progress
-
-- **5.3** Downloads tab: storage header, per-podcast sizes, "deletes in…" labels, bulk actions.
-- **5.4** Download buttons on episode rows, and a prompt before downloading over mobile data.
-- **7.2** Per-podcast settings sheet, showing "Default (x)" for inherited values.
 
 ## Next
 

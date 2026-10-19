@@ -13,7 +13,7 @@ Player.fm.
 </p>
 
 > **Status:** in active development. Playback, discovery, subscriptions, refresh, downloads and
-> settings work. Episode search, archive backfill and backup are still to come. See
+> settings (global and per podcast) work. Episode search, archive backfill and backup are still to come. See
 > [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Features
@@ -38,7 +38,7 @@ Player.fm.
 - **Settings** for theme (light / dark / system / pure black), downloads, playback, notifications
   and backup.
 
-**Planned**: the Downloads tab and per-podcast settings (both in progress), full-text search of your
+**Planned**: full-text search of your
 episodes, slow archive backfill for long-running shows, full backup and restore between phones, a
 history screen, chapters, a widget and Android Auto.
 
