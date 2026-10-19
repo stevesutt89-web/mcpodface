@@ -48,6 +48,8 @@ data class PlayerUiState(
     val speed: Float,
     val skipBackSec: Int,
     val skipForwardSec: Int,
+    /** Settings → Tint player from artwork. */
+    val tintFromArtwork: Boolean = true,
 )
 
 /** What the sleep timer button shows. */
@@ -140,6 +142,7 @@ class PlayerViewModel @Inject constructor(
                 speed = nowPlaying.speed,
                 skipBackSec = settings.skipBackSec,
                 skipForwardSec = settings.skipForwardSec,
+                tintFromArtwork = settings.tintPlayer,
             )
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)

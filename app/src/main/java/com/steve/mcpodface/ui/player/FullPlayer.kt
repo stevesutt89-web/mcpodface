@@ -149,7 +149,7 @@ fun FullPlayerContent(
     onSleepChoice: (SleepChoice) -> Unit = {},
 ) {
     val colors = AppTheme.colors
-    val artworkAccent by rememberArtworkAccent(state.artworkUrl)
+    val artworkAccent by rememberArtworkAccent(if (state.tintFromArtwork) state.artworkUrl else null)
     val accent = artworkAccent ?: colors.accent
     var showSpeedSheet by rememberSaveable { mutableStateOf(false) }
     var showSleepSheet by rememberSaveable { mutableStateOf(false) }
@@ -161,7 +161,15 @@ fun FullPlayerContent(
         label = "artScale",
     )
 
-    GlassPage(background = { ArtworkAmbience(state.artworkUrl, fadeTo = 1f, intensity = 1.25f) }) {
+    GlassPage(
+        background = {
+            if (state.tintFromArtwork) {
+                ArtworkAmbience(state.artworkUrl, fadeTo = 1f, intensity = 1.25f)
+            } else {
+                Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
+            }
+        },
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()

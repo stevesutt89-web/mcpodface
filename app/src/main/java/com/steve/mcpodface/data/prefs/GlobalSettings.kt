@@ -19,7 +19,8 @@ data class GlobalSettings(
     // Appearance
     val theme: ThemeMode = ThemeMode.SYSTEM,
     val pureBlack: Boolean = true,
-    val tintPlayer: Boolean = false,
+    /** Artwork-coloured full player (the Liquid Glass look); off = neutral background, app accent. */
+    val tintPlayer: Boolean = true,
     val dynamicColor: Boolean = false,
     // UI state
     val lastTab: AppTab = AppTab.LATEST,

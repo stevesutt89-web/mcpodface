@@ -24,7 +24,7 @@ class DataStoreSettingsRepositoryTest {
     @Test fun updateRoundTripsEveryField() = runTest(UnconfinedTestDispatcher()) {
         val repo = repo()
         val changed = GlobalSettings(
-            theme = ThemeMode.DARK, pureBlack = false, tintPlayer = true, dynamicColor = true,
+            theme = ThemeMode.DARK, pureBlack = false, tintPlayer = false, dynamicColor = true,
             lastTab = AppTab.SEARCH, searchMode = SearchMode.DISCOVER,
             librarySort = LibrarySort.ALPHABETICAL, libraryLayout = LibraryLayout.LIST,
             latestFilter = LatestFilter.DOWNLOADED, autoDownload = false, keepLatestCount = 9,
