@@ -145,7 +145,7 @@ private fun PlaylistsContent(
                     NavCard(onOpenStarred = onOpenStarred, onOpenHistory = onOpenHistory, onOpenStats = onOpenStats)
                 }
                 item(key = "playlists-header") {
-                    SectionHeader("Playlists")
+                    SectionHeader("Your playlists")
                 }
                 item(key = "playlists-card") {
                     PlaylistsCard(
