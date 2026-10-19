@@ -37,6 +37,7 @@ import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.GridView
+import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Podcasts
 import androidx.compose.material.icons.outlined.RemoveCircleOutline
@@ -121,6 +122,7 @@ fun LibraryScreen(
     onOpenPodcast: (Long) -> Unit,
     onOpenStarred: () -> Unit,
     onOpenHistory: () -> Unit,
+    onOpenStats: () -> Unit,
     /** Playlists (PLAN.md §8.11): open one, or start a new smart playlist. */
     onOpenPlaylist: (Long) -> Unit = {},
     onNewSmartPlaylist: () -> Unit = {},
@@ -143,6 +145,7 @@ fun LibraryScreen(
         onOpenPodcast = onOpenPodcast,
         onOpenStarred = onOpenStarred,
         onOpenHistory = onOpenHistory,
+        onOpenStats = onOpenStats,
         onOpenPlaylist = onOpenPlaylist,
         onNewSmartPlaylist = onNewSmartPlaylist,
         onCreatePlaylist = viewModel::createPlaylist,
@@ -161,6 +164,7 @@ private fun LibraryContent(
     onOpenPodcast: (Long) -> Unit,
     onOpenStarred: () -> Unit,
     onOpenHistory: () -> Unit,
+    onOpenStats: () -> Unit,
     onOpenPlaylist: (Long) -> Unit,
     onNewSmartPlaylist: () -> Unit,
     onCreatePlaylist: (String) -> Unit,
@@ -257,7 +261,7 @@ private fun LibraryContent(
                     verticalArrangement = Arrangement.spacedBy(if (isGrid) GRID_GAP else Spacing.xs),
                 ) {
                     item(key = "nav-card", span = fullRow) {
-                        NavCard(onOpenStarred = onOpenStarred, onOpenHistory = onOpenHistory)
+                        NavCard(onOpenStarred = onOpenStarred, onOpenHistory = onOpenHistory, onOpenStats = onOpenStats)
                     }
                     item(key = "playlists-header", span = fullRow) {
                         SectionHeader("Playlists")
@@ -451,9 +455,9 @@ private fun LibrarySort.label(): String = when (this) {
     LibrarySort.RECENTLY_ADDED -> "Recently added"
 }
 
-/** Starred and History as one glass card, the two rows separated by a hairline. */
+/** Starred, History and Stats as one glass card, the rows separated by hairlines. */
 @Composable
-private fun NavCard(onOpenStarred: () -> Unit, onOpenHistory: () -> Unit) {
+private fun NavCard(onOpenStarred: () -> Unit, onOpenHistory: () -> Unit, onOpenStats: () -> Unit) {
     val shape = remember { RoundedRectangle(24.dp) }
     Column(
         Modifier
@@ -467,6 +471,11 @@ private fun NavCard(onOpenStarred: () -> Unit, onOpenHistory: () -> Unit) {
             color = AppTheme.colors.hairline,
         )
         NavRow(Icons.Outlined.History, "History", onClick = onOpenHistory)
+        HorizontalDivider(
+            modifier = Modifier.padding(start = Spacing.m + 24.dp + Spacing.m),
+            color = AppTheme.colors.hairline,
+        )
+        NavRow(Icons.Outlined.BarChart, "Stats", onClick = onOpenStats)
     }
 }
 
@@ -767,7 +776,7 @@ private fun LibraryGridPreview() {
         Surface {
             LibraryContent(
                 state = LibraryUiState(podcasts = previewLibrary(), playlists = previewPlaylists(), loaded = true),
-                onOpenSettings = {}, onOpenPodcast = {}, onOpenStarred = {}, onOpenHistory = {},
+                onOpenSettings = {}, onOpenPodcast = {}, onOpenStarred = {}, onOpenHistory = {}, onOpenStats = {},
                 onOpenPlaylist = {}, onNewSmartPlaylist = {}, onCreatePlaylist = {},
                 onSortSelected = {}, onLayoutSelected = {}, onRefresh = {}, onUnsubscribe = { _, _ -> },
             )
@@ -787,7 +796,7 @@ private fun LibraryListPreview() {
                     playlists = previewPlaylists(),
                     loaded = true,
                 ),
-                onOpenSettings = {}, onOpenPodcast = {}, onOpenStarred = {}, onOpenHistory = {},
+                onOpenSettings = {}, onOpenPodcast = {}, onOpenStarred = {}, onOpenHistory = {}, onOpenStats = {},
                 onOpenPlaylist = {}, onNewSmartPlaylist = {}, onCreatePlaylist = {},
                 onSortSelected = {}, onLayoutSelected = {}, onRefresh = {}, onUnsubscribe = { _, _ -> },
             )
@@ -802,7 +811,7 @@ private fun LibraryEmptyPreview() {
         Surface {
             LibraryContent(
                 state = LibraryUiState(loaded = true),
-                onOpenSettings = {}, onOpenPodcast = {}, onOpenStarred = {}, onOpenHistory = {},
+                onOpenSettings = {}, onOpenPodcast = {}, onOpenStarred = {}, onOpenHistory = {}, onOpenStats = {},
                 onOpenPlaylist = {}, onNewSmartPlaylist = {}, onCreatePlaylist = {},
                 onSortSelected = {}, onLayoutSelected = {}, onRefresh = {}, onUnsubscribe = { _, _ -> },
             )

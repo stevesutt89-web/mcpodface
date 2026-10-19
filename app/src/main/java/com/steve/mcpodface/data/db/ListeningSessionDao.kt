@@ -52,6 +52,55 @@ interface ListeningSessionDao {
     @Query("DELETE FROM listening_sessions")
     suspend fun clearHistory()
 
+    /** Total wall-clock listening time across all sessions, in ms (PLAN.md §13 stats). */
+    @Query("SELECT COALESCE(SUM(listenedMs), 0) FROM listening_sessions")
+    fun observeTotalListenedMs(): Flow<Long>
+
+    /**
+     * Every session's start and listened time. Stats bucket these into local days in Kotlin (a
+     * session counts toward the day it started), which also drives the streaks.
+     */
+    @Query("SELECT startedAt, listenedMs FROM listening_sessions ORDER BY startedAt")
+    fun observeSessionTimes(): Flow<List<SessionTimeRow>>
+
+    /** The ten podcasts with the most listening time, with their artwork (PLAN.md §13). */
+    @Query(
+        """
+        SELECT p.id AS podcastId,
+               p.title AS podcastTitle,
+               p.artworkUrl AS artworkUrl,
+               SUM(s.listenedMs) AS listenedMs
+        FROM listening_sessions s
+        INNER JOIN episodes e ON e.id = s.episodeId
+        INNER JOIN podcasts p ON p.id = e.podcastId
+        GROUP BY p.id
+        ORDER BY listenedMs DESC, p.id
+        LIMIT 10
+        """,
+    )
+    fun observeTopPodcasts(): Flow<List<PodcastListeningTotal>>
+
+    /**
+     * Time saved by playing faster: listenedMs × (speed − 1), summed over sessions faster than 1x.
+     * Fractional ms.
+     */
+    @Query("SELECT COALESCE(SUM(listenedMs * (speed - 1.0)), 0.0) FROM listening_sessions WHERE speed > 1.0")
+    fun observeTimeSavedMs(): Flow<Double>
+
+    /**
+     * Episodes finished (PLAYED with a playedAt): all time, and those finished at or after [since]
+     * (epoch ms, the start of the 30-day window).
+     */
+    @Query(
+        """
+        SELECT COUNT(*) AS total,
+               COALESCE(SUM(CASE WHEN playedAt >= :since THEN 1 ELSE 0 END), 0) AS last30Days
+        FROM episodes
+        WHERE playState = 'PLAYED' AND playedAt IS NOT NULL
+        """,
+    )
+    fun observeFinishedCounts(since: Long): Flow<FinishedCounts>
+
     /** Every listening session, oldest first, keyed by feed URL + guid for the backup (PLAN.md §9). */
     @Query(
         """
