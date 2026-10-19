@@ -14,18 +14,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,7 +36,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kyant.shapes.RoundedRectangle
 import com.steve.mcpodface.data.backup.OpmlImportProgress
+import com.steve.mcpodface.ui.components.glass.GlassButton
+import com.steve.mcpodface.ui.components.glass.GlassIconButton
+import com.steve.mcpodface.ui.components.glass.GlassStyle
+import com.steve.mcpodface.ui.components.glass.LocalGlassBackdrop
 import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
 import com.steve.mcpodface.ui.theme.ThemePreviews
@@ -85,10 +88,18 @@ fun AddPodcastMenu(onOpenPodcast: (Long) -> Unit) {
     }
 
     Box {
-        IconButton(onClick = { menuOpen = true }) {
-            Icon(Icons.Outlined.Add, contentDescription = "Add podcast")
-        }
-        DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+        GlassIconButton(
+            icon = Icons.Rounded.Add,
+            contentDescription = "Add podcast",
+            onClick = { menuOpen = true },
+            size = 40.dp,
+            iconSize = 20.dp,
+        )
+        DropdownMenu(
+            expanded = menuOpen,
+            onDismissRequest = { menuOpen = false },
+            shape = RoundedRectangle(20.dp),
+        ) {
             DropdownMenuItem(
                 text = { Text("Add by URL") },
                 onClick = {
@@ -132,19 +143,33 @@ fun AddPodcastMenu(onOpenPodcast: (Long) -> Unit) {
                 ImportProgressDialog(progress = progress, onHide = viewModel::hideImport)
             }
         } else {
-            ImportResultDialog(progress = progress, onDismiss = viewModel::dismissImportResult)
+            GlassDialogScope {
+                ImportResultDialog(progress = progress, onDismiss = viewModel::dismissImportResult)
+            }
         }
     }
 }
 
 @Composable
 private fun ImportProgressDialog(progress: OpmlImportProgress, onHide: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onHide,
-        title = { Text("Importing subscriptions") },
-        text = { ImportProgressContent(progress) },
-        confirmButton = { TextButton(onClick = onHide) { Text("Hide") } },
-    )
+    GlassDialogScope {
+        AlertDialog(
+            onDismissRequest = onHide,
+            shape = RoundedRectangle(28.dp),
+            title = { Text("Importing subscriptions") },
+            text = { ImportProgressContent(progress) },
+            confirmButton = { GlassButton(onClick = onHide) { Text("Hide") } },
+        )
+    }
+}
+
+/**
+ * Dialogs open in their own window, so they must not sample the page's glass backdrop: this
+ * drops the backdrop so glass inside falls back to its translucent fill.
+ */
+@Composable
+internal fun GlassDialogScope(content: @Composable () -> Unit) {
+    CompositionLocalProvider(LocalGlassBackdrop provides null, content = content)
 }
 
 /** The import progress body: "Importing 12 of 87…" with a bar. The import keeps running if hidden. */
@@ -174,6 +199,7 @@ private fun ImportResultDialog(progress: OpmlImportProgress, onDismiss: () -> Un
     var detailsOpen by rememberSaveable { mutableStateOf(false) }
     AlertDialog(
         onDismissRequest = onDismiss,
+        shape = RoundedRectangle(28.dp),
         title = { Text("Import finished") },
         text = {
             Column {
@@ -182,7 +208,7 @@ private fun ImportResultDialog(progress: OpmlImportProgress, onDismiss: () -> Un
                     style = MaterialTheme.typography.bodyLarge,
                 )
                 if (progress.failed.isNotEmpty()) {
-                    TextButton(onClick = { detailsOpen = !detailsOpen }) {
+                    GlassButton(onClick = { detailsOpen = !detailsOpen }) {
                         Text(if (detailsOpen) "Hide details" else "Details")
                     }
                     if (detailsOpen) {
@@ -205,7 +231,7 @@ private fun ImportResultDialog(progress: OpmlImportProgress, onDismiss: () -> Un
                 }
             }
         },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("Done") } },
+        confirmButton = { GlassButton(onClick = onDismiss, style = GlassStyle.Prominent) { Text("Done") } },
     )
 }
 

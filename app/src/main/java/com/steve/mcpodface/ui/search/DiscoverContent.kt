@@ -18,36 +18,38 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.kyant.shapes.RoundedRectangle
 import com.steve.mcpodface.data.catalog.CatalogCategory
 import com.steve.mcpodface.data.catalog.CatalogPodcast
-import com.steve.mcpodface.ui.components.Artwork
+import com.steve.mcpodface.ui.components.glass.GlassButton
+import com.steve.mcpodface.ui.components.glass.GlassChip
+import com.steve.mcpodface.ui.library.ShapedArtwork
 import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
 import com.steve.mcpodface.ui.theme.ThemePreviews
 
-private val ArtworkSize = 56.dp
+private val ArtworkSize = 60.dp
+private val ArtworkRadius = 14.dp
 /** Hairlines start where the title text starts: gutter + artwork + gap. */
 private val DividerInset = Spacing.m + ArtworkSize + Spacing.m
-/** Clears the mini player and the shell's bottom bar at the end of the list. */
-private val ListBottomPadding = 120.dp
 
 /**
  * Discover mode (PLAN.md §8.9): trending with category chips when the query is blank, otherwise
  * search results. Stateless: the ViewModel owns the query, debounce and requests.
+ * [contentPadding] carries the screen's bottom chrome clearance into the list.
  */
 @Composable
 fun DiscoverContent(
@@ -61,10 +63,11 @@ fun DiscoverContent(
     onResultClick: (CatalogPodcast) -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(),
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = ListBottomPadding),
+        contentPadding = contentPadding,
     ) {
         if (query.isBlank()) {
             item(key = "trending-header") { SectionTitle("Trending") }
@@ -124,7 +127,12 @@ private fun PodcastResultRow(
             .padding(horizontal = Spacing.m, vertical = Spacing.s),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Artwork(url = podcast.artworkUrl, contentDescription = null, size = ArtworkSize)
+        ShapedArtwork(
+            url = podcast.artworkUrl,
+            contentDescription = null,
+            shape = remember { RoundedRectangle(ArtworkRadius) },
+            modifier = Modifier.size(ArtworkSize),
+        )
         Column(Modifier.weight(1f).padding(horizontal = Spacing.m)) {
             Text(
                 podcast.title,
@@ -158,7 +166,8 @@ private fun PodcastResultRow(
 private fun SectionTitle(text: String) {
     Text(
         text,
-        style = MaterialTheme.typography.titleMedium,
+        style = MaterialTheme.typography.titleLarge,
+        fontWeight = FontWeight.Bold,
         color = AppTheme.colors.textPrimary,
         modifier = Modifier.padding(start = Spacing.m, top = Spacing.m, bottom = Spacing.s),
     )
@@ -176,30 +185,16 @@ private fun CategoryChips(
         modifier = Modifier.padding(bottom = Spacing.m),
     ) {
         item(key = "all") {
-            CategoryChip("All", selected = selectedCategory == null, onClick = { onCategorySelected(null) })
+            GlassChip("All", selected = selectedCategory == null, onClick = { onCategorySelected(null) })
         }
         items(categories, key = { it.id }) { category ->
-            CategoryChip(
+            GlassChip(
                 category.name,
                 selected = selectedCategory == category.name,
                 onClick = { onCategorySelected(category.name) },
             )
         }
     }
-}
-
-@Composable
-private fun CategoryChip(label: String, selected: Boolean, onClick: () -> Unit) {
-    FilterChip(
-        selected = selected,
-        onClick = onClick,
-        label = { Text(label) },
-        colors = FilterChipDefaults.filterChipColors(
-            // Neutral high-contrast when selected, not the accent (PLAN.md §11).
-            selectedContainerColor = AppTheme.colors.buttonPrimary,
-            selectedLabelColor = AppTheme.colors.onButtonPrimary,
-        ),
-    )
 }
 
 @Composable
@@ -230,7 +225,7 @@ private fun ErrorMessage(onRetry: () -> Unit) {
             color = AppTheme.colors.textSecondary,
             textAlign = TextAlign.Center,
         )
-        TextButton(onClick = onRetry) { Text("Retry") }
+        GlassButton(onClick = onRetry) { Text("Retry") }
     }
 }
 

@@ -1,6 +1,7 @@
 package com.steve.mcpodface.ui.search
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -14,11 +15,17 @@ import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
 import com.steve.mcpodface.ui.theme.ThemePreviews
 
-/** "Your podcasts" mode until task 6.3 adds local episode search. */
+/**
+ * "Your podcasts" mode until task 6.3 adds local episode search. [contentPadding] keeps the text
+ * clear of the floating chrome at the bottom of the screen.
+ */
 @Composable
-fun YourPodcastsPlaceholder(modifier: Modifier = Modifier) {
+fun YourPodcastsPlaceholder(
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(),
+) {
     Box(
-        modifier.fillMaxSize().padding(Spacing.m),
+        modifier.fillMaxSize().padding(contentPadding).padding(Spacing.m),
         contentAlignment = Alignment.Center,
     ) {
         Text(
