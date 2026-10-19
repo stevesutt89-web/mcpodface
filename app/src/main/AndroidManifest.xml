@@ -22,6 +22,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.McPodface">
 
+        <!-- Android Auto media app (task 9.5): browse tree comes from PlaybackService. -->
+        <meta-data
+            android:name="com.google.android.gms.car.application"
+            android:resource="@xml/automotive_app_desc" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

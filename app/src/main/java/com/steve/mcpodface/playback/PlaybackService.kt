@@ -52,6 +52,7 @@ class PlaybackService : MediaLibraryService() {
     @Inject lateinit var podcastSettingsDao: PodcastSettingsDao
     @Inject lateinit var settingsRepository: SettingsRepository
     @Inject lateinit var clock: Clock
+    @Inject lateinit var browseTree: BrowseTree
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private lateinit var player: ExoPlayer
@@ -136,7 +137,6 @@ class PlaybackService : MediaLibraryService() {
             return com.google.common.util.concurrent.Futures.immediateFuture(LibraryResult.ofItem(root, params))
         }
 
-        // TODO(9.5): Android Auto browse tree (Up Next, Latest, Downloads, Podcasts).
         override fun onGetChildren(
             session: MediaLibrarySession,
             browser: MediaSession.ControllerInfo,
@@ -144,8 +144,33 @@ class PlaybackService : MediaLibraryService() {
             page: Int,
             pageSize: Int,
             params: LibraryParams?,
-        ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> =
-            com.google.common.util.concurrent.Futures.immediateFuture(LibraryResult.ofItemList(ImmutableList.of(), params))
+        ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> = future {
+            val all = browseTree.children(parentId)
+            val from = (page * pageSize).coerceAtMost(all.size)
+            val to = if (pageSize == Int.MAX_VALUE) all.size else (from + pageSize).coerceAtMost(all.size)
+            LibraryResult.ofItemList(ImmutableList.copyOf(all.subList(from, to)), params)
+        }
+
+        override fun onSearch(
+            session: MediaLibrarySession,
+            browser: MediaSession.ControllerInfo,
+            query: String,
+            params: LibraryParams?,
+        ): ListenableFuture<LibraryResult<Void>> = future {
+            session.notifySearchResultChanged(browser, query, browseTree.search(query).size, params)
+            LibraryResult.ofVoid()
+        }
+
+        override fun onGetSearchResult(
+            session: MediaLibrarySession,
+            browser: MediaSession.ControllerInfo,
+            query: String,
+            page: Int,
+            pageSize: Int,
+            params: LibraryParams?,
+        ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> = future {
+            LibraryResult.ofItemList(ImmutableList.copyOf(browseTree.search(query)), params)
+        }
 
         override fun onAddMediaItems(
             mediaSession: MediaSession,
@@ -210,6 +235,6 @@ class PlaybackService : MediaLibraryService() {
     }
 
     companion object {
-        const val ROOT_ID = "root"
+        const val ROOT_ID = BrowseTree.ROOT
     }
 }
