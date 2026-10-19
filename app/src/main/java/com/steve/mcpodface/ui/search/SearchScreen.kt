@@ -65,11 +65,21 @@ import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
 import com.steve.mcpodface.ui.theme.ThemePreviews
 
-/** Search tab (PLAN.md §8.9): "Your podcasts" (placeholder until 6.3) or "Discover". */
+/**
+ * Search tab (PLAN.md §8.9): "Your podcasts" (local episode search) or "Discover". One search field
+ * serves both: its text goes to the Discover ViewModel and to the episode search ViewModel.
+ */
 @Composable
-fun SearchScreen(onOpenPodcast: (Long) -> Unit, onOpenSettings: () -> Unit = {}) {
+fun SearchScreen(
+    onOpenPodcast: (Long) -> Unit,
+    onOpenEpisode: (Long) -> Unit = {},
+    onOpenSettings: () -> Unit = {},
+) {
     val viewModel: SearchViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val episodeViewModel: EpisodeSearchViewModel = hiltViewModel()
+    val episodeState by episodeViewModel.uiState.collectAsStateWithLifecycle()
+    val episodeActions = rememberEpisodeSearchActions(episodeViewModel, onOpenEpisode)
     val snackbarHostState = remember { SnackbarHostState() }
     val currentOnOpenPodcast by rememberUpdatedState(onOpenPodcast)
 
@@ -84,10 +94,15 @@ fun SearchScreen(onOpenPodcast: (Long) -> Unit, onOpenSettings: () -> Unit = {})
 
     SearchContent(
         state = state,
+        episodeState = episodeState,
+        episodeActions = episodeActions,
         snackbarHostState = snackbarHostState,
         onOpenSettings = onOpenSettings,
         onOpenPodcast = onOpenPodcast,
-        onQueryChange = viewModel::onQueryChange,
+        onQueryChange = { text ->
+            viewModel.onQueryChange(text)
+            episodeActions.onQueryChange(text)
+        },
         onModeChange = viewModel::onModeChange,
         onCategorySelected = viewModel::onCategorySelected,
         onResultClick = viewModel::onResultClick,
@@ -99,6 +114,8 @@ fun SearchScreen(onOpenPodcast: (Long) -> Unit, onOpenSettings: () -> Unit = {})
 @Composable
 private fun SearchContent(
     state: SearchUiState,
+    episodeState: EpisodeSearchUiState,
+    episodeActions: EpisodeSearchActions,
     snackbarHostState: SnackbarHostState,
     onOpenSettings: () -> Unit = {},
     onOpenPodcast: (Long) -> Unit,
@@ -128,12 +145,15 @@ private fun SearchContent(
                         query = state.query,
                         onQueryChange = onQueryChange,
                         loading = discoverLoading,
+                        onSubmit = episodeActions.onSubmit,
                     )
                     // Mode is unknown until the default is resolved; show nothing rather than flip.
                     state.mode?.let { mode ->
                         ModeSwitcher(mode = mode, onModeChange = onModeChange)
                         when (mode) {
-                            SearchMode.YOUR_PODCASTS -> YourPodcastsPlaceholder(
+                            SearchMode.YOUR_PODCASTS -> YourPodcastsContent(
+                                state = episodeState,
+                                actions = episodeActions,
                                 modifier = Modifier.weight(1f),
                                 contentPadding = bottomPadding,
                             )
@@ -164,10 +184,12 @@ private fun SearchContent(
 
 /** Liquid Glass search capsule: rounded search icon, placeholder, the query and a clear button. */
 @Composable
-private fun SearchField(
+internal fun SearchField(
     query: String,
     onQueryChange: (String) -> Unit,
     loading: Boolean,
+    placeholder: String = "Podcasts, episodes",
+    onSubmit: () -> Unit = {},
 ) {
     val focusManager = LocalFocusManager.current
     val colors = AppTheme.colors
@@ -191,7 +213,7 @@ private fun SearchField(
             Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
                 if (query.isEmpty()) {
                     Text(
-                        "Podcasts, episodes",
+                        placeholder,
                         style = MaterialTheme.typography.bodyLarge,
                         color = colors.textSecondary,
                     )
@@ -204,7 +226,10 @@ private fun SearchField(
                     cursorBrush = SolidColor(colors.accent),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                    keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
+                    keyboardActions = KeyboardActions(onSearch = {
+                        onSubmit()
+                        focusManager.clearFocus()
+                    }),
                 )
             }
             if (query.isNotEmpty()) {
@@ -332,6 +357,8 @@ private fun SearchContentPreview() {
                     query = "",
                     discover = DiscoverState.Loading,
                 ),
+                episodeState = EpisodeSearchUiState(),
+                episodeActions = EpisodeSearchActions(),
                 snackbarHostState = SnackbarHostState(),
                 onOpenPodcast = {},
                 onQueryChange = {},
