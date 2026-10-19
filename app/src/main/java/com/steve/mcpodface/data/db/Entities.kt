@@ -188,3 +188,33 @@ data class CatalogCacheEntity(
     val json: String,
     val fetchedAt: Long,
 )
+
+/** A playlist (PLAN.md §8.11). SMART playlists keep their rules as JSON and have no items. */
+@Entity(tableName = "playlists")
+data class PlaylistEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val name: String,
+    val kind: PlaylistKind,
+    /** [com.steve.mcpodface.data.playlist.SmartRules] as JSON; null unless SMART. */
+    val rulesJson: String? = null,
+    /** Order in the Library list. */
+    val position: Int = 0,
+    val createdAt: Long,
+)
+
+/** An episode in a LISTEN_LATER or MANUAL playlist, in [position] order. */
+@Entity(
+    tableName = "playlist_items",
+    primaryKeys = ["playlistId", "episodeId"],
+    foreignKeys = [
+        ForeignKey(PlaylistEntity::class, ["id"], ["playlistId"], onDelete = ForeignKey.CASCADE),
+        ForeignKey(EpisodeEntity::class, ["id"], ["episodeId"], onDelete = ForeignKey.CASCADE),
+    ],
+    indices = [Index("episodeId")],
+)
+data class PlaylistItemEntity(
+    val playlistId: Long,
+    val episodeId: Long,
+    val position: Int,
+    val addedAt: Long,
+)

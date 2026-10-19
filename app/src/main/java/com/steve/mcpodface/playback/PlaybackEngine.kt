@@ -18,6 +18,7 @@ import com.steve.mcpodface.data.db.PodcastSettingsDao
 import com.steve.mcpodface.data.db.SortOrder
 import com.steve.mcpodface.data.prefs.GlobalSettings
 import com.steve.mcpodface.data.prefs.SettingsRepository
+import com.steve.mcpodface.data.playlist.PlaylistRepository
 import com.steve.mcpodface.data.queue.QueueRepository
 import com.steve.mcpodface.domain.policy.PlayedRule
 import com.steve.mcpodface.domain.policy.defaultSortOrder
@@ -47,6 +48,7 @@ class PlaybackEngine @Inject constructor(
     private val clock: Clock,
     private val listeningSessionDao: ListeningSessionDao,
     private val sleepTimer: SleepTimer,
+    private val playlists: PlaylistRepository,
 ) {
     private val sessions = ListeningSessionRecorder(clock)
 
@@ -205,6 +207,7 @@ class PlaybackEngine @Inject constructor(
         episodeDao.updatePosition(id, 0, PlayState.PLAYED, now)
         markedPlayed = true
         queue.remove(id)
+        playlists.onEpisodeFinished(id)
 
         val next = if (sleepTimer.consumeEndOfEpisode()) null else nextEpisode(id)
         if (next == null) {

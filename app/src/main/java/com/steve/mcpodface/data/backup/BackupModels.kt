@@ -59,6 +59,8 @@ data class BackupData(
     /** Listening sessions, oldest first. */
     val history: List<HistoryBackup>,
     val backfill: List<BackfillBackup>,
+    /** Playlists (PLAN.md §8.11). Absent in backups made before playlists existed. */
+    val playlists: List<PlaylistBackup> = emptyList(),
 )
 
 @Serializable
@@ -155,4 +157,19 @@ data class ArchiveEpisodeLine(
     val pubDate: Long,
     val durationSec: Int? = null,
     val description: String? = null,
+)
+
+/**
+ * One playlist. Items are episode references in order (Listen Later and manual lists). For smart
+ * playlists [rulesJson] holds the rules with podcastIds cleared; the podcasts are [smartPodcastFeeds]
+ * instead, because ids differ between phones.
+ */
+@Serializable
+data class PlaylistBackup(
+    val name: String,
+    val kind: String,
+    val position: Int = 0,
+    val items: List<QueueBackup> = emptyList(),
+    val rulesJson: String? = null,
+    val smartPodcastFeeds: List<String> = emptyList(),
 )

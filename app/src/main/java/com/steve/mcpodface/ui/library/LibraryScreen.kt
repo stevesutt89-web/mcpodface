@@ -106,6 +106,9 @@ fun LibraryScreen(
     onOpenPodcast: (Long) -> Unit,
     onOpenStarred: () -> Unit,
     onOpenHistory: () -> Unit,
+    /** Playlists (PLAN.md §8.11): open one, or start a new smart playlist. */
+    onOpenPlaylist: (Long) -> Unit = {},
+    onNewSmartPlaylist: () -> Unit = {},
 ) {
     val viewModel: LibraryViewModel = hiltViewModel()
     val state by viewModel.state.collectAsStateWithLifecycle()

@@ -18,7 +18,7 @@
 - Screens draw their own top bar; the shell Scaffold passes zero content insets.
 - `domain/policy` is pure Kotlin: no `android.*` imports.
 - Time: inject `core.Clock`, never call `System.currentTimeMillis()` directly.
-- Room: tables are `podcasts`, `podcast_settings`, `episodes`, `episode_fts`, `downloads`, `backfill_state`, `queue_items`, `listening_sessions`, `recent_searches`, `catalog_cache`. Any entity change = bump version + real Migration + commit the new `app/schemas` JSON. **Never** destructive migration. **Never** `OnConflictStrategy.REPLACE` on podcasts/episodes (cascading FKs delete child rows); use `@Upsert`/`@Update`/IGNORE.
+- Room: tables are `podcasts`, `podcast_settings`, `episodes`, `episode_fts`, `downloads`, `backfill_state`, `queue_items`, `listening_sessions`, `recent_searches`, `catalog_cache`, `playlists`, `playlist_items`. Any entity change = bump version + real Migration + commit the new `app/schemas` JSON. **Never** destructive migration. **Never** `OnConflictStrategy.REPLACE` on podcasts/episodes (cascading FKs delete child rows); use `@Upsert`/`@Update`/IGNORE.
 - Never overwrite episode user state (playState, positionMs, playedAt, isStarred, autoDownloadBlocked) from feed data.
 - Settings: `SettingsRepository.settings` (Flow<GlobalSettings>) and `update { it.copy(...) }`. Key names are part of the backup format; don't rename.
 - Secrets (`PODCASTINDEX_*`, signing) live in git-ignored `local.properties`, exposed via `BuildConfig`.

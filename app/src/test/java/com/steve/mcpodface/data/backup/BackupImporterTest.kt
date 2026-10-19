@@ -23,6 +23,10 @@ import com.steve.mcpodface.data.feed.RssParser
 import com.steve.mcpodface.data.network.NetworkModule
 import com.steve.mcpodface.data.prefs.DataStoreSettingsRepository
 import com.steve.mcpodface.data.prefs.ThemeMode
+import com.steve.mcpodface.data.playlist.PlaylistRepository
+import com.steve.mcpodface.data.playlist.SmartRules
+import com.steve.mcpodface.data.search.SearchRepository
+import com.steve.mcpodface.data.db.PlaylistKind
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -56,7 +60,8 @@ class BackupImporterTest {
         private val feeds = FeedRepository(db, FeedFetcher(NetworkModule.okHttpClient(), RssParser(), Dispatchers.Unconfined), EpisodeMerger(), clock)
 
         fun exporter() = BackupExporter(db, settings, OpmlExporter(db.podcastDao(), Dispatchers.IO), clock, Dispatchers.IO)
-        fun importer() = BackupImporter(db, settings, feeds, { error("no refresh in tests") }, scope, Dispatchers.IO)
+        val playlists = PlaylistRepository(db, SearchRepository(db, clock, Dispatchers.Unconfined), clock)
+        fun importer() = BackupImporter(db, settings, feeds, { error("no refresh in tests") }, playlists, scope, Dispatchers.IO)
 
         suspend fun backup(includeArchive: Boolean = true): ByteArray =
             ByteArrayOutputStream().also { exporter().export(it, includeArchive) }.toByteArray()
@@ -187,6 +192,30 @@ class BackupImporterTest {
         new.restore(old.backup(), ImportMode.REPLACE)
         assertThat(new.db.podcastDao().getByFeedUrl("https://local/feed")).isNull()
         assertThat(new.db.podcastDao().getSubscribed().map { it.feedUrl }).containsExactly("https://a/feed", "https://b/feed")
+    }
+
+    @Test fun playlistsRoundTrip() = runBlocking<Unit> {
+        val a = old.db.podcastDao().getByFeedUrl("https://a/feed")!!.id
+        old.playlists.toggleListenLater(old.episode("https://a/feed", "g5").id)
+        val road = old.playlists.createManual("Road trip")
+        old.playlists.add(road, old.episode("https://b/feed", "g22").id)
+        old.playlists.add(road, old.episode("https://a/feed", "g6").id)
+        old.playlists.createSmart("Fresh A", SmartRules(podcastIds = listOf(a), publishedWithinDays = 7, limit = 20))
+
+        val new = phone("new")
+        new.restore(old.backup(includeArchive = false))
+
+        val all = new.db.playlistDao().getAll()
+        val ll = all.single { it.kind == PlaylistKind.LISTEN_LATER }
+        assertThat(new.db.playlistDao().getItems(ll.id).map { new.db.episodeDao().getById(it.episodeId)!!.guid }).containsExactly("g5")
+        val roadNew = all.single { it.name == "Road trip" }
+        assertThat(new.db.playlistDao().getItems(roadNew.id).map { new.db.episodeDao().getById(it.episodeId)!!.guid })
+            .containsExactly("g22", "g6").inOrder()
+        val smart = all.single { it.kind == PlaylistKind.SMART }
+        val rules = SmartRules.fromJson(smart.rulesJson)
+        assertThat(rules.podcastIds).containsExactly(new.db.podcastDao().getByFeedUrl("https://a/feed")!!.id)
+        assertThat(rules.publishedWithinDays).isEqualTo(7)
+        assertThat(rules.limit).isEqualTo(20)
     }
 
     @Test fun rejectsFilesThatAreNotBackups() = runBlocking<Unit> {

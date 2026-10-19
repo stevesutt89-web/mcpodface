@@ -184,6 +184,7 @@ interface EpisodeDao {
            OR e.lastPlayedAt IS NOT NULL OR e.isStarred = 1 OR e.autoDownloadBlocked = 1
            OR EXISTS (SELECT 1 FROM queue_items q WHERE q.episodeId = e.id)
            OR EXISTS (SELECT 1 FROM listening_sessions s WHERE s.episodeId = e.id)
+           OR EXISTS (SELECT 1 FROM playlist_items pi WHERE pi.episodeId = e.id)
         ORDER BY e.id
         """,
     )

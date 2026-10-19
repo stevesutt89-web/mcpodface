@@ -24,6 +24,10 @@ import kotlinx.serialization.Serializable
 @Serializable data object HistoryRoute
 /** Episode search scoped to one podcast (PLAN.md §7.1). The scope chip can widen it. */
 @Serializable data class EpisodeSearchRoute(val podcastId: Long)
+/** One playlist: Listen Later, a manual playlist or a smart playlist (PLAN.md §8.11). */
+@Serializable data class PlaylistRoute(val playlistId: Long)
+/** Create (playlistId = 0) or edit a smart playlist's rules (PLAN.md §8.11). */
+@Serializable data class SmartPlaylistEditorRoute(val playlistId: Long = 0L)
 
 /** The five bottom-bar tabs, in order (PLAN.md §8.1). */
 enum class TopLevelDestination(

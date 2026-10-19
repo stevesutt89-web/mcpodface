@@ -576,6 +576,42 @@ politely. It's **best effort**, because no source is guaranteed to hold a show's
   setting (see §12).
 - **About:** Version, open source licenses.
 
+### 8.11 Playlists
+Three kinds, stored in the `playlists` and `playlist_items` tables (DB v2), with the logic in
+`data/playlist/PlaylistRepository`:
+
+- **Listen Later**
+  - Built in, created on first use, always listed first; it can't be renamed or deleted.
+  - **Swipe right on any episode row** (Latest, podcast page, search results, Starred, History,
+    other playlists) to add an episode. Swiping right again removes it, and the swipe label shows
+    which will happen ("Listen later" / "Remove").
+  - Newest saves go on top.
+  - An episode leaves Listen Later automatically when it finishes playing.
+  - Swipe left keeps its current meaning (played/unplayed). "Add to Up Next" moves to the
+    long-press menu.
+- **Manual playlists**
+  - The user names one and adds episodes from the episode page or a row's long-press menu ("Add to
+    playlist…" sheet, which can also create a playlist).
+  - Drag to reorder, swipe left to remove. Rename and delete.
+- **Smart playlists**
+  - Saved `SmartRules`, evaluated live by the search engine (§7.3): podcasts (all or chosen),
+    status (default "not played"), downloaded only, starred only, published in the last N days,
+    duration, optional words, newest or oldest first, and a size limit (default 50).
+  - The editor shows a live preview of the matching episodes as you change the rules.
+
+**Library tab:** Under Starred and History sits a **Playlists** section: Listen Later (with its
+count), then the user's playlists (manual with counts, smart marked as smart), then "New playlist"
+and "New smart playlist".
+
+**Playlist page:**
+- Large title and episode count, then **Play all**, which replaces Up Next with the playlist's
+  episodes in order and starts the first; it confirms first if Up Next isn't empty.
+- **Shuffle**.
+- Standard episode rows.
+- Overflow menu: rename / edit rules / delete.
+
+**Backup (§9):** playlists are included; smart-rule podcasts are stored as feed URLs.
+
 ---
 
 ## 9. Export / import (moving between phones)

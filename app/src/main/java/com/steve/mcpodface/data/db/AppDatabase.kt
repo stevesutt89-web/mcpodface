@@ -8,7 +8,7 @@ import androidx.room.RoomDatabase
  * registered in DatabaseModule. Never use destructive migration (PLAN.md §4).
  */
 @Database(
-    version = 1,
+    version = 2,
     exportSchema = true,
     entities = [
         PodcastEntity::class,
@@ -21,6 +21,8 @@ import androidx.room.RoomDatabase
         ListeningSessionEntity::class,
         RecentSearchEntity::class,
         CatalogCacheEntity::class,
+        PlaylistEntity::class,
+        PlaylistItemEntity::class,
     ],
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -34,6 +36,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun recentSearchDao(): RecentSearchDao
     abstract fun catalogCacheDao(): CatalogCacheDao
     abstract fun searchDao(): SearchDao
+    abstract fun playlistDao(): PlaylistDao
 
     companion object {
         const val NAME = "mcpodface.db"

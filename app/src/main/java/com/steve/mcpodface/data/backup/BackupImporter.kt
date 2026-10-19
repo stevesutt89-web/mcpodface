@@ -11,7 +11,10 @@ import com.steve.mcpodface.data.db.EpisodeOrigin
 import com.steve.mcpodface.data.db.ListeningSessionEntity
 import com.steve.mcpodface.data.db.PlayState
 import com.steve.mcpodface.data.db.PodcastEntity
+import com.steve.mcpodface.data.db.PlaylistKind
 import com.steve.mcpodface.data.db.PodcastSettingsEntity
+import com.steve.mcpodface.data.playlist.PlaylistRepository
+import com.steve.mcpodface.data.playlist.SmartRules
 import com.steve.mcpodface.data.db.QueueAdd
 import com.steve.mcpodface.data.db.SortOrder
 import com.steve.mcpodface.data.feed.EnclosureUrls
@@ -54,6 +57,7 @@ class BackupImporter @Inject constructor(
     private val settings: DataStoreSettingsRepository,
     private val feeds: FeedRepository,
     private val refresh: dagger.Lazy<RefreshCoordinator>,
+    private val playlistRepository: PlaylistRepository,
     @ApplicationScope private val appScope: CoroutineScope,
     @IoDispatcher private val io: CoroutineDispatcher,
 ) {
@@ -135,6 +139,7 @@ class BackupImporter @Inject constructor(
         val queued = restoreQueue(d.queue, ids, mode)
         val history = restoreHistory(d.history, ids, mode)
         restoreBackfill(d.backfill, ids)
+        restorePlaylists(d.playlists, ids)
         onProgress(1f)
 
         if (refreshAfter) appScope.launch { refresh.get().refreshAllAndApply() }
@@ -276,6 +281,33 @@ class BackupImporter @Inject constructor(
                     oldestKnownPubDate = b.oldestKnownPubDate,
                 ),
             )
+        }
+    }
+
+    /**
+     * Playlists are matched by kind and name: Listen Later merges into this phone's, and a manual
+     * playlist with the same name gets the backup's episodes appended. Smart playlists that already
+     * exist by name are left alone.
+     */
+    private suspend fun restorePlaylists(playlists: List<PlaylistBackup>, ids: Ids) {
+        val dao = db.playlistDao()
+        for (b in playlists) {
+            val kind = enumOr(b.kind, PlaylistKind.MANUAL)
+            val existing = dao.getAll().firstOrNull { it.kind == kind && (kind == PlaylistKind.LISTEN_LATER || it.name == b.name) }
+            when (kind) {
+                PlaylistKind.SMART -> if (existing == null) {
+                    val rules = SmartRules.fromJson(b.rulesJson)
+                    val podcastIds = b.smartPodcastFeeds.mapNotNull { ids.podcasts[it] ?: db.podcastDao().getByFeedUrl(it)?.id }
+                    playlistRepository.createSmart(b.name, rules.copy(podcastIds = podcastIds))
+                }
+                else -> {
+                    val id = existing?.id ?: if (kind == PlaylistKind.LISTEN_LATER) playlistRepository.listenLaterId() else playlistRepository.createManual(b.name)
+                    for (item in b.items) {
+                        val episodeId = episodeFor(item.feedUrl, item.guid, null, ids)?.id ?: continue
+                        playlistRepository.add(id, episodeId)
+                    }
+                }
+            }
         }
     }
 

@@ -15,7 +15,7 @@ object DatabaseModule {
     @Provides @Singleton
     fun database(@ApplicationContext context: Context): AppDatabase =
         Room.databaseBuilder(context, AppDatabase::class.java, AppDatabase.NAME)
-            // Register migrations here: .addMigrations(MIGRATION_1_2)
+            .addMigrations(*ALL_MIGRATIONS)
             .build()
 
     @Provides fun podcastDao(db: AppDatabase) = db.podcastDao()
@@ -27,4 +27,5 @@ object DatabaseModule {
     @Provides fun listeningSessionDao(db: AppDatabase) = db.listeningSessionDao()
     @Provides fun recentSearchDao(db: AppDatabase) = db.recentSearchDao()
     @Provides fun catalogCacheDao(db: AppDatabase) = db.catalogCacheDao()
+    @Provides fun playlistDao(db: AppDatabase) = db.playlistDao()
 }

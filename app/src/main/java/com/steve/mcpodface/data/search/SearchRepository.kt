@@ -46,9 +46,13 @@ class SearchRepository @Inject constructor(
         filters: SearchFilters = SearchFilters(),
         sort: SearchSort = SearchSort.RELEVANCE,
         pageSize: Int = 200,
+        /** Smart playlists: blank text with default filters lists every subscribed episode. */
+        listAllWhenBlank: Boolean = false,
     ): Flow<SearchResults> {
         val parsed = SearchQueryBuilder.parse(text)
-        if (parsed == null && (text.isNotBlank() || filters.isDefault)) return flowOf(SearchResults(emptyList(), 0))
+        if (parsed == null && (text.isNotBlank() || (filters.isDefault && !listAllWhenBlank))) {
+            return flowOf(SearchResults(emptyList(), 0))
+        }
         return db.searchDao().observeHits(SearchSql.hits(parsed, filters, sort))
             .mapLatest { hits -> load(parsed, filters.titleOnly, rank(hits, sort, parsed != null), pageSize) }
             .flowOn(io)

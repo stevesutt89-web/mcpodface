@@ -16,6 +16,8 @@ import java.time.Instant
 import java.util.zip.GZIPOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
+import com.steve.mcpodface.data.db.PlaylistKind
+import com.steve.mcpodface.data.playlist.SmartRules
 import javax.inject.Inject
 
 /**
@@ -127,6 +129,7 @@ class BackupExporter @Inject constructor(
             history = db.listeningSessionDao().backupRows().map { s ->
                 HistoryBackup(s.feedUrl, s.guid, s.startedAt, s.listenedMs, s.speed)
             },
+            playlists = playlistBackups(),
             backfill = db.backfillStateDao().backupRows().map { b ->
                 BackfillBackup(
                     feedUrl = b.feedUrl,
@@ -141,6 +144,25 @@ class BackupExporter @Inject constructor(
                 )
             },
         )
+    }
+
+    private suspend fun playlistBackups(): List<PlaylistBackup> {
+        val feedById = HashMap<Long, String?>()
+        suspend fun feedOf(podcastId: Long) = feedById.getOrPut(podcastId) { db.podcastDao().getById(podcastId)?.feedUrl }
+        return db.playlistDao().getAll().map { pl ->
+            val rules = if (pl.kind == PlaylistKind.SMART) SmartRules.fromJson(pl.rulesJson) else null
+            PlaylistBackup(
+                name = pl.name,
+                kind = pl.kind.name,
+                position = pl.position,
+                items = db.playlistDao().getItems(pl.id).mapNotNull { item ->
+                    val e = db.episodeDao().getById(item.episodeId) ?: return@mapNotNull null
+                    feedOf(e.podcastId)?.let { QueueBackup(it, e.guid) }
+                },
+                rulesJson = rules?.copy(podcastIds = emptyList())?.toJson(),
+                smartPodcastFeeds = rules?.podcastIds?.mapNotNull { feedOf(it) }.orEmpty(),
+            )
+        }
     }
 
     /**

@@ -58,6 +58,9 @@ import com.steve.mcpodface.ui.downloads.DownloadsScreen
 import com.steve.mcpodface.ui.episode.EpisodeScreen
 import com.steve.mcpodface.ui.latest.LatestScreen
 import com.steve.mcpodface.ui.library.HistoryScreen
+import com.steve.mcpodface.ui.playlist.PlaylistScreen
+import com.steve.mcpodface.ui.playlist.SmartPlaylistEditorScreen
+import androidx.navigation.NavDestination.Companion.hasRoute
 import com.steve.mcpodface.ui.library.LibraryScreen
 import com.steve.mcpodface.ui.library.StarredScreen
 import com.steve.mcpodface.ui.player.FullPlayer
@@ -141,10 +144,31 @@ fun AppShell(
                     onOpenPodcast = openPodcast,
                     onOpenStarred = { navController.navigate(StarredRoute) },
                     onOpenHistory = { navController.navigate(HistoryRoute) },
+                    onOpenPlaylist = { id -> navController.navigate(PlaylistRoute(id)) },
+                    onNewSmartPlaylist = { navController.navigate(SmartPlaylistEditorRoute()) },
                 )
             }
             composable<StarredRoute> { StarredScreen(onBack = back, onOpenEpisode = openEpisode) }
             composable<HistoryRoute> { HistoryScreen(onBack = back, onOpenEpisode = openEpisode) }
+            composable<PlaylistRoute> {
+                PlaylistScreen(
+                    onBack = back,
+                    onOpenEpisode = openEpisode,
+                    onEditRules = { id -> navController.navigate(SmartPlaylistEditorRoute(id)) },
+                )
+            }
+            composable<SmartPlaylistEditorRoute> {
+                SmartPlaylistEditorScreen(
+                    onBack = back,
+                    onSaved = { id ->
+                        // A new playlist opens its page in place of the editor; an edited one goes back to it.
+                        navController.popBackStack()
+                        if (navController.currentBackStackEntry?.destination?.hasRoute(PlaylistRoute::class) != true) {
+                            navController.navigate(PlaylistRoute(id))
+                        }
+                    },
+                )
+            }
             composable<DownloadsRoute> { DownloadsScreen(onOpenSettings = openSettings) }
             composable<UpNextRoute> { UpNextScreen(onOpenSettings = openSettings) }
             composable<SearchRoute> {

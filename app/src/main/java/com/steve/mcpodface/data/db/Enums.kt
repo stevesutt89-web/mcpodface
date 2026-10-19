@@ -18,3 +18,6 @@ enum class DownloadState { QUEUED, DOWNLOADING, COMPLETED, FAILED, PAUSED_NETWOR
 enum class DownloadSource { AUTO, MANUAL }
 
 enum class BackfillStatus { PENDING, IN_PROGRESS, COMPLETE, FAILED, PAUSED }
+
+/** Playlists (PLAN.md §8.11). LISTEN_LATER is the built-in one filled by swiping right on a row. */
+enum class PlaylistKind { LISTEN_LATER, MANUAL, SMART }

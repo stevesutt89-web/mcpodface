@@ -6,7 +6,12 @@ import java.nio.ByteOrder
 import kotlin.math.ln
 import kotlin.math.min
 
-enum class StatusFilter { ANY, UNPLAYED, IN_PROGRESS, PLAYED }
+enum class StatusFilter {
+    ANY, UNPLAYED, IN_PROGRESS, PLAYED,
+
+    /** Unplayed or in progress (smart playlists). */
+    NOT_PLAYED,
+}
 
 /** Duration buckets from PLAN.md §7.3, in seconds (upper bound exclusive). */
 enum class DurationFilter(val minSec: Int?, val maxSec: Int?) {
@@ -108,9 +113,13 @@ object SearchSql {
         }
         f.publishedFrom?.let { sql.append("AND e.pubDate >= ? "); args += it }
         f.publishedTo?.let { sql.append("AND e.pubDate < ? "); args += it }
-        if (f.status != StatusFilter.ANY) {
-            sql.append("AND e.playState = ? ")
-            args += f.status.name
+        when (f.status) {
+            StatusFilter.ANY -> Unit
+            StatusFilter.NOT_PLAYED -> sql.append("AND e.playState != 'PLAYED' ")
+            else -> {
+                sql.append("AND e.playState = ? ")
+                args += f.status.name
+            }
         }
         if (f.downloadedOnly) sql.append("AND d.state = 'COMPLETED' ")
         if (f.starredOnly) sql.append("AND e.isStarred = 1 ")
