@@ -141,6 +141,77 @@ interface EpisodeDao {
     /** "Mark all played" on podcast detail. Already-played rows keep their original playedAt. */
     @Query("UPDATE episodes SET playState = 'PLAYED', playedAt = :at WHERE podcastId = :podcastId AND playState != 'PLAYED'")
     suspend fun markAllPlayed(podcastId: Long, at: Long)
+
+    @Query("SELECT COUNT(*) FROM episodes")
+    suspend fun countAll(): Int
+
+    /**
+     * One keyset page of every episode row, ordered by id, for the backup archive (PLAN.md §9).
+     * Keyset paging (id > :afterId) keeps each page cheap however deep it is.
+     */
+    @Query(
+        """
+        SELECT e.id AS id, p.feedUrl AS feedUrl, e.guid AS guid, e.title AS title,
+               e.enclosureUrl AS enclosureUrl, e.pubDate AS pubDate, e.durationSec AS durationSec,
+               e.descriptionHtml AS descriptionHtml
+        FROM episodes e
+        INNER JOIN podcasts p ON p.id = e.podcastId
+        WHERE e.id > :afterId
+        ORDER BY e.id
+        LIMIT :limit
+        """,
+    )
+    suspend fun archivePage(afterId: Long, limit: Int): List<EpisodeArchiveRow>
+
+    /**
+     * Episodes whose user state differs from the default, plus queued episodes and episodes with
+     * listening history (PLAN.md §9). Keyed by feed URL + guid so another phone can match them.
+     */
+    @Query(
+        """
+        SELECT p.feedUrl AS feedUrl, e.guid AS guid, e.enclosureUrl AS enclosureUrl,
+               e.title AS title, e.pubDate AS pubDate, e.durationSec AS durationSec,
+               e.playState AS playState, e.positionMs AS positionMs, e.playedAt AS playedAt,
+               e.lastPlayedAt AS lastPlayedAt, e.isStarred AS isStarred,
+               e.autoDownloadBlocked AS autoDownloadBlocked
+        FROM episodes e
+        INNER JOIN podcasts p ON p.id = e.podcastId
+        WHERE e.playState != 'UNPLAYED' OR e.positionMs > 0 OR e.playedAt IS NOT NULL
+           OR e.lastPlayedAt IS NOT NULL OR e.isStarred = 1 OR e.autoDownloadBlocked = 1
+           OR EXISTS (SELECT 1 FROM queue_items q WHERE q.episodeId = e.id)
+           OR EXISTS (SELECT 1 FROM listening_sessions s WHERE s.episodeId = e.id)
+        ORDER BY e.id
+        """,
+    )
+    suspend fun backupStateRows(): List<EpisodeStateRow>
 }
 
 data class PodcastLastPlayed(val podcastId: Long, val lastPlayedAt: Long)
+
+/** One episode row as written to the backup archive (PLAN.md §9 `archive.jsonl.gz`). */
+data class EpisodeArchiveRow(
+    val id: Long,
+    val feedUrl: String,
+    val guid: String,
+    val title: String,
+    val enclosureUrl: String,
+    val pubDate: Long,
+    val durationSec: Int?,
+    val descriptionHtml: String?,
+)
+
+/** Non-default user state for one episode, keyed by feed URL + guid (PLAN.md §9 `episodes`). */
+data class EpisodeStateRow(
+    val feedUrl: String,
+    val guid: String,
+    val enclosureUrl: String,
+    val title: String,
+    val pubDate: Long,
+    val durationSec: Int?,
+    val playState: PlayState,
+    val positionMs: Long,
+    val playedAt: Long?,
+    val lastPlayedAt: Long?,
+    val isStarred: Boolean,
+    val autoDownloadBlocked: Boolean,
+)
