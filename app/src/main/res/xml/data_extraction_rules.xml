@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Back up only the Room DB and DataStore (PLAN.md §9 "Bonus"). Downloaded audio lives in
-     getExternalFilesDir(Podcasts), which is the "external" domain's Podcasts/ folder (DownloadPaths).
-     It is excluded explicitly in both cloud backup and device transfer (Smart Switch) so the two
-     stay consistent. -->
+<!-- Back up only the Room DB and DataStore (PLAN.md §9 "Bonus"). Only included paths are copied, so
+     downloaded audio (getExternalFilesDir, "external" domain, Podcasts/ via DownloadPaths) is left
+     out of both cloud backup and device transfer (Smart Switch). An explicit exclude for it would
+     fail lint, since it isn't inside an included path. -->
 <data-extraction-rules>
     <cloud-backup>
         <include domain="database" path="." />
         <include domain="file" path="datastore/" />
-        <exclude domain="external" path="Podcasts/" />
     </cloud-backup>
     <device-transfer>
         <include domain="database" path="." />
         <include domain="file" path="datastore/" />
-        <exclude domain="external" path="Podcasts/" />
     </device-transfer>
 </data-extraction-rules>

@@ -1,5 +1,7 @@
 package com.steve.mcpodface.playback
 
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
 import android.media.audiofx.LoudnessEnhancer
 import android.util.Log
 import androidx.media3.common.C
@@ -34,6 +36,7 @@ import javax.inject.Inject
  * position every 10s and on pause, marks episodes played (PLAN.md §6.0), skips outros, and moves
  * on to the next Up Next item (or the next episode of the podcast if autoplay is on) at the end.
  */
+@OptIn(UnstableApi::class) // Media3 APIs marked unstable (ForwardingPlayer, skip silence, session tweaks)
 class PlaybackEngine @Inject constructor(
     private val episodeDao: EpisodeDao,
     private val podcastDao: PodcastDao,

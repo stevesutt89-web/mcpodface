@@ -1,5 +1,7 @@
 package com.steve.mcpodface.playback
 
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
 import android.app.PendingIntent
 import android.content.Intent
 import androidx.media3.common.AudioAttributes
@@ -40,6 +42,7 @@ import javax.inject.Inject
  * id); onSetMediaItems resolves the URI (local file or stream) and the start position.
  */
 @AndroidEntryPoint
+@OptIn(UnstableApi::class) // Media3 APIs marked unstable (ForwardingPlayer, skip silence, session tweaks)
 class PlaybackService : MediaLibraryService() {
 
     @Inject lateinit var okHttpClient: OkHttpClient

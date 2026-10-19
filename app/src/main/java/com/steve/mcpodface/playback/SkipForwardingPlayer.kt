@@ -1,5 +1,7 @@
 package com.steve.mcpodface.playback
 
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.Player
 
@@ -7,6 +9,7 @@ import androidx.media3.common.Player
  * Maps next/previous (Galaxy Buds double/triple press, car and Bluetooth buttons, the lock screen)
  * to skip forward/back by the user's intervals, since we play one episode at a time.
  */
+@OptIn(UnstableApi::class) // Media3 APIs marked unstable (ForwardingPlayer, skip silence, session tweaks)
 class SkipForwardingPlayer(player: Player) : ForwardingPlayer(player) {
     var skipBackMs: Long = 10_000
     var skipForwardMs: Long = 30_000
