@@ -4,18 +4,23 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.steve.mcpodface.data.db.AppDatabase
 import com.steve.mcpodface.data.db.LibraryPodcast
+import com.steve.mcpodface.data.db.PlaylistWithCount
 import com.steve.mcpodface.data.feed.FeedRepository
 import com.steve.mcpodface.data.feed.SubscriptionRepository
+import com.steve.mcpodface.data.playlist.PlaylistRepository
 import com.steve.mcpodface.data.prefs.LibraryLayout
 import com.steve.mcpodface.data.prefs.LibrarySort
 import com.steve.mcpodface.data.prefs.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -63,6 +68,8 @@ fun formatUnplayedBadge(count: Int): String? = when {
 
 data class LibraryUiState(
     val podcasts: List<LibraryPodcast> = emptyList(),
+    /** Listen Later first, then the user's playlists (PLAN.md §8.11). */
+    val playlists: List<PlaylistWithCount> = emptyList(),
     val sort: LibrarySort = LibrarySort.RECENTLY_UPDATED,
     val layout: LibraryLayout = LibraryLayout.GRID,
     /** False until the first emission, so the empty state does not flash. */
@@ -70,23 +77,34 @@ data class LibraryUiState(
     val refreshing: Boolean = false,
 )
 
+/** One-shot navigation from the Library. */
+sealed interface LibraryEvent {
+    data class OpenPlaylist(val playlistId: Long) : LibraryEvent
+}
+
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
     db: AppDatabase,
     private val settings: SettingsRepository,
     private val feeds: FeedRepository,
     private val subscriptions: SubscriptionRepository,
+    private val playlists: PlaylistRepository,
 ) : ViewModel() {
 
     private val refreshing = MutableStateFlow(false)
+
+    private val eventChannel = Channel<LibraryEvent>(Channel.BUFFERED)
+    val events: Flow<LibraryEvent> = eventChannel.receiveAsFlow()
 
     val state: StateFlow<LibraryUiState> = combine(
         db.podcastDao().observeLibrary(),
         settings.settings.map { it.librarySort to it.libraryLayout }.distinctUntilChanged(),
         refreshing,
-    ) { podcasts, (sort, layout), isRefreshing ->
+        playlists.observePlaylists(),
+    ) { podcasts, (sort, layout), isRefreshing, lists ->
         LibraryUiState(
             podcasts = sortLibrary(podcasts, sort),
+            playlists = lists,
             sort = sort,
             layout = layout,
             loaded = true,
@@ -115,5 +133,13 @@ class LibraryViewModel @Inject constructor(
 
     fun unsubscribe(podcastId: Long, deleteDownloads: Boolean) {
         viewModelScope.launch { subscriptions.unsubscribe(podcastId, deleteDownloads) }
+    }
+
+    /** "New playlist": creates a manual playlist, then asks the screen to open it. */
+    fun createPlaylist(name: String) {
+        viewModelScope.launch {
+            val id = playlists.createManual(name)
+            eventChannel.send(LibraryEvent.OpenPlaylist(id))
+        }
     }
 }
