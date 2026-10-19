@@ -151,7 +151,7 @@ fun AddPodcastMenu(onOpenPodcast: (Long) -> Unit) {
 }
 
 @Composable
-private fun ImportProgressDialog(progress: OpmlImportProgress, onHide: () -> Unit) {
+internal fun ImportProgressDialog(progress: OpmlImportProgress, onHide: () -> Unit) {
     GlassDialogScope {
         AlertDialog(
             onDismissRequest = onHide,
@@ -195,7 +195,7 @@ internal fun ImportProgressContent(progress: OpmlImportProgress) {
 }
 
 @Composable
-private fun ImportResultDialog(progress: OpmlImportProgress, onDismiss: () -> Unit) {
+internal fun ImportResultDialog(progress: OpmlImportProgress, onDismiss: () -> Unit) {
     var detailsOpen by rememberSaveable { mutableStateOf(false) }
     AlertDialog(
         onDismissRequest = onDismiss,
