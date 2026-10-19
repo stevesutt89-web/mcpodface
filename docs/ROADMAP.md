@@ -22,10 +22,9 @@ Task IDs match the phases in [`PLAN.md` §14](../PLAN.md#14-phased-delivery).
 
 ## Next
 
-**Check the next round on the phone.** It was written in a cloud session that couldn't reach
-Google's Maven, so it hasn't been compiled or tested yet. Run `compileDebugKotlin`,
-`testDebugUnitTest` and `lintDebug`, then try the swipe, the playlist grid, the settings sections and
-each glass style on both phones.
+**Check the next round on the phone.** It compiles, and all unit tests and `lintDebug` pass, but it
+hasn't run on a device yet. Try the swipe, the playlist grid, the settings sections and each glass
+style on both phones.
 
 Needs real phones:
 - Smoothness on the `fast` build, the first-run notification prompt on Samsung, and the widget's

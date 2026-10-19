@@ -2,9 +2,8 @@
 
 Fourteen changes the user asked for after a day of using the app on the S25 Ultra.
 
-> **Status:** all 14 are written (branch `ccr-6ec0b98b-ma67wv`). They were written in a cloud
-> session with no access to Google's Maven, so they **haven't been compiled or tested yet**. Run
-> `compileDebugKotlin`, `testDebugUnitTest` and `lintDebug` locally first.
+> **Status:** all 14 are built (branch `ccr-6ec0b98b-ma67wv`). `compileDebugKotlin`, all 965 unit
+> tests and `lintDebug` pass. Not yet checked on a phone.
 
 Nothing below this line has been updated since the plan was written. Each item has the request, then notes on where the code lives and how to approach it.
 The work is grouped so parallel agents don't edit the same files (see "Suggested split").
