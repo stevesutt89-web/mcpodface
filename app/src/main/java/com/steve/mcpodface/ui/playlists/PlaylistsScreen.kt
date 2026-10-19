@@ -1,32 +1,38 @@
 package com.steve.mcpodface.ui.playlists
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.PlaylistPlay
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.AutoAwesome
-import androidx.compose.material.icons.outlined.BarChart
-import androidx.compose.material.icons.outlined.ChevronRight
-import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.DownloadForOffline
 import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -44,8 +50,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -57,27 +65,25 @@ import com.steve.mcpodface.data.db.PlaylistKind
 import com.steve.mcpodface.data.db.PlaylistWithCount
 import com.steve.mcpodface.ui.addpodcast.GlassDialogScope
 import com.steve.mcpodface.ui.components.LargeTitleScaffold
-import com.steve.mcpodface.ui.components.SearchButton
 import com.steve.mcpodface.ui.components.SettingsButton
 import com.steve.mcpodface.ui.components.glass.GlassButton
+import com.steve.mcpodface.ui.components.glass.GlassIconButton
 import com.steve.mcpodface.ui.components.glass.GlassPage
 import com.steve.mcpodface.ui.components.glass.GlassStyle
-import com.steve.mcpodface.ui.components.glass.glassCard
+import com.steve.mcpodface.ui.library.ShapedArtwork
 import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
 import com.steve.mcpodface.ui.theme.ThemePreviews
 
 /**
- * Playlists tab (PLAN.md §8.11): Starred, History and Stats rows, then the user's playlists with
- * "New playlist" and "New smart playlist". Search and Settings sit in the top bar.
+ * Playlists tab (PLAN.md §8.11): a two-column grid of mosaic tiles, Starred and Downloads first,
+ * then the user's playlists. "+" in the top bar makes a new playlist or smart playlist.
  */
 @Composable
 fun PlaylistsScreen(
-    onOpenSearch: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenStarred: () -> Unit,
-    onOpenHistory: () -> Unit,
-    onOpenStats: () -> Unit,
+    onOpenDownloads: () -> Unit,
     onOpenPlaylist: (Long) -> Unit,
     onNewSmartPlaylist: () -> Unit,
 ) {
@@ -95,11 +101,9 @@ fun PlaylistsScreen(
 
     PlaylistsContent(
         state = state,
-        onOpenSearch = onOpenSearch,
         onOpenSettings = onOpenSettings,
         onOpenStarred = onOpenStarred,
-        onOpenHistory = onOpenHistory,
-        onOpenStats = onOpenStats,
+        onOpenDownloads = onOpenDownloads,
         onOpenPlaylist = onOpenPlaylist,
         onNewSmartPlaylist = onNewSmartPlaylist,
         onCreatePlaylist = viewModel::createPlaylist,
@@ -110,11 +114,9 @@ fun PlaylistsScreen(
 @Composable
 private fun PlaylistsContent(
     state: PlaylistsUiState,
-    onOpenSearch: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenStarred: () -> Unit,
-    onOpenHistory: () -> Unit,
-    onOpenStats: () -> Unit,
+    onOpenDownloads: () -> Unit,
     onOpenPlaylist: (Long) -> Unit,
     onNewSmartPlaylist: () -> Unit,
     onCreatePlaylist: (String) -> Unit,
@@ -126,12 +128,16 @@ private fun PlaylistsContent(
             title = "Playlists",
             background = Color.Transparent,
             actions = {
-                SearchButton(onOpenSearch)
+                NewPlaylistMenu(
+                    onNewPlaylist = { newPlaylistOpen = true },
+                    onNewSmartPlaylist = onNewSmartPlaylist,
+                )
                 SettingsButton(onOpenSettings)
             },
         ) { padding ->
             val layoutDirection = LocalLayoutDirection.current
-            LazyColumn(
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
                     start = padding.calculateStartPadding(layoutDirection) + Spacing.m,
@@ -139,20 +145,40 @@ private fun PlaylistsContent(
                     end = padding.calculateEndPadding(layoutDirection) + Spacing.m,
                     bottom = padding.calculateBottomPadding(),
                 ),
-                verticalArrangement = Arrangement.spacedBy(Spacing.xs),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.m),
+                verticalArrangement = Arrangement.spacedBy(Spacing.l),
             ) {
-                item(key = "nav-card") {
-                    NavCard(onOpenStarred = onOpenStarred, onOpenHistory = onOpenHistory, onOpenStats = onOpenStats)
+                item(key = "starred") {
+                    PlaylistTile(
+                        title = "Starred",
+                        subtitle = episodeCount(state.starredCount),
+                        artworks = state.starredArtworks,
+                        placeholderIcon = Icons.Outlined.StarOutline,
+                        onClick = onOpenStarred,
+                    )
                 }
-                item(key = "playlists-header") {
-                    SectionHeader("Your playlists")
+                item(key = "downloads") {
+                    PlaylistTile(
+                        title = "Downloads",
+                        subtitle = episodeCount(state.downloadCount),
+                        artworks = state.downloadArtworks,
+                        placeholderIcon = Icons.Outlined.DownloadForOffline,
+                        onClick = onOpenDownloads,
+                    )
                 }
-                item(key = "playlists-card") {
-                    PlaylistsCard(
-                        playlists = state.playlists,
-                        onOpenPlaylist = onOpenPlaylist,
-                        onNewPlaylist = { newPlaylistOpen = true },
-                        onNewSmartPlaylist = onNewSmartPlaylist,
+                items(state.playlists, key = { it.playlist.id }) { entry ->
+                    val playlist = entry.playlist
+                    val isSmart = playlist.kind == PlaylistKind.SMART
+                    PlaylistTile(
+                        title = playlist.name,
+                        subtitle = if (isSmart) "Smart playlist" else episodeCount(entry.itemCount),
+                        artworks = state.artworks[playlist.id].orEmpty(),
+                        placeholderIcon = when (playlist.kind) {
+                            PlaylistKind.MANUAL -> Icons.AutoMirrored.Outlined.PlaylistPlay
+                            // LISTEN_LATER is retired and never listed; it only exists so the enum stays exhaustive.
+                            PlaylistKind.SMART, PlaylistKind.LISTEN_LATER -> Icons.Outlined.AutoAwesome
+                        },
+                        onClick = { onOpenPlaylist(playlist.id) },
                     )
                 }
             }
@@ -170,134 +196,121 @@ private fun PlaylistsContent(
     }
 }
 
-/** Section title above a glass card, same style as the Downloads sections. */
-@Composable
-private fun SectionHeader(title: String) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.titleSmall,
-        color = AppTheme.colors.textSecondary,
-        modifier = Modifier.padding(start = Spacing.m, top = Spacing.s, bottom = Spacing.xs),
-    )
-}
+private fun episodeCount(count: Int) = if (count == 1) "1 episode" else "$count episodes"
 
-/** Starred, History and Stats as one glass card, the rows separated by hairlines. */
+/** The top-bar "+": New playlist or New smart playlist. */
 @Composable
-private fun NavCard(onOpenStarred: () -> Unit, onOpenHistory: () -> Unit, onOpenStats: () -> Unit) {
-    val shape = remember { RoundedRectangle(24.dp) }
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .glassCard(shape)
-            .clip(shape),
-    ) {
-        NavRow(Icons.Outlined.StarOutline, "Starred", onClick = onOpenStarred)
-        HorizontalDivider(
-            modifier = Modifier.padding(start = Spacing.m + 24.dp + Spacing.m),
-            color = AppTheme.colors.hairline,
+private fun NewPlaylistMenu(onNewPlaylist: () -> Unit, onNewSmartPlaylist: () -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    Box {
+        GlassIconButton(
+            icon = Icons.Outlined.Add,
+            contentDescription = "New playlist",
+            onClick = { open = true },
+            size = 40.dp,
+            iconSize = 20.dp,
         )
-        NavRow(Icons.Outlined.History, "History", onClick = onOpenHistory)
-        HorizontalDivider(
-            modifier = Modifier.padding(start = Spacing.m + 24.dp + Spacing.m),
-            color = AppTheme.colors.hairline,
-        )
-        NavRow(Icons.Outlined.BarChart, "Stats", onClick = onOpenStats)
+        DropdownMenu(
+            expanded = open,
+            onDismissRequest = { open = false },
+            shape = RoundedRectangle(20.dp),
+        ) {
+            DropdownMenuItem(
+                text = { Text("New playlist") },
+                leadingIcon = { Icon(Icons.AutoMirrored.Outlined.PlaylistPlay, contentDescription = null) },
+                onClick = {
+                    open = false
+                    onNewPlaylist()
+                },
+            )
+            DropdownMenuItem(
+                text = { Text("New smart playlist") },
+                leadingIcon = { Icon(Icons.Outlined.AutoAwesome, contentDescription = null) },
+                onClick = {
+                    open = false
+                    onNewSmartPlaylist()
+                },
+            )
+        }
     }
 }
 
-/** Starred / History / Stats row: accent icon, label, chevron. */
+/** A square mosaic with the title and a secondary line below, like Spotify's library grid. */
 @Composable
-private fun NavRow(icon: ImageVector, label: String, onClick: () -> Unit) {
+private fun PlaylistTile(
+    title: String,
+    subtitle: String,
+    artworks: List<String>,
+    placeholderIcon: ImageVector,
+    onClick: () -> Unit,
+) {
     val colors = AppTheme.colors
-    Row(
+    Column(
         Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = Spacing.m, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            .clickable(role = Role.Button, onClick = onClick),
     ) {
-        Icon(icon, contentDescription = null, tint = colors.accent, modifier = Modifier.size(24.dp))
-        Spacer(Modifier.width(Spacing.m))
-        Text(
-            label,
-            style = MaterialTheme.typography.bodyLarge,
-            color = colors.textPrimary,
-            modifier = Modifier.weight(1f),
+        PlaylistMosaic(
+            artworks = artworks,
+            placeholderIcon = placeholderIcon,
+            modifier = Modifier.fillMaxWidth().aspectRatio(1f),
         )
-        Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = colors.textSecondary)
+        Spacer(Modifier.height(Spacing.s))
+        Text(
+            title,
+            style = MaterialTheme.typography.titleMedium,
+            color = colors.textPrimary,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            subtitle,
+            style = MaterialTheme.typography.bodySmall,
+            color = colors.textSecondary,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 
 /**
- * The user's playlists (manual with counts, smart marked "Smart"), then the two "New" actions
- * (PLAN.md §8.11). One glass card, hairlines between rows.
+ * Up to four podcast artworks as a 2×2 mosaic. One artwork fills the square; two or three leave
+ * the remaining cells as filled tiles; none shows [placeholderIcon].
  */
 @Composable
-private fun PlaylistsCard(
-    playlists: List<PlaylistWithCount>,
-    onOpenPlaylist: (Long) -> Unit,
-    onNewPlaylist: () -> Unit,
-    onNewSmartPlaylist: () -> Unit,
-) {
-    val shape = remember { RoundedRectangle(24.dp) }
-    val dividerInset = Modifier.padding(start = Spacing.m + 24.dp + Spacing.m)
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .glassCard(shape)
-            .clip(shape),
-    ) {
-        playlists.forEach { entry ->
-            val playlist = entry.playlist
-            val isSmart = playlist.kind == PlaylistKind.SMART
-            PlaylistRow(
-                icon = when (playlist.kind) {
-                    PlaylistKind.MANUAL -> Icons.AutoMirrored.Outlined.PlaylistPlay
-                    // LISTEN_LATER is retired and never listed; it only exists so the enum stays exhaustive.
-                    PlaylistKind.SMART, PlaylistKind.LISTEN_LATER -> Icons.Outlined.AutoAwesome
-                },
-                label = playlist.name,
-                trailing = if (isSmart) "Smart" else entry.itemCount.toString(),
-                onClick = { onOpenPlaylist(playlist.id) },
-            )
-            HorizontalDivider(modifier = dividerInset, color = AppTheme.colors.hairline)
-        }
-        PlaylistRow(Icons.Outlined.Add, "New playlist", trailing = null, onClick = onNewPlaylist)
-        HorizontalDivider(modifier = dividerInset, color = AppTheme.colors.hairline)
-        PlaylistRow(Icons.Outlined.AutoAwesome, "New smart playlist", trailing = null, onClick = onNewSmartPlaylist)
-    }
-}
-
-/** One playlist row: accent icon, name, optional trailing count or "Smart", chevron. */
-@Composable
-private fun PlaylistRow(icon: ImageVector, label: String, trailing: String?, onClick: () -> Unit) {
+private fun PlaylistMosaic(artworks: List<String>, placeholderIcon: ImageVector, modifier: Modifier = Modifier) {
+    val shape = remember { RoundedRectangle(20.dp) }
     val colors = AppTheme.colors
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = Spacing.m, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(icon, contentDescription = null, tint = colors.accent, modifier = Modifier.size(24.dp))
-        Spacer(Modifier.width(Spacing.m))
-        Text(
-            label,
-            style = MaterialTheme.typography.bodyLarge,
-            color = colors.textPrimary,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f),
-        )
-        if (trailing != null) {
-            Text(
-                trailing,
-                style = MaterialTheme.typography.bodySmall,
-                color = colors.textSecondary,
+    Box(modifier.clip(shape).background(colors.surfaceGrouped)) {
+        when (artworks.size) {
+            0 -> Icon(
+                placeholderIcon,
+                contentDescription = null,
+                tint = colors.accent,
+                modifier = Modifier.align(Alignment.Center).size(48.dp),
             )
-            Spacer(Modifier.width(Spacing.xs))
+            1 -> ShapedArtwork(
+                url = artworks.first(),
+                contentDescription = null,
+                shape = RectangleShape,
+                modifier = Modifier.fillMaxSize(),
+            )
+            else -> Column(Modifier.fillMaxSize()) {
+                for (row in 0 until 2) {
+                    Row(Modifier.weight(1f).fillMaxWidth()) {
+                        for (col in 0 until 2) {
+                            val url = artworks.getOrNull(row * 2 + col)
+                            val cell = Modifier.weight(1f).fillMaxHeight()
+                            if (url != null) {
+                                ShapedArtwork(url = url, contentDescription = null, shape = RectangleShape, modifier = cell)
+                            } else {
+                                Box(cell.background(colors.accentSubtle))
+                            }
+                        }
+                    }
+                }
+            }
         }
-        Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = colors.textSecondary)
     }
 }
 
@@ -353,8 +366,13 @@ private fun PlaylistsScreenPreview() {
     AppTheme {
         Surface {
             PlaylistsContent(
-                state = PlaylistsUiState(playlists = previewPlaylists(), loaded = true),
-                onOpenSearch = {}, onOpenSettings = {}, onOpenStarred = {}, onOpenHistory = {}, onOpenStats = {},
+                state = PlaylistsUiState(
+                    playlists = previewPlaylists(),
+                    starredCount = 12,
+                    downloadCount = 1,
+                    loaded = true,
+                ),
+                onOpenSettings = {}, onOpenStarred = {}, onOpenDownloads = {},
                 onOpenPlaylist = {}, onNewSmartPlaylist = {}, onCreatePlaylist = {},
             )
         }

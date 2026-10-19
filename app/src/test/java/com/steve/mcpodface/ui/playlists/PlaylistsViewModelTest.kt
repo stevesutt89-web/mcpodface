@@ -45,13 +45,19 @@ class PlaylistsViewModelTest {
         db.close()
     }
 
-    private fun viewModel() = PlaylistsViewModel(playlists)
+    private fun viewModel() = PlaylistsViewModel(playlists, db.episodeDao(), db.downloadDao())
 
     @Test fun playlistsListManualAndSmartPlaylistsWithCounts() = runTest {
         val mine = playlists.createManual("Mine")
         playlists.createSmart("Fresh", SmartRules())
         val podcastId = db.podcastDao().insert(
-            PodcastEntity(feedUrl = "https://example.com/alpha", title = "Alpha", isSubscribed = true, subscribedAt = NOW),
+            PodcastEntity(
+                feedUrl = "https://example.com/alpha",
+                title = "Alpha",
+                artworkUrl = "https://example.com/alpha.jpg",
+                isSubscribed = true,
+                subscribedAt = NOW,
+            ),
         )
         val episodeId = db.episodeDao().insertAll(
             listOf(
@@ -76,6 +82,13 @@ class PlaylistsViewModelTest {
                 "Mine" to PlaylistKind.MANUAL to 1,
                 "Fresh" to PlaylistKind.SMART to 0,
             ).inOrder()
+        assertThat(state.artworks[mine]).containsExactly("https://example.com/alpha.jpg")
+    }
+
+    @Test fun mosaicTakesTheFirstFourDistinctArtworks() {
+        assertThat(mosaicArtworks(listOf("a", null, "a", "", "b", "c", "b", "d", "e")))
+            .containsExactly("a", "b", "c", "d").inOrder()
+        assertThat(mosaicArtworks(listOf(null, " "))).isEmpty()
     }
 
     @Test fun createPlaylistMakesAManualPlaylistAndAsksToOpenIt() = runTest {
