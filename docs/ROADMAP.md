@@ -16,7 +16,7 @@ Task IDs match the phases in [`PLAN.md` §14](../PLAN.md#14-phased-delivery).
 | 8 Backup | Export to a zip (data, OPML, optional streamed archive) and import (merge or replace) from Settings, via the system file picker |
 | 7 Settings | Global settings, per-podcast settings sheet, preview before a change deletes files, battery-optimisation row, notification prompt |
 | 8.11 Playlists | Playlists tab (Starred, History, Stats, playlists), manual playlists, smart playlists from rules; swipe right adds to Up Next |
-| 9 Extras | Chapters, transcripts, share at timestamp, listening stats, home-screen widget, Android Auto browse tree and voice search, 200k-episode stress test |
+| 9 Extras | Chapters, transcripts, share at timestamp, listening stats, home-screen widget, Android Auto browse tree and voice search, accessibility pass (TalkBack labels and actions, 48dp targets, large fonts), 200k-episode stress test |
 | Design | Liquid Glass pass across the app |
 
 ## Next
@@ -28,5 +28,5 @@ Needs real phones:
 - Android Auto in a car (or the desktop head unit).
 
 Still open from Phase 9:
-- **9.6** Accessibility pass (TalkBack labels, font scaling to 200%).
+- **9.6** A screen-by-screen check at 200% font size (shared components and the player are done).
 - **9.8** Baseline profiles (needs a benchmark module and a connected phone).
