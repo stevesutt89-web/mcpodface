@@ -20,8 +20,9 @@ internal object Palette {
     val Zinc900 = Color(0xFF18181B)
     val Grey950 = Color(0xFF121212)
 
-    val SlateLight = Color(0xFF4A6378)
-    val SlateDark = Color(0xFF9DB4C8)
+    // The accent: a vivid violet (PLAN.md §11, iOS 26 direction). Change it here only.
+    val AccentLight = Color(0xFF6B4EFF)
+    val AccentDark = Color(0xFF9B8CFF)
 
     val ErrorLight = Color(0xFFB3261E)
     val ErrorDark = Color(0xFFF2B8B5)
@@ -46,9 +47,9 @@ data class AppColors(
 )
 
 internal val LightAppColors = AppColors(
-    accent = Palette.SlateLight,
+    accent = Palette.AccentLight,
     onAccent = Palette.White,
-    accentSubtle = Palette.SlateLight.copy(alpha = 0.12f),
+    accentSubtle = Palette.AccentLight.copy(alpha = 0.12f),
     textPrimary = Palette.Zinc900,
     textSecondary = Palette.Zinc500,
     hairline = Palette.Zinc200,
@@ -59,9 +60,9 @@ internal val LightAppColors = AppColors(
 )
 
 internal val DarkAppColors = AppColors(
-    accent = Palette.SlateDark,
+    accent = Palette.AccentDark,
     onAccent = Palette.Zinc900,
-    accentSubtle = Palette.SlateDark.copy(alpha = 0.16f),
+    accentSubtle = Palette.AccentDark.copy(alpha = 0.16f),
     textPrimary = Palette.Zinc100,
     textSecondary = Palette.Zinc400,
     hairline = Palette.Zinc800,

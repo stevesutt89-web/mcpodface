@@ -1,18 +1,36 @@
 package com.steve.mcpodface.ui.navigation
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import com.steve.mcpodface.ui.components.glass.GlassTab
+import com.steve.mcpodface.ui.components.glass.GlassTabBar
+import com.steve.mcpodface.ui.components.glass.LocalChromeBackdrop
+import com.steve.mcpodface.ui.components.glass.LocalChromePadding
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -46,7 +64,6 @@ import com.steve.mcpodface.ui.podcast.PodcastScreen
 import com.steve.mcpodface.ui.queue.UpNextScreen
 import com.steve.mcpodface.ui.search.SearchScreen
 import com.steve.mcpodface.ui.settings.SettingsScreen
-import com.steve.mcpodface.ui.theme.AppTheme
 
 /**
  * Bottom tabs + nav graph. [startTab] is read once at launch (the splash screen waits for it);
@@ -68,6 +85,9 @@ fun AppShell(
     val playerState by playerViewModel.uiState.collectAsStateWithLifecycle()
     var showFullPlayer by rememberSaveable { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
+    // Keeps the last state so the mini player can animate out after playback is cleared.
+    var lastPlayerState by remember { mutableStateOf(playerState) }
+    if (playerState != null) lastPlayerState = playerState
 
     LaunchedEffect(playerViewModel) {
         playerViewModel.messages.collect { message ->
@@ -79,52 +99,19 @@ fun AppShell(
         if (playerState == null) showFullPlayer = false
     }
 
-    Scaffold(
-        // Screens draw their own top bars and handle the status bar inset themselves.
-        contentWindowInsets = WindowInsets(0),
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        bottomBar = {
-            Column {
-                playerState?.let { state ->
-                    MiniPlayer(
-                        state = state,
-                        onOpen = { showFullPlayer = true },
-                        onTogglePlayPause = playerViewModel::togglePlayPause,
-                        onSkipForward = playerViewModel::skipForward,
-                    )
-                }
-                HorizontalDivider(color = AppTheme.colors.hairline)
-                NavigationBar(containerColor = androidx.compose.material3.MaterialTheme.colorScheme.background) {
-                    TopLevelDestination.entries.forEach { dest ->
-                        NavigationBarItem(
-                            selected = dest == currentTop,
-                            onClick = {
-                                onTabSelected(dest.tab)
-                                navController.navigate(dest.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            },
-                            icon = { Icon(dest.icon, contentDescription = null) },
-                            label = { Text(dest.label) },
-                            colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = AppTheme.colors.accent,
-                                selectedTextColor = AppTheme.colors.textPrimary,
-                                indicatorColor = AppTheme.colors.accentSubtle,
-                                unselectedIconColor = AppTheme.colors.textSecondary,
-                                unselectedTextColor = AppTheme.colors.textSecondary,
-                            ),
-                        )
-                    }
-                }
-            }
-        },
-    ) { padding ->
+    val chromeBackdrop = rememberLayerBackdrop()
+    val density = LocalDensity.current
+    var chromeHeight by remember { mutableStateOf(0.dp) }
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
+    // Content fills the whole screen and is recorded into chromeBackdrop; the floating glass
+    // mini player and tab bar sit on top and refract it (PLAN.md §11).
+    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        CompositionLocalProvider(LocalChromePadding provides PaddingValues(bottom = chromeHeight + navBarBottom)) {
         NavHost(
             navController = navController,
             startDestination = TopLevelDestination.of(startTab).route,
-            modifier = Modifier.padding(padding),
+            modifier = Modifier.fillMaxSize().layerBackdrop(chromeBackdrop),
         ) {
             val openSettings = { navController.navigate(SettingsRoute) }
             val openPodcast = { id: Long -> navController.navigate(PodcastRoute(id)) }
@@ -153,6 +140,52 @@ fun AppShell(
             }
             composable<EpisodeRoute> { entry ->
                 EpisodeScreen(episodeId = entry.toRoute<EpisodeRoute>().episodeId, onBack = back, onOpenPodcast = openPodcast)
+            }
+        }
+        }
+
+        SnackbarHost(
+            snackbarHostState,
+            Modifier.align(Alignment.BottomCenter).padding(bottom = chromeHeight + navBarBottom + 4.dp),
+        )
+
+        CompositionLocalProvider(LocalChromeBackdrop provides chromeBackdrop) {
+            Column(
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .navigationBarsPadding()
+                    .padding(horizontal = 14.dp)
+                    .padding(bottom = 6.dp)
+                    .onSizeChanged { chromeHeight = with(density) { it.height.toDp() } + 6.dp },
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                AnimatedVisibility(
+                    visible = playerState != null,
+                    enter = slideInVertically { it } + fadeIn(),
+                    exit = slideOutVertically { it } + fadeOut(),
+                ) {
+                    lastPlayerState?.let { state ->
+                        MiniPlayer(
+                            state = state,
+                            onOpen = { showFullPlayer = true },
+                            onTogglePlayPause = playerViewModel::togglePlayPause,
+                            onSkipForward = playerViewModel::skipForward,
+                        )
+                    }
+                }
+                GlassTabBar(
+                    tabs = remember { TopLevelDestination.entries.map { GlassTab(it.label, it.icon) } },
+                    selectedIndex = currentTop?.ordinal ?: -1,
+                    onSelect = { index ->
+                        val dest = TopLevelDestination.entries[index]
+                        onTabSelected(dest.tab)
+                        navController.navigate(dest.route) {
+                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                )
             }
         }
     }

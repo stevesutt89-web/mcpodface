@@ -129,6 +129,7 @@ dependencies {
     implementation(libs.coil.network.okhttp)
     implementation(libs.reorderable)
     implementation(libs.backdrop)
+    implementation(libs.kyant.shapes)
 
     testImplementation(libs.junit)
     testImplementation(libs.truth)
