@@ -51,3 +51,20 @@ data class DownloadListItem(
     val playedAt: Long?,
     val isStarred: Boolean,
 )
+
+/**
+ * An episode with listening sessions, for the History screen (PLAN.md §8.3). Carries the list-row
+ * columns of [EpisodeListItem] plus when it was last listened to and the total time listened.
+ */
+data class HistoryItem(
+    @Embedded val episode: EpisodeEntity,
+    val podcastTitle: String,
+    val podcastArtworkUrl: String?,
+    /** null when there is no downloads row. */
+    val downloadState: DownloadState?,
+    val downloadBytes: Long?,
+    val inQueue: Boolean,
+    /** Latest session end: max(startedAt + listenedMs). */
+    val lastListenedAt: Long,
+    val totalListenedMs: Long,
+)
