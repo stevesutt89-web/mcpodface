@@ -61,4 +61,6 @@ data class GlobalSettings(
     val apiBudgetDay: Long = 0,
     /** Epoch millis; Podcast Index backfill is paused until then after a 429. */
     val apiPausedUntil: Long = 0,
+    // First run (PLAN.md §12). Set once the POST_NOTIFICATIONS prompt has been shown.
+    val notificationPermissionAsked: Boolean = false,
 )

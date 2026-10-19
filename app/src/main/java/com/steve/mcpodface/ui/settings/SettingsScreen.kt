@@ -65,6 +65,7 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     val importProgress by viewModel.importProgress.collectAsStateWithLifecycle()
     val importHidden by viewModel.importHidden.collectAsStateWithLifecycle()
+    val pendingCleanup by viewModel.pendingCleanup.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val batteryUnrestricted = rememberBatteryUnrestricted()
 
@@ -88,6 +89,16 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
         onExportOpml = { exportPicker.launch(EXPORT_FILE_NAME) },
         onOpenBatterySettings = { openBatterySettings(context) },
     )
+
+    // A setting change that would delete downloads waits here until the user confirms (PLAN.md §6.5).
+    pendingCleanup?.let { pending ->
+        CleanupPreviewDialog(
+            count = pending.count,
+            bytes = pending.bytes,
+            onRemove = viewModel::confirmCleanup,
+            onCancel = viewModel::cancelCleanup,
+        )
+    }
 
     // Same progress and result dialogs as the Search tab's OPML import (the import runs in the app scope).
     val progress = importProgress
@@ -379,9 +390,9 @@ private fun LazyListScope.batterySection(batteryUnrestricted: Boolean, onOpenBat
                 title = "Battery optimisation",
                 onClick = onOpenBatterySettings,
                 subtitle = if (batteryUnrestricted) {
-                    "Unrestricted — background refresh works"
+                    "Unrestricted"
                 } else {
-                    "Restricted — tap to allow background refresh"
+                    "Optimised — background refresh may be delayed"
                 },
                 subtitleColor = if (batteryUnrestricted) {
                     AppTheme.colors.textSecondary
