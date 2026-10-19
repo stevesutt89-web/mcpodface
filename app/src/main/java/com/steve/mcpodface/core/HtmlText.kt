@@ -5,8 +5,19 @@ package com.steve.mcpodface.core
  * Pure Kotlin (no android.text.Html) so it runs in plain JVM tests and workers.
  */
 object HtmlText {
-    /** Full plain text: tags removed, block elements become line breaks, entities decoded, whitespace tidied. */
+    /**
+     * Full plain text: tags removed, block elements become line breaks, entities decoded, whitespace tidied.
+     * Some feeds double-encode their notes (`&lt;b&gt;`), which decodes to literal tags: those get a second pass.
+     */
     fun toPlainText(html: String?): String {
+        val once = strip(html)
+        return if (DOUBLE_ENCODED_TAG.containsMatchIn(once)) strip(once) else once
+    }
+
+    /** Common show-notes tags appearing as text after one pass. */
+    private val DOUBLE_ENCODED_TAG = Regex("""</?(b|i|em|strong|p|br|a|ul|ol|li|div|span|h[1-6]|blockquote|img)(\s[^<>]*)?/?>""", RegexOption.IGNORE_CASE)
+
+    private fun strip(html: String?): String {
         val s = html?.takeIf { it.isNotBlank() } ?: return ""
         val lastGt = s.lastIndexOf('>')
         val out = StringBuilder(s.length)

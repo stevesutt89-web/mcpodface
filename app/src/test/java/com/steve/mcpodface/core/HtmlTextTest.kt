@@ -141,8 +141,10 @@ class HtmlTextTest {
         assertThat(HtmlText.toPlainText("&amp;lt; &amp;amp;")).isEqualTo("&lt; &amp;")
     }
 
-    @Test fun `decoded angle brackets are not re-read as tags`() {
-        assertThat(HtmlText.toPlainText("&lt;p&gt;not a tag&lt;/p&gt;")).isEqualTo("<p>not a tag</p>")
+    @Test fun `double-encoded tags are stripped, other decoded angle brackets stay`() {
+        // Feeds such as Podcasting 2.0 escape their markup twice; showing "<p>" in a summary is worse.
+        assertThat(HtmlText.toPlainText("&lt;p&gt;was a tag&lt;/p&gt;")).isEqualTo("was a tag")
+        assertThat(HtmlText.toPlainText("x &lt;y&gt; z")).isEqualTo("x <y> z")
     }
 
     // ---- whitespace -------------------------------------------------------------------------
@@ -214,5 +216,14 @@ class HtmlTextTest {
     @Test fun `summary of show notes is one line`() {
         val text = HtmlText.toPlainText("<p>Opening line.</p><ul><li>Point A</li><li>Point B</li></ul>")
         assertThat(HtmlText.summary(text)).isEqualTo("Opening line. • Point A • Point B")
+    }
+
+    @Test fun doubleEncodedHtmlIsStrippedToo() {
+        val html = "Adam &amp; Dave go deep &lt;b&gt;ShowNotes&lt;/b&gt; &lt;p&gt;more&lt;/p&gt;"
+        assertThat(HtmlText.toPlainText(html)).isEqualTo("Adam & Dave go deep ShowNotes\n\nmore")
+    }
+
+    @Test fun literalAngleBracketsInTextSurviveTheSecondPassCheck() {
+        assertThat(HtmlText.toPlainText("a &lt; b and c &gt; d")).isEqualTo("a < b and c > d")
     }
 }
