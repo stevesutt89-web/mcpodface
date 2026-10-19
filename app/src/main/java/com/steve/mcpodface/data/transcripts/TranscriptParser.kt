@@ -83,7 +83,7 @@ object TranscriptParser {
     }
 
     private fun sniff(body: String): TranscriptFormat {
-        val head = body.trimStart('﻿', ' ', '\t', '\r', '\n')
+        val head = body.trimStart('\uFEFF', ' ', '\t', '\r', '\n')
         return when {
             head.startsWith("WEBVTT") -> TranscriptFormat.VTT
             head.startsWith("{") || head.startsWith("[") -> TranscriptFormat.JSON

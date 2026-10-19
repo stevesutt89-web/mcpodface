@@ -1,5 +1,11 @@
 package com.steve.mcpodface
 
+import android.app.SearchManager
+import android.content.Intent
+import android.provider.MediaStore
+import com.steve.mcpodface.data.db.EpisodeDao
+import com.steve.mcpodface.playback.BrowseTree
+import com.steve.mcpodface.playback.PlayerController
 import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -40,6 +46,9 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
+    private val browseTree: BrowseTree,
+    private val episodeDao: EpisodeDao,
+    private val playerController: PlayerController,
 ) : ViewModel() {
     /** null until DataStore has loaded; the splash screen stays up until then. */
     val settings: StateFlow<GlobalSettings?> = settingsRepository.settings
@@ -47,6 +56,21 @@ class MainViewModel @Inject constructor(
 
     fun onTabSelected(tab: AppTab) {
         viewModelScope.launch { settingsRepository.update { it.copy(lastTab = tab) } }
+    }
+
+    /**
+     * Voice search from Android Auto or Assistant ("play … on McPodface"): plays the best match,
+     * or resumes the last played episode when the query is blank.
+     */
+    fun playFromSearch(query: String?) {
+        viewModelScope.launch {
+            val id = if (query.isNullOrBlank()) {
+                episodeDao.getLastPlayed()?.id
+            } else {
+                browseTree.search(query).firstOrNull()?.mediaId?.toLongOrNull()
+            }
+            id?.let { playerController.play(it) }
+        }
     }
 
     fun onNotificationPermissionAsked() {
@@ -90,6 +114,7 @@ class MainActivity : ComponentActivity() {
         val splash = installSplashScreen()
         super.onCreate(savedInstanceState)
         splash.setKeepOnScreenCondition { viewModel.settings.value == null }
+        if (savedInstanceState == null) handleIntent(intent)
 
         setContent {
             val settings by viewModel.settings.collectAsStateWithLifecycle()
@@ -109,6 +134,17 @@ class MainActivity : ComponentActivity() {
                 )
                 AppShell(startTab = startTab, onTabSelected = viewModel::onTabSelected)
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        if (intent?.action == MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH) {
+            viewModel.playFromSearch(intent.getStringExtra(SearchManager.QUERY))
         }
     }
 
