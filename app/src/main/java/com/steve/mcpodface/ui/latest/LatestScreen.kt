@@ -2,6 +2,7 @@ package com.steve.mcpodface.ui.latest
 
 import android.content.Intent
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,22 +17,24 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Podcasts
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.StarBorder
+import androidx.compose.material.icons.rounded.FilterList
+import androidx.compose.material.icons.rounded.Podcasts
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -48,16 +51,24 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kyant.shapes.Capsule
 import com.steve.mcpodface.data.db.EpisodeListItem
 import com.steve.mcpodface.data.prefs.LatestFilter
 import com.steve.mcpodface.ui.components.LargeTitleScaffold
+import com.steve.mcpodface.ui.components.glass.GlassChip
+import com.steve.mcpodface.ui.components.glass.GlassIconButton
+import com.steve.mcpodface.ui.components.glass.GlassPage
+import com.steve.mcpodface.ui.components.glass.GlassStyle
+import com.steve.mcpodface.ui.components.glass.glass
 import com.steve.mcpodface.ui.components.previewEpisodeItems
 import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
@@ -128,51 +139,75 @@ private fun LatestContent(
     var menuEpisodeId by rememberSaveable { mutableStateOf<Long?>(null) }
     val menuItem = menuEpisodeId?.let { id -> state.items.firstOrNull { it.episode.id == id } }
 
-    LargeTitleScaffold(
-        title = "Latest",
-        actions = {
-            IconButton(onClick = onOpenSettings) {
-                Icon(Icons.Outlined.Settings, contentDescription = "Settings")
-            }
-        },
-    ) { padding ->
-        Box(Modifier.fillMaxSize().padding(padding)) {
-            PullToRefreshBox(
-                isRefreshing = state.refreshing,
-                onRefresh = onRefresh,
-                modifier = Modifier.fillMaxSize(),
-            ) {
-                LazyColumn(contentPadding = PaddingValues(bottom = Spacing.xl)) {
-                    item(key = "filters") {
-                        FilterChipRow(selected = state.filter, onSelect = onFilterSelected)
-                    }
-                    if (state.loaded && state.items.isEmpty()) {
-                        item(key = "empty") { EmptyState(filter = state.filter) }
-                    }
-                    itemsIndexed(state.items, key = { _, item -> item.episode.id }) { index, item ->
-                        SwipeableEpisodeRow(
-                            item = item,
-                            now = state.now,
-                            isPlaying = state.nowPlaying?.let { it.episodeId == item.episode.id && it.isPlaying } ?: false,
-                            onClick = { onOpenEpisode(item.episode.id) },
-                            onPlayClick = { onTogglePlay(item.episode.id) },
-                            onLongClick = { menuEpisodeId = item.episode.id },
-                            onAddToUpNext = { onAddToUpNext(item) },
-                            onTogglePlayed = { onTogglePlayed(item) },
+    GlassPage {
+        LargeTitleScaffold(
+            title = "Latest",
+            background = Color.Transparent,
+            actions = {
+                GlassIconButton(
+                    icon = Icons.Rounded.Settings,
+                    contentDescription = "Settings",
+                    onClick = onOpenSettings,
+                    size = 40.dp,
+                    iconSize = 20.dp,
+                    modifier = Modifier.padding(end = Spacing.s),
+                )
+            },
+        ) { padding ->
+            val pullState = rememberPullToRefreshState()
+            Box(Modifier.fillMaxSize()) {
+                PullToRefreshBox(
+                    isRefreshing = state.refreshing,
+                    onRefresh = onRefresh,
+                    modifier = Modifier.fillMaxSize(),
+                    state = pullState,
+                    indicator = {
+                        PullToRefreshDefaults.Indicator(
+                            state = pullState,
+                            isRefreshing = state.refreshing,
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .padding(top = padding.calculateTopPadding()),
                         )
-                        if (index < state.items.lastIndex) {
-                            HorizontalDivider(
-                                modifier = Modifier.padding(start = Spacing.m + 56.dp + Spacing.m),
-                                color = AppTheme.colors.hairline,
+                    },
+                ) {
+                    LazyColumn(
+                        contentPadding = PaddingValues(
+                            top = padding.calculateTopPadding(),
+                            bottom = padding.calculateBottomPadding() + Spacing.s,
+                        ),
+                    ) {
+                        item(key = "filters") {
+                            FilterChipRow(selected = state.filter, onSelect = onFilterSelected)
+                        }
+                        if (state.loaded && state.items.isEmpty()) {
+                            item(key = "empty") { EmptyState(filter = state.filter) }
+                        }
+                        itemsIndexed(state.items, key = { _, item -> item.episode.id }) { index, item ->
+                            SwipeableEpisodeRow(
+                                item = item,
+                                now = state.now,
+                                isPlaying = state.nowPlaying?.let { it.episodeId == item.episode.id && it.isPlaying } ?: false,
+                                onClick = { onOpenEpisode(item.episode.id) },
+                                onPlayClick = { onTogglePlay(item.episode.id) },
+                                onLongClick = { menuEpisodeId = item.episode.id },
+                                onAddToUpNext = { onAddToUpNext(item) },
+                                onTogglePlayed = { onTogglePlayed(item) },
                             )
+                            if (index < state.items.lastIndex) {
+                                HorizontalDivider(
+                                    modifier = Modifier.padding(start = Spacing.m + 56.dp + Spacing.m),
+                                    color = AppTheme.colors.hairline,
+                                )
+                            }
                         }
                     }
                 }
+                SnackbarHost(
+                    hostState = snackbarHostState,
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                )
             }
-            SnackbarHost(
-                hostState = snackbarHostState,
-                modifier = Modifier.align(Alignment.BottomCenter),
-            )
         }
     }
 
@@ -193,19 +228,21 @@ internal fun LatestFilter.label(): String = when (this) {
     LatestFilter.DOWNLOADED -> "Downloaded"
 }
 
+/** Filter chips as glass, scrolling horizontally with the list (first item). */
 @Composable
 private fun FilterChipRow(selected: LatestFilter, onSelect: (LatestFilter) -> Unit) {
     Row(
         Modifier
             .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
             .padding(horizontal = Spacing.m, vertical = Spacing.s),
         horizontalArrangement = Arrangement.spacedBy(Spacing.s),
     ) {
         LatestFilter.entries.forEach { filter ->
-            FilterChip(
+            GlassChip(
+                label = filter.label(),
                 selected = filter == selected,
                 onClick = { onSelect(filter) },
-                label = { Text(filter.label()) },
             )
         }
     }
@@ -213,10 +250,10 @@ private fun FilterChipRow(selected: LatestFilter, onSelect: (LatestFilter) -> Un
 
 @Composable
 private fun EmptyState(filter: LatestFilter) {
-    val (title, body) = if (filter == LatestFilter.ALL) {
-        "No episodes yet" to "Subscribe to podcasts from the Search tab."
+    val (icon, title, body) = if (filter == LatestFilter.ALL) {
+        Triple(Icons.Rounded.Podcasts, "No episodes yet", "Subscribe to podcasts from the Search tab.")
     } else {
-        "Nothing here" to "Nothing matches the ${filter.label()} filter."
+        Triple(Icons.Rounded.FilterList, "Nothing here", "Nothing matches the ${filter.label()} filter.")
     }
     Column(
         Modifier
@@ -224,11 +261,20 @@ private fun EmptyState(filter: LatestFilter) {
             .padding(horizontal = Spacing.l, vertical = Spacing.xl),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(title, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
+        Box(
+            Modifier
+                .size(88.dp)
+                .glass(remember { Capsule() }, GlassStyle.Regular),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(icon, contentDescription = null, tint = AppTheme.colors.accent, modifier = Modifier.size(56.dp))
+        }
+        Spacer(Modifier.height(Spacing.m))
+        Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
         Spacer(Modifier.height(Spacing.xs))
         Text(
             body,
-            style = MaterialTheme.typography.bodySmall,
+            style = MaterialTheme.typography.bodyLarge,
             color = AppTheme.colors.textSecondary,
             textAlign = TextAlign.Center,
         )
