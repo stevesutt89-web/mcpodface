@@ -1,29 +1,32 @@
 package com.steve.mcpodface.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.PlaylistAddCheck
-import androidx.compose.material.icons.outlined.DownloadDone
-import androidx.compose.material.icons.outlined.Downloading
-import androidx.compose.material.icons.outlined.ErrorOutline
-import androidx.compose.material.icons.outlined.Star
-import androidx.compose.material.icons.outlined.WifiOff
+import androidx.compose.material.icons.automirrored.rounded.PlaylistAddCheck
+import androidx.compose.material.icons.rounded.DownloadDone
+import androidx.compose.material.icons.rounded.Downloading
+import androidx.compose.material.icons.rounded.ErrorOutline
+import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.WifiOff
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.AnnotatedString
@@ -33,6 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import com.kyant.shapes.Capsule
 import com.steve.mcpodface.data.db.DownloadState
 import com.steve.mcpodface.data.db.EpisodeEntity
 import com.steve.mcpodface.data.db.EpisodeListItem
@@ -89,7 +93,7 @@ fun EpisodeRow(
                 contentDescription = null,
                 size = 56.dp,
             )
-            Spacer(Modifier.width(Spacing.m))
+            Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 Text(
                     text = meta,
@@ -100,7 +104,7 @@ fun EpisodeRow(
                 )
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                     color = if (played) colors.textSecondary else colors.textPrimary,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
@@ -134,29 +138,41 @@ fun EpisodeRow(
                     color = colors.textSecondary,
                 )
             }
+            if (inProgress) {
+                Spacer(Modifier.width(Spacing.s))
+                ProgressBar(progress = progress ?: 0f)
+            }
             Spacer(Modifier.weight(1f))
             item.downloadState?.let { DownloadStateIcon(it) }
             if (episode.isStarred) {
                 Spacer(Modifier.width(Spacing.s))
-                StateIcon(Icons.Outlined.Star, "Starred", colors.textSecondary)
+                StateIcon(Icons.Rounded.Star, "Starred", colors.accent)
             }
             if (item.inQueue) {
                 Spacer(Modifier.width(Spacing.s))
-                StateIcon(Icons.AutoMirrored.Outlined.PlaylistAddCheck, "In Up Next", colors.textSecondary)
+                StateIcon(Icons.AutoMirrored.Rounded.PlaylistAddCheck, "In Up Next", colors.textSecondary)
             }
         }
+    }
+}
 
-        if (inProgress) {
-            LinearProgressIndicator(
-                progress = { progress ?: 0f },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = Spacing.s)
-                    .height(2.dp),
-                color = colors.accent,
-                trackColor = colors.hairline,
-            )
-        }
+/** A 3dp capsule progress bar, shown after the time-left text of an in-progress episode. */
+@Composable
+private fun ProgressBar(progress: Float) {
+    val colors = AppTheme.colors
+    Box(
+        Modifier
+            .width(48.dp)
+            .height(3.dp)
+            .clip(Capsule())
+            .background(colors.textPrimary.copy(alpha = 0.12f)),
+    ) {
+        Box(
+            Modifier
+                .fillMaxHeight()
+                .fillMaxWidth(progress.coerceIn(0f, 1f))
+                .background(colors.accent),
+        )
     }
 }
 
@@ -170,11 +186,11 @@ private fun playProgress(positionMs: Long, durationSec: Int?): Float? {
 private fun DownloadStateIcon(state: DownloadState) {
     val colors = AppTheme.colors
     when (state) {
-        DownloadState.COMPLETED -> StateIcon(Icons.Outlined.DownloadDone, "Downloaded", colors.accent)
-        DownloadState.DOWNLOADING -> StateIcon(Icons.Outlined.Downloading, "Downloading", colors.textSecondary)
-        DownloadState.QUEUED -> StateIcon(Icons.Outlined.Downloading, "Download queued", colors.textSecondary)
-        DownloadState.FAILED -> StateIcon(Icons.Outlined.ErrorOutline, "Download failed", MaterialTheme.colorScheme.error)
-        DownloadState.PAUSED_NETWORK -> StateIcon(Icons.Outlined.WifiOff, "Paused, waiting for network", colors.textSecondary)
+        DownloadState.COMPLETED -> StateIcon(Icons.Rounded.DownloadDone, "Downloaded", colors.accent)
+        DownloadState.DOWNLOADING -> StateIcon(Icons.Rounded.Downloading, "Downloading", colors.textSecondary)
+        DownloadState.QUEUED -> StateIcon(Icons.Rounded.Downloading, "Download queued", colors.textSecondary)
+        DownloadState.FAILED -> StateIcon(Icons.Rounded.ErrorOutline, "Download failed", MaterialTheme.colorScheme.error)
+        DownloadState.PAUSED_NETWORK -> StateIcon(Icons.Rounded.WifiOff, "Paused, waiting for network", colors.textSecondary)
     }
 }
 
@@ -184,7 +200,7 @@ private fun StateIcon(icon: ImageVector, description: String, tint: Color) {
         imageVector = icon,
         contentDescription = description,
         tint = tint,
-        modifier = Modifier.size(18.dp),
+        modifier = Modifier.size(16.dp),
     )
 }
 

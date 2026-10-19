@@ -8,10 +8,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Podcasts
+import androidx.compose.material.icons.rounded.Podcasts
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -19,12 +20,16 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.SubcomposeAsyncImage
+import com.kyant.shapes.RoundedRectangle
 import com.steve.mcpodface.ui.theme.AppTheme
-import com.steve.mcpodface.ui.theme.ArtworkShape
 import com.steve.mcpodface.ui.theme.Spacing
 import com.steve.mcpodface.ui.theme.ThemePreviews
 
-/** Square podcast or episode artwork with rounded corners and a neutral placeholder (PLAN.md §11). */
+/**
+ * Square podcast or episode artwork with continuous rounded corners (PLAN.md §11). The corner
+ * radius scales with the size (18%, at least 8dp) so small thumbnails and large covers both look
+ * right. Shows a neutral placeholder while loading, when there is no URL, or on error.
+ */
 @Composable
 fun Artwork(
     url: String?,
@@ -32,7 +37,9 @@ fun Artwork(
     modifier: Modifier = Modifier,
     size: Dp = 56.dp,
 ) {
-    val frame = modifier.size(size).clip(ArtworkShape)
+    val corner = (size * 0.18f).coerceAtLeast(8.dp)
+    val shape = remember(corner) { RoundedRectangle(corner) }
+    val frame = modifier.size(size).clip(shape)
     if (url.isNullOrBlank()) {
         ArtworkPlaceholder(frame)
     } else {
@@ -54,7 +61,7 @@ private fun ArtworkPlaceholder(modifier: Modifier) {
         contentAlignment = Alignment.Center,
     ) {
         Icon(
-            imageVector = Icons.Outlined.Podcasts,
+            imageVector = Icons.Rounded.Podcasts,
             contentDescription = null,
             tint = AppTheme.colors.textSecondary.copy(alpha = 0.5f),
             modifier = Modifier.fillMaxSize(0.45f),
