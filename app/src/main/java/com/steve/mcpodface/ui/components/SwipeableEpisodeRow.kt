@@ -1,6 +1,14 @@
 package com.steve.mcpodface.ui.components
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,17 +27,23 @@ import androidx.compose.material.icons.rounded.PlaylistRemove
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.semantics.CustomAccessibilityAction
@@ -42,15 +56,31 @@ import com.steve.mcpodface.data.db.PlayState
 import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
 import com.steve.mcpodface.ui.theme.ThemePreviews
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.math.abs
+import kotlin.math.sign
 
 /** Swipe left toggles played: an episode that is played becomes unplayed, anything else becomes played. */
 fun playedToggleTarget(current: PlayState): Boolean = current != PlayState.PLAYED
 
+/** Fraction of the row width a swipe must pass to trigger its action. */
+private const val SWIPE_THRESHOLD = 0.3f
+
+/** A fling faster than this (px/s) in the swipe's direction also triggers it. */
+private const val FLING_VELOCITY = 1_500f
+
+/** How long the row stays off screen before it slides back in from the other side. */
+private const val RETURN_DELAY_MS = 500L
+
+private enum class SwipePhase { IDLE, FLYING, RETURNING }
+
 /**
  * An [EpisodeRow] with swipe actions (PLAN.md §8.2, §8.11). Swipe right toggles Up Next (the
  * strip reads "Up Next" or "Remove from Up Next"). Swipe left toggles played, and is disabled when
- * [onTogglePlayed] is null. The row always springs back: the action runs, and the drag is cancelled
- * by returning false from confirmValueChange.
+ * [onTogglePlayed] is null. Past the threshold the row flies off that side, the action runs, and
+ * about [RETURN_DELAY_MS] later the row slides back in from the other side. Short of it, the row
+ * springs back.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,52 +99,100 @@ fun SwipeableEpisodeRow(
     snippet: AnnotatedString? = null,
     /** Replaces the publish date in the meta line, e.g. "Played 3h ago" in History. */
     dateLabel: String? = null,
+    preferPodcastArtwork: Boolean = true,
 ) {
     val haptics = LocalHapticFeedback.current
     val currentToggleUpNext by rememberUpdatedState(onToggleUpNext)
     val currentTogglePlayed by rememberUpdatedState(onTogglePlayed)
-    val state = rememberSwipeToDismissBoxState(
-        confirmValueChange = { value ->
-            when (value) {
-                SwipeToDismissBoxValue.StartToEnd -> {
-                    haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                    currentToggleUpNext()
-                }
-                SwipeToDismissBoxValue.EndToStart -> currentTogglePlayed?.let {
-                    haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                    it()
-                }
-                SwipeToDismissBoxValue.Settled -> Unit
-            }
-            false
-        },
-    )
+    val scope = rememberCoroutineScope()
+    val offset = remember { Animatable(0f) }
+    var widthPx by remember { mutableFloatStateOf(0f) }
+    var phase by remember { mutableStateOf(SwipePhase.IDLE) }
+    val canSwipeLeft = onTogglePlayed != null
     val playedAfterSwipe = playedToggleTarget(item.episode.playState)
+    // Labels frozen when a swipe commits, so the strip doesn't flip while the action lands.
+    var frozenInUpNext by remember { mutableStateOf<Boolean?>(null) }
+    var frozenPlayedLabel by remember { mutableStateOf<String?>(null) }
 
-    SwipeToDismissBox(
-        state = state,
-        modifier = modifier,
-        enableDismissFromStartToEnd = true,
-        enableDismissFromEndToStart = onTogglePlayed != null,
-        backgroundContent = {
-            SwipeActionBackground(
-                direction = state.dismissDirection,
-                inUpNext = inUpNext,
-                playedLabel = if (playedAfterSwipe) "Played" else "Unplayed",
-            )
-        },
+    val dragState = rememberDraggableState { delta ->
+        if (phase == SwipePhase.IDLE) {
+            val min = if (canSwipeLeft) -widthPx else 0f
+            scope.launch { offset.snapTo((offset.value + delta).coerceIn(min, widthPx)) }
+        }
+    }
+
+    fun settle(velocity: Float) {
+        if (phase != SwipePhase.IDLE) return
+        scope.launch {
+            val value = offset.value
+            val threshold = widthPx * SWIPE_THRESHOLD
+            val fling = abs(velocity) > FLING_VELOCITY && sign(velocity) == sign(value)
+            val toEnd = value > 0f && (value > threshold || fling)
+            val toStart = value < 0f && canSwipeLeft && (-value > threshold || fling)
+            if (!toEnd && !toStart) {
+                offset.animateTo(0f, spring(dampingRatio = Spring.DampingRatioMediumBouncy), velocity)
+                return@launch
+            }
+            phase = SwipePhase.FLYING
+            frozenInUpNext = inUpNext
+            frozenPlayedLabel = if (playedAfterSwipe) "Played" else "Unplayed"
+            haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            val out = if (toEnd) widthPx else -widthPx
+            offset.animateTo(out, tween(durationMillis = 180, easing = FastOutLinearInEasing), velocity)
+            if (toEnd) currentToggleUpNext() else currentTogglePlayed?.invoke()
+            delay(RETURN_DELAY_MS)
+            phase = SwipePhase.RETURNING
+            offset.snapTo(-out)
+            offset.animateTo(0f, spring(dampingRatio = 0.8f, stiffness = Spring.StiffnessMediumLow))
+            phase = SwipePhase.IDLE
+            frozenInUpNext = null
+            frozenPlayedLabel = null
+        }
+    }
+
+    // Which strip is showing; derived so the background only recomposes when it changes.
+    val direction by remember {
+        derivedStateOf {
+            when {
+                phase == SwipePhase.RETURNING || offset.value == 0f -> SwipeToDismissBoxValue.Settled
+                offset.value > 0f -> SwipeToDismissBoxValue.StartToEnd
+                else -> SwipeToDismissBoxValue.EndToStart
+            }
+        }
+    }
+
+    Box(
+        modifier
+            .fillMaxWidth()
+            .clipToBounds()
+            .onSizeChanged { widthPx = it.width.toFloat() }
+            .draggable(
+                state = dragState,
+                orientation = Orientation.Horizontal,
+                enabled = phase == SwipePhase.IDLE,
+                onDragStopped = { velocity -> settle(velocity) },
+            ),
     ) {
+        SwipeActionBackground(
+            direction = direction,
+            inUpNext = frozenInUpNext ?: inUpNext,
+            playedLabel = frozenPlayedLabel ?: if (playedAfterSwipe) "Played" else "Unplayed",
+            modifier = Modifier.matchParentSize(),
+        )
         EpisodeRow(
             item = item,
             onClick = onClick,
             onPlayClick = onPlayClick,
-            modifier = Modifier.background(MaterialTheme.colorScheme.background),
+            modifier = Modifier
+                .graphicsLayer { translationX = offset.value }
+                .background(MaterialTheme.colorScheme.background),
             isPlaying = isPlaying,
             showPodcastTitle = showPodcastTitle,
             snippet = snippet,
             now = now,
             onLongClick = onLongClick,
             dateLabel = dateLabel,
+            preferPodcastArtwork = preferPodcastArtwork,
             customActions = buildList {
                 // TalkBack users can't swipe, so the swipe actions are also custom actions.
                 add(
@@ -147,6 +225,7 @@ internal fun SwipeActionBackground(
     direction: SwipeToDismissBoxValue,
     inUpNext: Boolean,
     playedLabel: String,
+    modifier: Modifier = Modifier.fillMaxSize(),
 ) {
     if (direction == SwipeToDismissBoxValue.Settled) return
     val colors = AppTheme.colors
@@ -162,8 +241,7 @@ internal fun SwipeActionBackground(
     val content = if (fromStart) Color.White else colors.textPrimary
 
     Box(
-        Modifier
-            .fillMaxSize()
+        modifier
             .padding(8.dp)
             .background(container, shape)
             .padding(horizontal = Spacing.l),

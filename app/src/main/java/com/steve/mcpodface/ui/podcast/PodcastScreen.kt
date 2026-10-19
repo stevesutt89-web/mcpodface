@@ -270,6 +270,8 @@ private fun PodcastContent(
                                     onLongClick = { menuEpisodeId = episodeId },
                                     onTogglePlayed = { onTogglePlayed(item) },
                                     showPodcastTitle = false,
+                                    // One podcast's own page keeps per-episode artwork.
+                                    preferPodcastArtwork = false,
                                 )
                                 DropdownMenu(
                                     expanded = menuEpisodeId == episodeId,

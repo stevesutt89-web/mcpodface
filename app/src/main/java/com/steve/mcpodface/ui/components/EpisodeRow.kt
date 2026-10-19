@@ -51,8 +51,11 @@ import com.steve.mcpodface.ui.theme.ThemePreviews
 import androidx.compose.ui.tooling.preview.Preview
 
 /**
- * One episode in a list (PLAN.md §8.2): artwork, meta line, title, summary or search snippet,
- * then a footer with play/progress, duration or time left, and download / star / queue state.
+ * One episode in a list (PLAN.md §8.2). Left: artwork with the play/progress button under it.
+ * Right: the meta line (podcast · date · duration or time left, then download / star / queue
+ * icons), a thin progress bar while in progress, the title, and the summary or search snippet.
+ * Mixed lists show the podcast's artwork so the show is easy to spot; a podcast's own page passes
+ * [preferPodcastArtwork] = false to show per-episode artwork.
  */
 @Composable
 fun EpisodeRow(
@@ -69,6 +72,7 @@ fun EpisodeRow(
     dateLabel: String? = null,
     /** Extra TalkBack actions for the row, e.g. Up Next or Move up / Move down. */
     customActions: List<CustomAccessibilityAction> = emptyList(),
+    preferPodcastArtwork: Boolean = true,
 ) {
     val colors = AppTheme.colors
     val episode = item.episode
@@ -78,23 +82,29 @@ fun EpisodeRow(
 
     val title = episode.title.ifBlank { "Untitled episode" }
     val dateText = dateLabel ?: formatRelativeDate(episode.pubDate, now)
+    val timeText = when (episode.playState) {
+        PlayState.UNPLAYED -> formatDuration(episode.durationSec)
+        PlayState.IN_PROGRESS -> formatTimeLeft(episode.durationSec, episode.positionMs)
+        PlayState.PLAYED -> "Played"
+    }
     val meta = buildList {
         if (showPodcastTitle && item.podcastTitle.isNotBlank()) add(item.podcastTitle)
         add(dateText)
         if (!episode.inCurrentFeed) add("Archived")
+        if (timeText.isNotEmpty()) add(timeText)
     }.joinToString(" · ")
     val summary: AnnotatedString? = snippet?.takeIf { it.text.isNotBlank() }
         ?: episode.summaryText.takeIf { it.isNotBlank() }?.let { AnnotatedString(it) }
-    val footer = when (episode.playState) {
-        PlayState.UNPLAYED -> formatDuration(episode.durationSec)
-        PlayState.IN_PROGRESS -> formatTimeLeft(episode.durationSec, episode.positionMs)
-        PlayState.PLAYED -> "Played"
+    val artworkUrl = if (preferPodcastArtwork) {
+        item.podcastArtworkUrl ?: episode.artworkUrl
+    } else {
+        episode.artworkUrl ?: item.podcastArtworkUrl
     }
     val spokenSummary = episodeSpokenSummary(
         title = title,
         podcastTitle = if (showPodcastTitle) item.podcastTitle else null,
         dateText = dateText,
-        stateText = footer,
+        stateText = timeText,
         downloadLabel = item.downloadState?.let(::downloadStateLabel),
         starred = episode.isStarred,
         inUpNext = item.inQueue,
@@ -118,20 +128,49 @@ fun EpisodeRow(
             .padding(horizontal = Spacing.m, vertical = 12.dp),
     ) {
         Row {
-            Artwork(
-                url = episode.artworkUrl ?: item.podcastArtworkUrl,
-                contentDescription = null,
-                size = 56.dp,
-            )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Artwork(
+                    url = artworkUrl,
+                    contentDescription = null,
+                    size = 56.dp,
+                )
+                Spacer(Modifier.height(Spacing.xs))
+                PlayProgressButton(
+                    progress = progress,
+                    isPlaying = isPlaying,
+                    onClick = onPlayClick,
+                )
+            }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text(
-                    text = meta,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = colors.textSecondary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = meta,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.textSecondary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false),
+                    )
+                    item.downloadState?.let {
+                        Spacer(Modifier.width(Spacing.xs))
+                        DownloadStateIcon(it)
+                    }
+                    if (episode.isStarred) {
+                        Spacer(Modifier.width(Spacing.xs))
+                        StateIcon(Icons.Rounded.Star, "Starred", colors.accent)
+                    }
+                    if (item.inQueue) {
+                        Spacer(Modifier.width(Spacing.xs))
+                        StateIcon(Icons.AutoMirrored.Rounded.PlaylistAddCheck, "In Up Next", colors.textSecondary)
+                    }
+                }
+                if (inProgress) {
+                    ProgressBar(
+                        progress = progress ?: 0f,
+                        modifier = Modifier.padding(top = 3.dp, bottom = 2.dp),
+                    )
+                }
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
@@ -150,49 +189,16 @@ fun EpisodeRow(
                 }
             }
         }
-
-        Row(
-            modifier = Modifier.padding(top = Spacing.s),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            PlayProgressButton(
-                progress = progress,
-                isPlaying = isPlaying,
-                onClick = onPlayClick,
-            )
-            Spacer(Modifier.width(Spacing.s))
-            if (footer.isNotEmpty()) {
-                Text(
-                    text = footer,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = colors.textSecondary,
-                )
-            }
-            if (inProgress) {
-                Spacer(Modifier.width(Spacing.s))
-                ProgressBar(progress = progress ?: 0f)
-            }
-            Spacer(Modifier.weight(1f))
-            item.downloadState?.let { DownloadStateIcon(it) }
-            if (episode.isStarred) {
-                Spacer(Modifier.width(Spacing.s))
-                StateIcon(Icons.Rounded.Star, "Starred", colors.accent)
-            }
-            if (item.inQueue) {
-                Spacer(Modifier.width(Spacing.s))
-                StateIcon(Icons.AutoMirrored.Rounded.PlaylistAddCheck, "In Up Next", colors.textSecondary)
-            }
-        }
     }
 }
 
-/** A 3dp capsule progress bar, shown after the time-left text of an in-progress episode. */
+/** A 3dp capsule progress bar, shown under the meta line of an in-progress episode. */
 @Composable
-private fun ProgressBar(progress: Float) {
+private fun ProgressBar(progress: Float, modifier: Modifier = Modifier) {
     val colors = AppTheme.colors
     Box(
-        Modifier
-            .width(48.dp)
+        modifier
+            .width(64.dp)
             .height(3.dp)
             .clip(Capsule())
             .background(colors.textPrimary.copy(alpha = 0.12f)),
