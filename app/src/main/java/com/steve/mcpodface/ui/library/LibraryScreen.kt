@@ -86,6 +86,7 @@ import com.steve.mcpodface.ui.components.glass.GlassPressSpring
 import com.steve.mcpodface.ui.components.glass.GlassStyle
 import com.steve.mcpodface.ui.components.glass.glass
 import com.steve.mcpodface.ui.components.glass.glassCard
+import com.steve.mcpodface.ui.podcastsettings.PodcastSettingsSheet
 import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
 import com.steve.mcpodface.ui.theme.ThemePreviews
@@ -137,6 +138,7 @@ private fun LibraryContent(
 ) {
     var sortMenuOpen by rememberSaveable { mutableStateOf(false) }
     var actionPodcastId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var settingsPodcastId by rememberSaveable { mutableStateOf<Long?>(null) }
     var unsubscribeId by rememberSaveable { mutableStateOf<Long?>(null) }
     val isGrid = state.layout == LibraryLayout.GRID
     val actionPodcast = actionPodcastId?.let { id -> state.podcasts.firstOrNull { it.podcast.id == id } }
@@ -244,11 +246,18 @@ private fun LibraryContent(
         PodcastActionSheet(
             title = actionPodcast.podcast.title,
             onDismiss = { actionPodcastId = null },
+            onSettings = {
+                settingsPodcastId = actionPodcast.podcast.id
+                actionPodcastId = null
+            },
             onUnsubscribe = {
                 unsubscribeId = actionPodcast.podcast.id
                 actionPodcastId = null
             },
         )
+    }
+    settingsPodcastId?.let { id ->
+        PodcastSettingsSheet(podcastId = id, onDismiss = { settingsPodcastId = null })
     }
     if (unsubscribePodcast != null) {
         UnsubscribeDialog(
@@ -476,10 +485,15 @@ private fun EmptyState() {
     }
 }
 
-/** Long-press menu for a podcast. Podcast settings arrive with task 7.2. */
+/** Long-press menu for a podcast: per-podcast settings and unsubscribe. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun PodcastActionSheet(title: String, onDismiss: () -> Unit, onUnsubscribe: () -> Unit) {
+private fun PodcastActionSheet(
+    title: String,
+    onDismiss: () -> Unit,
+    onSettings: () -> Unit,
+    onUnsubscribe: () -> Unit,
+) {
     val sheetState = rememberModalBottomSheetState()
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
         Column(Modifier.padding(bottom = Spacing.l)) {
@@ -490,7 +504,7 @@ private fun PodcastActionSheet(title: String, onDismiss: () -> Unit, onUnsubscri
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(horizontal = Spacing.m, vertical = Spacing.s),
             )
-            SheetAction(Icons.Outlined.Settings, "Podcast settings (coming soon)", enabled = false) {}
+            SheetAction(Icons.Outlined.Settings, "Podcast settings", onClick = onSettings)
             SheetAction(Icons.Outlined.RemoveCircleOutline, "Unsubscribe", onClick = onUnsubscribe)
         }
     }
