@@ -28,6 +28,9 @@ class QueueRepository @Inject constructor(private val db: AppDatabase) {
 
     suspend fun clear() = dao.clear()
 
+    /** Replaces the whole queue with [episodeIds], in order (Play all / Shuffle on a playlist). */
+    suspend fun replaceAll(episodeIds: List<Long>) = db.withTransaction { dao.replaceAll(episodeIds.distinct()) }
+
     private suspend fun edit(transform: (List<Long>) -> List<Long>) = db.withTransaction {
         val current = dao.getAll().map(QueueItemEntity::episodeId)
         val next = transform(current)
