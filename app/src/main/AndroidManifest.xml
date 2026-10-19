@@ -43,6 +43,19 @@
             </intent-filter>
         </service>
 
+        <!-- Home-screen mini player (PLAN.md §13, task 9.4). -->
+        <receiver
+            android:name=".widget.NowPlayingWidgetReceiver"
+            android:exported="false"
+            android:label="@string/widget_now_playing_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/now_playing_widget_info" />
+        </receiver>
+
         <!-- WorkManager initializes through Hilt's Configuration.Provider in App. -->
         <provider
             android:name="androidx.startup.InitializationProvider"

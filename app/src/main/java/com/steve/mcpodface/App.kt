@@ -12,6 +12,7 @@ import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import dagger.hilt.android.HiltAndroidApp
 import okhttp3.OkHttpClient
 import com.steve.mcpodface.refresh.WorkScheduler
+import com.steve.mcpodface.widget.WidgetUpdater
 import javax.inject.Inject
 
 @HiltAndroidApp
@@ -20,10 +21,12 @@ class App : Application(), Configuration.Provider, SingletonImageLoader.Factory 
     @Inject lateinit var workerFactory: HiltWorkerFactory
     @Inject lateinit var okHttpClient: OkHttpClient
     @Inject lateinit var workScheduler: WorkScheduler
+    @Inject lateinit var widgetUpdater: WidgetUpdater
 
     override fun onCreate() {
         super.onCreate()
         workScheduler.start()
+        widgetUpdater.start()
     }
 
     override val workManagerConfiguration: Configuration
