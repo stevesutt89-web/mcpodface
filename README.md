@@ -13,8 +13,7 @@ Player.fm.
 </p>
 
 > **Status:** in active development. Playback, discovery, subscriptions, refresh, downloads and
-> settings (global and per podcast), episode search and archive backfill work. The backup screens are
-> still to come. See
+> settings (global and per podcast), episode search, archive backfill and backup/restore work. See
 > [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Features
@@ -42,10 +41,12 @@ Player.fm.
   highlighted snippets. Also works within one podcast.
 - **Archive backfill**: slowly fetches older episodes a feed no longer lists (RSS paging, then
   Podcast Index), within a daily API budget.
+- **Backup and restore** to move between phones: one zip with subscriptions, progress, queue,
+  history, settings and (optionally) the episode archive. Merge or replace on import.
 - **Settings** for theme (light / dark / system / pure black), downloads, playback, notifications
   and backup.
 
-**Planned**: full backup and restore between phones, chapters, a widget and Android Auto.
+**Planned (optional extras)**: chapters, transcripts, listening stats, a widget and Android Auto.
 
 ## Design
 
