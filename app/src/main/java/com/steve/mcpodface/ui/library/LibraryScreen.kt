@@ -1,8 +1,10 @@
 package com.steve.mcpodface.ui.library
 
-import androidx.compose.foundation.background
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -10,8 +12,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -20,60 +26,77 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridItemSpanScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.automirrored.outlined.ViewList
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Podcasts
 import androidx.compose.material.icons.outlined.RemoveCircleOutline
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.SubcomposeAsyncImage
+import com.kyant.shapes.Capsule
+import com.kyant.shapes.RoundedRectangle
 import com.steve.mcpodface.data.db.LibraryPodcast
 import com.steve.mcpodface.data.db.PodcastEntity
 import com.steve.mcpodface.data.prefs.LibraryLayout
 import com.steve.mcpodface.data.prefs.LibrarySort
-import com.steve.mcpodface.ui.components.Artwork
 import com.steve.mcpodface.ui.components.LargeTitleScaffold
+import com.steve.mcpodface.ui.components.glass.GlassIconButton
+import com.steve.mcpodface.ui.components.glass.GlassPage
+import com.steve.mcpodface.ui.components.glass.GlassPressSpring
+import com.steve.mcpodface.ui.components.glass.GlassStyle
+import com.steve.mcpodface.ui.components.glass.glass
 import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
 import com.steve.mcpodface.ui.theme.ThemePreviews
 
 private val GRID_GAP = 12.dp
+private val TILE_SHAPE_RADIUS = 16.dp
+private val LIST_ARTWORK_RADIUS = 12.dp
 private val fullRow: LazyGridItemSpanScope.() -> GridItemSpan = { GridItemSpan(maxLineSpan) }
 
 /**
- * Library tab (PLAN.md §8.3): Starred and History rows, then the subscriptions as a 3-column artwork
- * grid or a list. Rows and grid share one LazyVerticalGrid so they scroll together.
+ * Library tab (PLAN.md §8.3): Starred and History rows in a glass card, then the subscriptions as a
+ * 3-column artwork grid or a list. Rows and grid share one LazyVerticalGrid so they scroll together.
  */
 @Composable
 fun LibraryScreen(
@@ -118,69 +141,98 @@ private fun LibraryContent(
     val actionPodcast = actionPodcastId?.let { id -> state.podcasts.firstOrNull { it.podcast.id == id } }
     val unsubscribePodcast = unsubscribeId?.let { id -> state.podcasts.firstOrNull { it.podcast.id == id } }
 
-    LargeTitleScaffold(
-        title = "Library",
-        actions = {
-            Box {
-                IconButton(onClick = { sortMenuOpen = true }) {
-                    Icon(Icons.AutoMirrored.Outlined.Sort, contentDescription = "Sort")
-                }
-                DropdownMenu(expanded = sortMenuOpen, onDismissRequest = { sortMenuOpen = false }) {
-                    LibrarySort.entries.forEach { sort ->
-                        DropdownMenuItem(
-                            text = { Text(sort.label()) },
-                            leadingIcon = { RadioButton(selected = sort == state.sort, onClick = null) },
-                            onClick = {
-                                onSortSelected(sort)
-                                sortMenuOpen = false
-                            },
-                        )
+    GlassPage {
+        LargeTitleScaffold(
+            title = "Library",
+            background = Color.Transparent,
+            actions = {
+                Box(Modifier.padding(end = Spacing.xs)) {
+                    GlassIconButton(
+                        icon = Icons.AutoMirrored.Outlined.Sort,
+                        contentDescription = "Sort",
+                        onClick = { sortMenuOpen = true },
+                        size = 40.dp,
+                        iconSize = 20.dp,
+                    )
+                    DropdownMenu(
+                        expanded = sortMenuOpen,
+                        onDismissRequest = { sortMenuOpen = false },
+                        shape = RoundedRectangle(20.dp),
+                    ) {
+                        LibrarySort.entries.forEach { sort ->
+                            DropdownMenuItem(
+                                text = { Text(sort.label()) },
+                                leadingIcon = { RadioButton(selected = sort == state.sort, onClick = null) },
+                                onClick = {
+                                    onSortSelected(sort)
+                                    sortMenuOpen = false
+                                },
+                            )
+                        }
                     }
                 }
-            }
-            IconButton(onClick = { onLayoutSelected(if (isGrid) LibraryLayout.LIST else LibraryLayout.GRID) }) {
-                if (isGrid) {
-                    Icon(Icons.AutoMirrored.Outlined.ViewList, contentDescription = "Show as list")
-                } else {
-                    Icon(Icons.Outlined.GridView, contentDescription = "Show as grid")
-                }
-            }
-            IconButton(onClick = onOpenSettings) {
-                Icon(Icons.Outlined.Settings, contentDescription = "Settings")
-            }
-        },
-    ) { padding ->
-        PullToRefreshBox(
-            isRefreshing = state.refreshing,
-            onRefresh = onRefresh,
-            modifier = Modifier.fillMaxSize().padding(padding),
-        ) {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(if (isGrid) 3 else 1),
+                GlassIconButton(
+                    icon = if (isGrid) Icons.AutoMirrored.Outlined.ViewList else Icons.Outlined.GridView,
+                    contentDescription = if (isGrid) "Show as list" else "Show as grid",
+                    onClick = { onLayoutSelected(if (isGrid) LibraryLayout.LIST else LibraryLayout.GRID) },
+                    size = 40.dp,
+                    iconSize = 20.dp,
+                    modifier = Modifier.padding(end = Spacing.xs),
+                )
+                GlassIconButton(
+                    icon = Icons.Outlined.Settings,
+                    contentDescription = "Settings",
+                    onClick = onOpenSettings,
+                    size = 40.dp,
+                    iconSize = 20.dp,
+                    modifier = Modifier.padding(end = Spacing.s),
+                )
+            },
+        ) { padding ->
+            val layoutDirection = LocalLayoutDirection.current
+            val pullState = rememberPullToRefreshState()
+            PullToRefreshBox(
+                isRefreshing = state.refreshing,
+                onRefresh = onRefresh,
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(Spacing.m),
-                horizontalArrangement = Arrangement.spacedBy(if (isGrid) GRID_GAP else 0.dp),
-                verticalArrangement = Arrangement.spacedBy(if (isGrid) GRID_GAP else 0.dp),
+                state = pullState,
+                indicator = {
+                    // The bar sits over the content, so drop the indicator below it.
+                    PullToRefreshDefaults.Indicator(
+                        state = pullState,
+                        isRefreshing = state.refreshing,
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(top = padding.calculateTopPadding()),
+                    )
+                },
             ) {
-                item(key = "starred", span = fullRow) {
-                    NavRow(Icons.Outlined.StarOutline, "Starred", onClick = onOpenStarred)
-                }
-                item(key = "history", span = fullRow) {
-                    NavRow(Icons.Outlined.History, "History", onClick = onOpenHistory)
-                }
-                item(key = "top-divider", span = fullRow) {
-                    HorizontalDivider(color = AppTheme.colors.hairline)
-                }
-                if (state.loaded && state.podcasts.isEmpty()) {
-                    item(key = "empty", span = fullRow) { EmptyState() }
-                }
-                items(state.podcasts, key = { it.podcast.id }) { library ->
-                    val onClick = { onOpenPodcast(library.podcast.id) }
-                    val onLongClick = { actionPodcastId = library.podcast.id }
-                    if (isGrid) {
-                        PodcastGridCell(library, onClick = onClick, onLongClick = onLongClick)
-                    } else {
-                        PodcastListRow(library, onClick = onClick, onLongClick = onLongClick)
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(if (isGrid) 3 else 1),
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(
+                        start = padding.calculateStartPadding(layoutDirection) + Spacing.m,
+                        top = padding.calculateTopPadding() + Spacing.s,
+                        end = padding.calculateEndPadding(layoutDirection) + Spacing.m,
+                        bottom = padding.calculateBottomPadding(),
+                    ),
+                    horizontalArrangement = Arrangement.spacedBy(if (isGrid) GRID_GAP else 0.dp),
+                    verticalArrangement = Arrangement.spacedBy(if (isGrid) GRID_GAP else Spacing.xs),
+                ) {
+                    item(key = "nav-card", span = fullRow) {
+                        NavCard(onOpenStarred = onOpenStarred, onOpenHistory = onOpenHistory)
+                    }
+                    if (state.loaded && state.podcasts.isEmpty()) {
+                        item(key = "empty", span = fullRow) { EmptyState() }
+                    }
+                    items(state.podcasts, key = { it.podcast.id }) { library ->
+                        val onClick = { onOpenPodcast(library.podcast.id) }
+                        val onLongClick = { actionPodcastId = library.podcast.id }
+                        if (isGrid) {
+                            PodcastGridCell(library, onClick = onClick, onLongClick = onLongClick)
+                        } else {
+                            PodcastListRow(library, onClick = onClick, onLongClick = onLongClick)
+                        }
                     }
                 }
             }
@@ -215,7 +267,26 @@ private fun LibrarySort.label(): String = when (this) {
     LibrarySort.RECENTLY_ADDED -> "Recently added"
 }
 
-/** Starred / History row: leading icon, label, chevron. */
+/** Starred and History as one glass card, the two rows separated by a hairline. */
+@Composable
+private fun NavCard(onOpenStarred: () -> Unit, onOpenHistory: () -> Unit) {
+    val shape = remember { RoundedRectangle(24.dp) }
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .glass(shape, GlassStyle.Regular)
+            .clip(shape),
+    ) {
+        NavRow(Icons.Outlined.StarOutline, "Starred", onClick = onOpenStarred)
+        HorizontalDivider(
+            modifier = Modifier.padding(start = Spacing.m + 24.dp + Spacing.m),
+            color = AppTheme.colors.hairline,
+        )
+        NavRow(Icons.Outlined.History, "History", onClick = onOpenHistory)
+    }
+}
+
+/** Starred / History row: accent icon, label, chevron. */
 @Composable
 private fun NavRow(icon: ImageVector, label: String, onClick: () -> Unit) {
     val colors = AppTheme.colors
@@ -223,10 +294,10 @@ private fun NavRow(icon: ImageVector, label: String, onClick: () -> Unit) {
         Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(vertical = 14.dp),
+            .padding(horizontal = Spacing.m, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(icon, contentDescription = null, tint = colors.textPrimary, modifier = Modifier.size(24.dp))
+        Icon(icon, contentDescription = null, tint = colors.accent, modifier = Modifier.size(24.dp))
         Spacer(Modifier.width(Spacing.m))
         Text(
             label,
@@ -241,15 +312,42 @@ private fun NavRow(icon: ImageVector, label: String, onClick: () -> Unit) {
 @Composable
 private fun PodcastGridCell(item: LibraryPodcast, onClick: () -> Unit, onLongClick: () -> Unit) {
     val badge = formatUnplayedBadge(item.unplayedCount)
+    val shape = remember { RoundedRectangle(TILE_SHAPE_RADIUS) }
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val scale by animateFloatAsState(if (pressed) 0.96f else 1f, GlassPressSpring, label = "tilePress")
     BoxWithConstraints(
         Modifier
             .fillMaxWidth()
-            .combinedClickable(onClick = onClick, onLongClick = onLongClick),
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+                // Soft lift: the shadow follows the same continuous shape as the artwork.
+                this.shape = shape
+                shadowElevation = 6.dp.toPx()
+                clip = false
+            }
+            .combinedClickable(
+                interactionSource = interaction,
+                indication = null,
+                onClick = onClick,
+                onLongClick = onLongClick,
+            ),
     ) {
         // Square artwork at the cell width; the title is carried by contentDescription only.
-        Artwork(url = item.podcast.artworkUrl, contentDescription = item.podcast.title, size = maxWidth)
+        ShapedArtwork(
+            url = item.podcast.artworkUrl,
+            contentDescription = item.podcast.title,
+            shape = shape,
+            modifier = Modifier.size(maxWidth),
+        )
         if (badge != null) {
-            UnplayedBadge(text = badge, modifier = Modifier.align(Alignment.TopEnd).padding(Spacing.xs))
+            UnplayedBadge(
+                text = badge,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .offset(x = 4.dp, y = (-6).dp),
+            )
         }
     }
 }
@@ -265,7 +363,12 @@ private fun PodcastListRow(item: LibraryPodcast, onClick: () -> Unit, onLongClic
             .padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Artwork(url = item.podcast.artworkUrl, contentDescription = null, size = 56.dp)
+        ShapedArtwork(
+            url = item.podcast.artworkUrl,
+            contentDescription = null,
+            shape = remember { RoundedRectangle(LIST_ARTWORK_RADIUS) },
+            modifier = Modifier.size(56.dp),
+        )
         Spacer(Modifier.width(Spacing.m))
         Column(Modifier.weight(1f)) {
             Text(
@@ -296,18 +399,60 @@ private fun PodcastListRow(item: LibraryPodcast, onClick: () -> Unit, onLongClic
     }
 }
 
-/** Small pill in the top-end corner of a cover: the unplayed count (PLAN.md §8.3). */
+/**
+ * Small accent glass capsule in the top-end corner of a cover: the unplayed count (PLAN.md §8.3).
+ * Prominent glass, so the text is white on the accent.
+ */
 @Composable
 private fun UnplayedBadge(text: String, modifier: Modifier = Modifier) {
-    val colors = AppTheme.colors
     Text(
         text = text,
         style = MaterialTheme.typography.labelSmall,
-        color = colors.onButtonPrimary,
+        color = Color.White,
         maxLines = 1,
         modifier = modifier
-            .background(colors.buttonPrimary, RoundedCornerShape(50))
-            .padding(horizontal = 6.dp, vertical = 1.dp),
+            .glass(remember { Capsule() }, GlassStyle.Prominent)
+            .padding(horizontal = 7.dp, vertical = 2.dp),
+    )
+}
+
+/**
+ * Podcast artwork clipped to [shape]. The shared [com.steve.mcpodface.ui.components.Artwork] only
+ * knows its fixed corner, so tiles that need continuous corners draw their own frame.
+ */
+@Composable
+internal fun ShapedArtwork(
+    url: String?,
+    contentDescription: String?,
+    shape: Shape,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier.clip(shape).background(AppTheme.colors.surfaceGrouped),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (url.isNullOrBlank()) {
+            ArtworkPlaceholderIcon()
+        } else {
+            SubcomposeAsyncImage(
+                model = url,
+                contentDescription = contentDescription,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+                loading = { ArtworkPlaceholderIcon() },
+                error = { ArtworkPlaceholderIcon() },
+            )
+        }
+    }
+}
+
+@Composable
+private fun ArtworkPlaceholderIcon() {
+    Icon(
+        imageVector = Icons.Outlined.Podcasts,
+        contentDescription = null,
+        tint = AppTheme.colors.textSecondary.copy(alpha = 0.5f),
+        modifier = Modifier.fillMaxSize(0.45f),
     )
 }
 

@@ -14,17 +14,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,12 +33,15 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import com.steve.mcpodface.ui.theme.AppButtonDefaults
+import com.kyant.shapes.RoundedRectangle
+import com.steve.mcpodface.ui.components.glass.GlassButton
+import com.steve.mcpodface.ui.components.glass.GlassStyle
 import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
 import com.steve.mcpodface.ui.theme.ThemePreviews
@@ -82,52 +85,55 @@ fun AddByUrlDialog(
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
     val normalized = normalizeFeedUrl(url)
 
-    AlertDialog(
-        onDismissRequest = { if (!working) onDismiss() },
-        title = { Text("Add by URL") },
-        text = {
-            AddByUrlForm(
-                url = url,
-                onUrlChange = { url = it },
-                isPrivate = isPrivate,
-                onPrivateChange = { isPrivate = it },
-                username = username,
-                onUsernameChange = { username = it },
-                password = password,
-                onPasswordChange = { password = it },
-                passwordVisible = passwordVisible,
-                onPasswordVisibleChange = { passwordVisible = it },
-                enabled = !working,
-                error = error,
-            )
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    if (normalized != null) {
-                        val user = username.trim().takeIf { isPrivate && it.isNotEmpty() }
-                        val pass = password.takeIf { isPrivate && user != null && it.isNotEmpty() }
-                        onAdd(normalized, user, pass)
+    GlassDialogScope {
+        AlertDialog(
+            onDismissRequest = { if (!working) onDismiss() },
+            shape = RoundedRectangle(28.dp),
+            title = { Text("Add by URL") },
+            text = {
+                AddByUrlForm(
+                    url = url,
+                    onUrlChange = { url = it },
+                    isPrivate = isPrivate,
+                    onPrivateChange = { isPrivate = it },
+                    username = username,
+                    onUsernameChange = { username = it },
+                    password = password,
+                    onPasswordChange = { password = it },
+                    passwordVisible = passwordVisible,
+                    onPasswordVisibleChange = { passwordVisible = it },
+                    enabled = !working,
+                    error = error,
+                )
+            },
+            confirmButton = {
+                GlassButton(
+                    onClick = {
+                        if (normalized != null) {
+                            val user = username.trim().takeIf { isPrivate && it.isNotEmpty() }
+                            val pass = password.takeIf { isPrivate && user != null && it.isNotEmpty() }
+                            onAdd(normalized, user, pass)
+                        }
+                    },
+                    enabled = !working && normalized != null,
+                    style = GlassStyle.Prominent,
+                ) {
+                    if (working) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            strokeWidth = 2.dp,
+                            color = Color.White,
+                        )
+                        Spacer(Modifier.width(Spacing.s))
                     }
-                },
-                enabled = !working && normalized != null,
-                colors = AppButtonDefaults.primaryColors(),
-            ) {
-                if (working) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(16.dp),
-                        strokeWidth = 2.dp,
-                        color = AppTheme.colors.onButtonPrimary,
-                    )
-                    Spacer(Modifier.width(Spacing.s))
+                    Text("Add")
                 }
-                Text("Add")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !working) { Text("Cancel") }
-        },
-    )
+            },
+            dismissButton = {
+                GlassButton(onClick = onDismiss, enabled = !working) { Text("Cancel") }
+            },
+        )
+    }
 }
 
 /** The dialog body: the URL field, the "Private feed" toggle with credentials, and the error. */
@@ -146,12 +152,20 @@ internal fun AddByUrlForm(
     enabled: Boolean,
     error: String?,
 ) {
+    val fieldShape = remember { RoundedRectangle(14.dp) }
+    val fieldColors = OutlinedTextFieldDefaults.colors(
+        focusedBorderColor = AppTheme.colors.accent,
+        focusedLabelColor = AppTheme.colors.accent,
+        cursorColor = AppTheme.colors.accent,
+    )
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.s)) {
         OutlinedTextField(
             value = url,
             onValueChange = onUrlChange,
             modifier = Modifier.fillMaxWidth(),
             enabled = enabled,
+            shape = fieldShape,
+            colors = fieldColors,
             label = { Text("Feed URL") },
             placeholder = { Text("https://example.com/feed.xml") },
             singleLine = true,
@@ -163,7 +177,12 @@ internal fun AddByUrlForm(
                 .clickable(enabled = enabled) { onPrivateChange(!isPrivate) },
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Checkbox(checked = isPrivate, onCheckedChange = null, enabled = enabled)
+            Checkbox(
+                checked = isPrivate,
+                onCheckedChange = null,
+                enabled = enabled,
+                colors = CheckboxDefaults.colors(checkedColor = AppTheme.colors.accent),
+            )
             Text("Private feed", style = MaterialTheme.typography.bodyLarge)
         }
         if (isPrivate) {
@@ -172,6 +191,8 @@ internal fun AddByUrlForm(
                 onValueChange = onUsernameChange,
                 modifier = Modifier.fillMaxWidth(),
                 enabled = enabled,
+                shape = fieldShape,
+                colors = fieldColors,
                 label = { Text("Username") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
@@ -181,6 +202,8 @@ internal fun AddByUrlForm(
                 onValueChange = onPasswordChange,
                 modifier = Modifier.fillMaxWidth(),
                 enabled = enabled,
+                shape = fieldShape,
+                colors = fieldColors,
                 label = { Text("Password") },
                 singleLine = true,
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
