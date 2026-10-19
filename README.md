@@ -1,3 +1,5 @@
+<img src="docs/icon.png" width="96" alt="McPodface icon" align="right">
+
 # McPodface
 
 A native Android podcast app with a Liquid Glass (iOS 26 style) interface, smart auto-download and
@@ -8,14 +10,12 @@ Player.fm.
 <p>
   <img src="docs/screenshots/latest.jpg" width="200" alt="Latest tab">
   <img src="docs/screenshots/player.jpg" width="200" alt="Full player">
-  <img src="docs/screenshots/library.jpg" width="200" alt="Library tab">
-  <img src="docs/screenshots/settings.jpg" width="200" alt="Settings">
+  <img src="docs/screenshots/playlists.jpg" width="200" alt="Playlists tab">
+  <img src="docs/screenshots/stats.jpg" width="200" alt="Listening stats">
 </p>
 
-> **Status:** in active development. Playback, discovery, subscriptions, refresh, downloads and
-> settings (global and per podcast), playlists, episode search, archive backfill and backup/restore
-> work. See
-> [docs/ROADMAP.md](docs/ROADMAP.md).
+> **Status:** the planned feature set (PLAN.md phases 0–9) is built. See
+> [docs/ROADMAP.md](docs/ROADMAP.md) for what's left.
 
 ## Features
 
@@ -23,8 +23,9 @@ Player.fm.
 - **Discover**: searches Podcast Index and iTunes together, with Listen Notes as a fallback. Also
   trending and categories, add-by-URL (including password-protected feeds) and OPML import/export.
 - **Latest**: new episodes from all your subscriptions, with All / Unplayed / Downloaded filters.
-- **Library**: subscriptions in a grid or list, with unplayed badges, Starred, and a History of what
-  you've played.
+- **Tabs**: Latest · Library · Playlists · Downloads · Up Next. Search and Settings are glass
+  buttons at the top right of every tab.
+- **Library**: subscriptions in a grid or list, with unplayed badges.
 - **Playback** through Media3: works from the lock screen, notification, Bluetooth and Galaxy Buds.
   - Per-podcast speed, skip intro/outro, trim silence, voice boost and resume rewind.
   - Sleep timer that fades out, adds 5 minutes when you shake the phone, or stops at the end of
@@ -37,9 +38,17 @@ Player.fm.
   - delete played episodes after a delay.
   - Downloads resume where they left off and retry on failure.
 - **Background refresh** with grouped new-episode notifications.
-- **Playlists**: swipe right on any episode to save it to **Listen Later**. Also manual playlists
-  (drag to reorder) and **smart playlists** built from rules (podcasts, unplayed, last N days,
-  downloaded, length, words) that update themselves.
+- **Swipe actions**: swipe right on any episode to add it to (or remove it from) Up Next; swipe left
+  to mark it played or unplayed.
+- **Playlists tab**: Starred, History, listening Stats, manual playlists (drag to reorder) and
+  **smart playlists** built from rules (podcasts, unplayed, last N days, downloaded, length, words)
+  that update themselves.
+- **Chapters and transcripts** (Podcasting 2.0): the current chapter under the title, a chapter
+  list to jump around, and a transcript that follows along and seeks on tap.
+- **Share** an episode, from the player at the current time.
+- **Stats**: listening time, a 30-day chart, streaks, time saved by speed, top podcasts.
+- **Home-screen widget** (Glance) and **Android Auto** (browse Up Next, Latest, Downloads,
+  Podcasts; voice search).
 - **Episode search**, offline, across every episode's title and show notes: phrases, `-exclusions`
   and `OR`, filters (date, status, downloaded, starred, duration), relevance ranking and
   highlighted snippets. Also works within one podcast.
@@ -50,7 +59,6 @@ Player.fm.
 - **Settings** for theme (light / dark / system / pure black), downloads, playback, notifications
   and backup.
 
-**Planned (optional extras)**: chapters, transcripts, listening stats, a widget and Android Auto.
 
 ## Design
 

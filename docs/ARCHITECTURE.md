@@ -17,12 +17,12 @@ data/
   feed/          RssParser, FeedFetcher (conditional GET), EpisodeMerger, FeedRepository, SubscriptionRepository
   episodes/      EpisodeRepository (play state, starring)
   queue/         QueueRepository (Up Next)
-  playlist/      PlaylistRepository (Listen Later, manual, smart), SmartRules
+  playlist/      PlaylistRepository (manual and smart playlists), SmartRules
   backup/        OPML parser, importer, exporter
 domain/policy/   DownloadPolicy, CleanupPolicy, PlayedRule: pure Kotlin, no android.* imports
 download/        EpisodeDownloader, DownloadWorker, DownloadManager facade
 refresh/         RefreshCoordinator, PolicyRunner, refresh/cleanup workers, WorkScheduler
-playback/        PlaybackService, PlaybackEngine, PlayerController, SleepTimer
+playback/        PlaybackService, PlaybackEngine, PlayerController, SleepTimer, BrowseTree (Android Auto)
 ui/
   theme/         colours, typography, AppTheme
   components/    shared composables; glass/ holds the Liquid Glass building blocks
@@ -40,7 +40,7 @@ The on-device Room database is the app's own store. There is no server.
 | `episodes`, `episode_fts` | Every episode ever seen, plus an FTS4 index of titles and show notes |
 | `downloads` | Download state per episode, including tombstones that stop deleted episodes coming back |
 | `queue_items` | Up Next order |
-| `playlists`, `playlist_items` | Listen Later, manual playlists (ordered items) and smart playlists (rules as JSON) |
+| `playlists`, `playlist_items` | Manual playlists (ordered items) and smart playlists (rules as JSON) |
 | `listening_sessions` | Listening history and stats |
 | `backfill_state` | Progress of the slow archive backfill |
 | `recent_searches`, `catalog_cache` | Search history and cached discovery results |
