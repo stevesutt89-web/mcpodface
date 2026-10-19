@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Fallback Show</title>
+    <link>https://fallback.example.com/home</link>
+    <managingEditor>editor@example.com (Managing Editor Name)</managingEditor>
+    <itunes:summary>Channel summary used when description is missing</itunes:summary>
+    <image>
+      <url>https://fallback.example.com/rss-image.jpg</url>
+      <title>Fallback Show</title>
+    </image>
+    <itunes:type>serial</itunes:type>
+    <item>
+      <guid>fb-1</guid>
+      <title>Text-only item, no enclosure: skipped</title>
+      <description>Nothing to play here</description>
+      <pubDate>Mon, 02 Jun 2025 10:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <guid>fb-2</guid>
+      <title>Playable item</title>
+      <itunes:summary>Item summary fallback</itunes:summary>
+      <itunes:image href="https://fallback.example.com/ep2.jpg"/>
+      <itunes:season>2</itunes:season>
+      <itunes:episode>14</itunes:episode>
+      <itunes:duration>1:02:03</itunes:duration>
+      <pubDate>Tue, 03 Jun 2025 10:00:00 GMT</pubDate>
+      <enclosure url="https://cdn.example.com/fb2.mp3" length="42" type="audio/mpeg"/>
+    </item>
+  </channel>
+</rss>

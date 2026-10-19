@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
+  <channel>
+    <title>Media Content Show</title>
+    <link>https://media.example.com/</link>
+    <description>Episodes only carry media:content</description>
+    <item>
+      <guid isPermaLink="false">media-ep-1</guid>
+      <title>Episode via media:content</title>
+      <pubDate>Mon, 02 Jun 2025 10:00:00 +0000</pubDate>
+      <media:content url="https://cdn.example.com/media/ep1.m4a" fileSize="5555" type="audio/x-m4a" medium="audio"/>
+    </item>
+    <item>
+      <guid>media-ep-2</guid>
+      <title>Episode with both enclosure and media:content</title>
+      <pubDate>Mon, 09 Jun 2025 10:00:00 +0000</pubDate>
+      <enclosure url="https://cdn.example.com/enclosure/ep2.mp3" length="777" type="audio/mpeg"/>
+      <media:content url="https://cdn.example.com/media/ep2.mp3" type="audio/mpeg"/>
+    </item>
+    <item>
+      <guid>media-ep-3</guid>
+      <title>Media content with no url attribute: skipped</title>
+      <media:content type="audio/mpeg"/>
+    </item>
+  </channel>
+</rss>

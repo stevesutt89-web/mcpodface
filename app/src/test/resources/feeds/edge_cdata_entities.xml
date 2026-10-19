@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
+  <channel>
+    <title>  CDATA &amp; Entities  </title>
+    <description><![CDATA[<p>Channel <b>HTML</b> description &amp; more</p>]]></description>
+    <item>
+      <guid>cdata-1</guid>
+      <title><![CDATA[Tom &amp; Jerry &lt;3 &#8217;s]]></title>
+      <description><![CDATA[<p>Plain <em>description</em></p>]]></description>
+      <content:encoded><![CDATA[<p>Full <strong>content</strong> wins &amp; stays raw</p>]]></content:encoded>
+      <itunes:summary>Summary should lose to description</itunes:summary>
+      <pubDate>Tue, 03 Jun 2025 08:00:00 GMT</pubDate>
+      <enclosure url="https://cdn.example.com/cdata1.mp3" length="10" type="audio/mpeg"/>
+    </item>
+    <item>
+      <guid>cdata-2</guid>
+      <title>Caf&eacute; &amp; cr&egrave;me &#x2014; &#8220;quoted&#8221; &nbsp;</title>
+      <description>Caf&eacute; &lt;b&gt;bold&lt;/b&gt; &amp;amp; &#39;apostrophe&#39;</description>
+      <itunes:summary>Only summary here</itunes:summary>
+      <pubDate>Wed, 04 Jun 2025 08:00:00 GMT</pubDate>
+      <enclosure url="https://cdn.example.com/cdata2.mp3" length="10" type="audio/mpeg"/>
+    </item>
+    <item>
+      <guid>cdata-3</guid>
+      <title>   </title>
+      <itunes:summary>   </itunes:summary>
+      <pubDate>Thu, 05 Jun 2025 08:00:00 GMT</pubDate>
+      <enclosure url="https://cdn.example.com/cdata3.mp3" length="10" type="audio/mpeg"/>
+    </item>
+  </channel>
+</rss>
