@@ -64,7 +64,12 @@ import com.steve.mcpodface.ui.podcastsettings.PodcastSettingsSheet
 import com.steve.mcpodface.ui.theme.ThemePreviews
 
 @Composable
-fun PodcastScreen(podcastId: Long, onBack: () -> Unit, onOpenEpisode: (Long) -> Unit) {
+fun PodcastScreen(
+    podcastId: Long,
+    onBack: () -> Unit,
+    onOpenEpisode: (Long) -> Unit,
+    onSearch: () -> Unit = {},
+) {
     // The ViewModel reads podcastId from the route; the key keeps one instance per podcast on the back stack.
     val viewModel: PodcastViewModel = hiltViewModel(key = "podcast-$podcastId")
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -72,6 +77,7 @@ fun PodcastScreen(podcastId: Long, onBack: () -> Unit, onOpenEpisode: (Long) -> 
         state = state,
         onBack = onBack,
         onOpenEpisode = onOpenEpisode,
+        onSearch = onSearch,
         onPlayClick = viewModel::togglePlayPause,
         onSubscribe = viewModel::subscribe,
         onUnsubscribe = viewModel::unsubscribe,
@@ -88,6 +94,7 @@ private fun PodcastContent(
     state: PodcastUiState,
     onBack: () -> Unit,
     onOpenEpisode: (Long) -> Unit,
+    onSearch: () -> Unit = {},
     onPlayClick: (Long) -> Unit,
     onSubscribe: () -> Unit,
     onUnsubscribe: (deleteDownloads: Boolean) -> Unit,
@@ -113,12 +120,10 @@ private fun PodcastContent(
             background = Color.Transparent,
             navigationIcon = { BackButton(onClick = onBack) },
             actions = {
-                // TODO(6.3): open search scoped to this podcast (PLAN.md §7). Disabled until then.
                 GlassIconButton(
                     icon = Icons.Rounded.Search,
                     contentDescription = "Search this podcast",
-                    onClick = {},
-                    enabled = false,
+                    onClick = onSearch,
                     size = 40.dp,
                     iconSize = 20.dp,
                 )

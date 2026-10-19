@@ -22,6 +22,8 @@ import kotlinx.serialization.Serializable
 @Serializable data class EpisodeRoute(val episodeId: Long)
 @Serializable data object StarredRoute
 @Serializable data object HistoryRoute
+/** Episode search scoped to one podcast (PLAN.md §7.1). The scope chip can widen it. */
+@Serializable data class EpisodeSearchRoute(val podcastId: Long)
 
 /** The five bottom-bar tabs, in order (PLAN.md §8.1). */
 enum class TopLevelDestination(

@@ -65,6 +65,7 @@ import com.steve.mcpodface.ui.player.MiniPlayer
 import com.steve.mcpodface.ui.player.PlayerViewModel
 import com.steve.mcpodface.ui.podcast.PodcastScreen
 import com.steve.mcpodface.ui.queue.UpNextScreen
+import com.steve.mcpodface.ui.search.EpisodeSearchScreen
 import com.steve.mcpodface.ui.search.SearchScreen
 import com.steve.mcpodface.ui.settings.SettingsScreen
 
@@ -146,10 +147,21 @@ fun AppShell(
             composable<HistoryRoute> { HistoryScreen(onBack = back, onOpenEpisode = openEpisode) }
             composable<DownloadsRoute> { DownloadsScreen(onOpenSettings = openSettings) }
             composable<UpNextRoute> { UpNextScreen(onOpenSettings = openSettings) }
-            composable<SearchRoute> { SearchScreen(onOpenPodcast = openPodcast, onOpenSettings = openSettings) }
+            composable<SearchRoute> {
+                SearchScreen(onOpenPodcast = openPodcast, onOpenEpisode = openEpisode, onOpenSettings = openSettings)
+            }
             composable<SettingsRoute> { SettingsScreen(onBack = back) }
             composable<PodcastRoute> { entry ->
-                PodcastScreen(podcastId = entry.toRoute<PodcastRoute>().podcastId, onBack = back, onOpenEpisode = openEpisode)
+                val podcastId = entry.toRoute<PodcastRoute>().podcastId
+                PodcastScreen(
+                    podcastId = podcastId,
+                    onBack = back,
+                    onOpenEpisode = openEpisode,
+                    onSearch = { navController.navigate(EpisodeSearchRoute(podcastId)) },
+                )
+            }
+            composable<EpisodeSearchRoute> {
+                EpisodeSearchScreen(onBack = back, onOpenEpisode = openEpisode)
             }
             composable<EpisodeRoute> { entry ->
                 EpisodeScreen(episodeId = entry.toRoute<EpisodeRoute>().episodeId, onBack = back, onOpenPodcast = openPodcast)
