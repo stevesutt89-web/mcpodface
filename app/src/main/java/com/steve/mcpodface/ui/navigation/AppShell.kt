@@ -20,10 +20,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.steve.mcpodface.data.prefs.AppTab
 import com.steve.mcpodface.ui.downloads.DownloadsScreen
+import com.steve.mcpodface.ui.episode.EpisodeScreen
 import com.steve.mcpodface.ui.latest.LatestScreen
 import com.steve.mcpodface.ui.library.LibraryScreen
+import com.steve.mcpodface.ui.podcast.PodcastScreen
 import com.steve.mcpodface.ui.queue.UpNextScreen
 import com.steve.mcpodface.ui.search.SearchScreen
 import com.steve.mcpodface.ui.settings.SettingsScreen
@@ -83,12 +86,24 @@ fun AppShell(
             modifier = Modifier.padding(padding),
         ) {
             val openSettings = { navController.navigate(SettingsRoute) }
-            composable<LatestRoute> { LatestScreen(onOpenSettings = openSettings) }
-            composable<LibraryRoute> { LibraryScreen(onOpenSettings = openSettings) }
+            val openPodcast = { id: Long -> navController.navigate(PodcastRoute(id)) }
+            val openEpisode = { id: Long -> navController.navigate(EpisodeRoute(id)) }
+            val back: () -> Unit = { navController.popBackStack() }
+
+            composable<LatestRoute> {
+                LatestScreen(onOpenSettings = openSettings, onOpenPodcast = openPodcast, onOpenEpisode = openEpisode)
+            }
+            composable<LibraryRoute> { LibraryScreen(onOpenSettings = openSettings, onOpenPodcast = openPodcast) }
             composable<DownloadsRoute> { DownloadsScreen() }
             composable<UpNextRoute> { UpNextScreen() }
-            composable<SearchRoute> { SearchScreen() }
-            composable<SettingsRoute> { SettingsScreen(onBack = { navController.popBackStack() }) }
+            composable<SearchRoute> { SearchScreen(onOpenPodcast = openPodcast) }
+            composable<SettingsRoute> { SettingsScreen(onBack = back) }
+            composable<PodcastRoute> { entry ->
+                PodcastScreen(podcastId = entry.toRoute<PodcastRoute>().podcastId, onBack = back, onOpenEpisode = openEpisode)
+            }
+            composable<EpisodeRoute> { entry ->
+                EpisodeScreen(episodeId = entry.toRoute<EpisodeRoute>().episodeId, onBack = back, onOpenPodcast = openPodcast)
+            }
         }
     }
 }

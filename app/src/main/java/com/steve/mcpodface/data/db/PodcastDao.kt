@@ -16,6 +16,10 @@ interface PodcastDao {
     @Update
     suspend fun update(podcast: PodcastEntity)
 
+    /** Removes a preview-only row (cascades to its episodes). Subscribed podcasts are never deleted. */
+    @Query("DELETE FROM podcasts WHERE id = :id AND isSubscribed = 0")
+    suspend fun deleteIfUnsubscribed(id: Long)
+
     @Query("SELECT * FROM podcasts WHERE id = :id")
     suspend fun getById(id: Long): PodcastEntity?
 
