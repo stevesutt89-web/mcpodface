@@ -32,6 +32,15 @@ interface DownloadDao {
     @Query("SELECT * FROM downloads WHERE state = 'COMPLETED'")
     suspend fun getCompleted(): List<DownloadEntity>
 
+    @Query("SELECT d.* FROM downloads d INNER JOIN episodes e ON e.id = d.episodeId WHERE e.podcastId = :podcastId")
+    suspend fun getForPodcast(podcastId: Long): List<DownloadEntity>
+
+    @Query("SELECT DISTINCT e.podcastId FROM downloads d INNER JOIN episodes e ON e.id = d.episodeId")
+    suspend fun podcastIdsWithDownloads(): List<Long>
+
+    @Query("SELECT * FROM downloads")
+    suspend fun getAll(): List<DownloadEntity>
+
     /** Downloads storage header, per-podcast sizes (PLAN.md §8.7), largest first. */
     @Query(
         """

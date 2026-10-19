@@ -11,6 +11,7 @@ import coil3.disk.directory
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import dagger.hilt.android.HiltAndroidApp
 import okhttp3.OkHttpClient
+import com.steve.mcpodface.refresh.WorkScheduler
 import javax.inject.Inject
 
 @HiltAndroidApp
@@ -18,6 +19,12 @@ class App : Application(), Configuration.Provider, SingletonImageLoader.Factory 
 
     @Inject lateinit var workerFactory: HiltWorkerFactory
     @Inject lateinit var okHttpClient: OkHttpClient
+    @Inject lateinit var workScheduler: WorkScheduler
+
+    override fun onCreate() {
+        super.onCreate()
+        workScheduler.start()
+    }
 
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()

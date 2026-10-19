@@ -5,6 +5,8 @@ import com.steve.mcpodface.core.Clock
 import com.steve.mcpodface.data.db.AppDatabase
 import com.steve.mcpodface.data.db.EpisodeOrigin
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Semaphore
@@ -66,13 +68,30 @@ class FeedRepository @Inject constructor(
         }
     }
 
-    /** Refreshes every subscribed podcast, at most 4 feeds at a time (PLAN.md §5). */
-    suspend fun refreshAll(): List<RefreshResult> = coroutineScope {
+    private val _refreshes = MutableSharedFlow<List<RefreshResult>>(extraBufferCapacity = 8)
+
+    /**
+     * Results of refreshes started from the UI (pull-to-refresh, subscribe). The WorkScheduler
+     * applies download/cleanup policies after each (PLAN.md §6.5).
+     */
+    val refreshes: SharedFlow<List<RefreshResult>> = _refreshes
+
+    /**
+     * Refreshes every subscribed podcast, at most 4 feeds at a time (PLAN.md §5). [announce]
+     * publishes the results on [refreshes]; the background worker applies policies itself.
+     */
+    suspend fun refreshAll(announce: Boolean = true): List<RefreshResult> = coroutineScope {
         val gate = Semaphore(4)
-        podcastDao.getSubscribed()
+        val results = podcastDao.getSubscribed()
             .map { p -> async { gate.withPermit { refresh(p.id) } } }
             .awaitAll()
-        // TODO(5.2): run DownloadPolicy per podcast, then one CleanupPolicy pass, then notify.
+        if (announce) _refreshes.tryEmit(results)
+        results
+    }
+
+    /** Announces a single-podcast refresh (e.g. right after subscribing) so policies run for it. */
+    fun announce(result: RefreshResult) {
+        _refreshes.tryEmit(listOf(result))
     }
 
     /**

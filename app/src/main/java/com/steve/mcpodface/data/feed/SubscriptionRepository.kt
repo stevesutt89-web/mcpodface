@@ -8,6 +8,7 @@ import com.steve.mcpodface.data.catalog.CatalogRepository
 import com.steve.mcpodface.data.db.AppDatabase
 import com.steve.mcpodface.data.db.BackfillStateEntity
 import com.steve.mcpodface.data.db.PodcastEntity
+import com.steve.mcpodface.download.DownloadManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,6 +26,7 @@ class SubscriptionRepository @Inject constructor(
     private val db: AppDatabase,
     private val feedRepository: FeedRepository,
     private val catalog: CatalogRepository,
+    private val downloadManager: dagger.Lazy<DownloadManager>,
     private val clock: Clock,
     @ApplicationScope private val appScope: CoroutineScope,
 ) {
@@ -116,8 +118,8 @@ class SubscriptionRepository @Inject constructor(
             }
         }
         appScope.launch {
-            feedRepository.refresh(podcastId)
-            // TODO(5.2): run DownloadPolicy for this podcast once downloads exist.
+            // Policies (auto-download of the latest episodes) run when the result is announced.
+            feedRepository.announce(feedRepository.refresh(podcastId))
             if (podcast.podcastIndexId == null) {
                 catalog.lookupByFeedUrl(podcast.feedUrl)?.let { found ->
                     podcastDao.getById(podcastId)?.let {
@@ -134,13 +136,14 @@ class SubscriptionRepository @Inject constructor(
         }
     }
 
-    /**
-     * Unsubscribes. Episode rows and play history are kept so re-subscribing restores them.
-     * TODO(5.1): when [deleteDownloads] is true, delete this podcast's downloaded files.
-     */
+    /** Unsubscribes. Episode rows and play history are kept so re-subscribing restores them. */
     suspend fun unsubscribe(podcastId: Long, deleteDownloads: Boolean) {
         val podcast = podcastDao.getById(podcastId) ?: return
         podcastDao.update(podcast.copy(isSubscribed = false, subscribedAt = null))
+        if (deleteDownloads) {
+            val ids = db.downloadDao().getForPodcast(podcastId).map { it.episodeId }
+            downloadManager.get().deleteAll(ids)
+        }
     }
 
     private suspend fun insertPlaceholder(url: String, hint: CatalogPodcast?, user: String?, pass: String?): Long {

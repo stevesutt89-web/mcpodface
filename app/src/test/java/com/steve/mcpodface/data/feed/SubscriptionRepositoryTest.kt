@@ -30,6 +30,7 @@ class SubscriptionRepositoryTest {
     private val server = MockWebServer()
     private lateinit var db: AppDatabase
     private val now = 1_800_000_000_000L
+    private val downloads = io.mockk.mockk<com.steve.mcpodface.download.DownloadManager>(relaxed = true)
 
     private val feedXml = """
         <rss version="2.0"><channel><title>Real Title</title>
@@ -65,7 +66,7 @@ class SubscriptionRepositoryTest {
     private fun TestScope.repo(catalog: CatalogRepository = FakeCatalog(null)): SubscriptionRepository {
         val clock = Clock { now }
         val feeds = FeedRepository(db, FeedFetcher(NetworkModule.okHttpClient(), RssParser(), Dispatchers.Unconfined), EpisodeMerger(), clock)
-        return SubscriptionRepository(db, feeds, catalog, clock, TestScope(UnconfinedTestDispatcher(testScheduler)))
+        return SubscriptionRepository(db, feeds, catalog, { downloads }, clock, TestScope(UnconfinedTestDispatcher(testScheduler)))
     }
 
     @Test fun openPreviewStoresUnsubscribedPodcastWithEpisodes() = runTest {
