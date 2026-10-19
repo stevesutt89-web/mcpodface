@@ -13,7 +13,8 @@ Player.fm.
 </p>
 
 > **Status:** in active development. Playback, discovery, subscriptions, refresh, downloads and
-> settings (global and per podcast) work. Episode search, archive backfill and backup are still to come. See
+> settings (global and per podcast), episode search and archive backfill work. The backup screens are
+> still to come. See
 > [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Features
@@ -36,13 +37,15 @@ Player.fm.
   - delete played episodes after a delay.
   - Downloads resume where they left off and retry on failure.
 - **Background refresh** with grouped new-episode notifications.
+- **Episode search**, offline, across every episode's title and show notes: phrases, `-exclusions`
+  and `OR`, filters (date, status, downloaded, starred, duration), relevance ranking and
+  highlighted snippets. Also works within one podcast.
 - **Archive backfill**: slowly fetches older episodes a feed no longer lists (RSS paging, then
   Podcast Index), within a daily API budget.
 - **Settings** for theme (light / dark / system / pure black), downloads, playback, notifications
   and backup.
 
-**Planned**: full-text search of your
-episodes, full backup and restore between phones, chapters, a widget and Android Auto.
+**Planned**: full backup and restore between phones, chapters, a widget and Android Auto.
 
 ## Design
 
