@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<opml version="2.0">
+  <head>
+    <title>Edge &amp; cases</title>
+  </head>
+  <body>
+    <outline text="Folder without xmlUrl">
+      <outline type="rss" text="Nested &amp; Entities" xmlUrl="https://example.com/a?x=1&amp;y=2"/>
+    </outline>
+    <outline type="rss" text="Feed Scheme" xmlUrl="feed://feeds.example.net/feedscheme.xml"/>
+    <outline type="rss" text="Feed Wrapped" xmlUrl="feed://https://wrapped.example.net/rss"/>
+    <outline type="rss" text="Feed Http" xmlUrl="feed://http://insecure.example.net/rss"/>
+    <outline type="rss" text="Pcast" xmlUrl="pcast://pcast.example.net/show"/>
+    <outline type="rss" text="Itpc" xmlUrl="itpc://itpc.example.net/show.xml"/>
+    <outline type="rss" text="Padded" xmlUrl="   https://padded.example.net/feed.xml  "/>
+    <outline type="rss" text="Blank URL" xmlUrl="   "/>
+    <outline type="rss" text="Lower attr" xmlurl="https://lower.example.net/x.xml"/>
+    <outline type="rss" text="Upper attr" XMLURL="https://upper.example.net/y.xml"/>
+    <outline type="rss" text="Ignored text" title="Title wins" xmlUrl="https://title.example.net/t.xml"/>
+    <outline type="rss" text="Caf&#233; &quot;Quoted&quot;" xmlUrl="https://cafe.example.net/c.xml"/>
+    <outline type="rss" text="   " xmlUrl="https://empty-title.example.net/z.xml"/>
+    <outline type="rss" text="Duplicate of first" xmlUrl="https://example.com/a?x=1&amp;y=2"/>
+    <outline type="rss" text="Duplicate via scheme" xmlUrl="https://feeds.example.net/feedscheme.xml"/>
+    <outline type="rss" text="Duplicate of padded" xmlUrl="https://padded.example.net/feed.xml"/>
+  </body>
+</opml>

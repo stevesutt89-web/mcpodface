@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="1.0">
+  <head>
+    <title>Overcast Subscriptions</title>
+    <dateCreated>Thu, 16 Oct 2026 07:45:02 GMT</dateCreated>
+    <ownerName>Steve</ownerName>
+  </head>
+  <body>
+    <outline text="Signal Fires" title="Signal Fires" type="rss" xmlUrl="https://feeds.example.net/signal-fires" htmlUrl="https://signalfires.example.net"/>
+    <outline text="Garden Radio Weekly" title="Garden Radio" type="rss" xmlUrl="https://gardenradio.example.org/rss.xml" htmlUrl="https://gardenradio.example.org/"/>
+    <outline text="Ask Nobody" title="Ask Nobody" type="rss" xmlUrl="https://askno.example.com/podcast.xml" htmlUrl="https://askno.example.com"/>
+  </body>
+</opml>
