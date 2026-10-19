@@ -137,6 +137,7 @@ fun GlassChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     leadingIcon: ImageVector? = null,
+    accent: Color = AppTheme.colors.accent,
 ) {
     val interaction = remember { MutableInteractionSource() }
     val (press, pressModifier) = rememberGlassPress(interaction)
@@ -146,7 +147,7 @@ fun GlassChip(
     Row(
         modifier = modifier
             .then(pressModifier)
-            .glass(shape, style, pressed = press)
+            .glass(shape, style, glassTint(style, accent), pressed = press)
             .clickable(interaction, indication = null, role = Role.Tab, onClick = onClick)
             .defaultMinSize(minHeight = 36.dp)
             .padding(horizontal = 14.dp, vertical = 8.dp),

@@ -297,6 +297,7 @@ private fun EpisodeControls(
             label = "Hide played",
             selected = hidePlayed,
             onClick = { onHidePlayedChange(!hidePlayed) },
+            accent = accent,
         )
     }
 }
