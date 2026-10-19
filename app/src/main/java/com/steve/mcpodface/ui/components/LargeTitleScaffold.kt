@@ -42,7 +42,7 @@ fun LargeTitleScaffold(
         contentWindowInsets = WindowInsets(0),
         topBar = {
             LargeTopAppBar(
-                title = { Text(title, style = MaterialTheme.typography.headlineMedium) },
+                title = { Text(title) }, // M3 animates headlineMedium (expanded) -> titleLarge (collapsed)
                 navigationIcon = navigationIcon,
                 actions = actions,
                 scrollBehavior = scrollBehavior,
