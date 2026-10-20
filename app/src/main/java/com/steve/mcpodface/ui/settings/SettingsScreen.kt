@@ -55,6 +55,7 @@ import com.steve.mcpodface.data.prefs.ThemeMode
 import com.steve.mcpodface.ui.addpodcast.GlassDialogScope
 import com.steve.mcpodface.ui.addpodcast.ImportProgressDialog
 import com.steve.mcpodface.ui.addpodcast.ImportResultDialog
+import com.steve.mcpodface.ui.addpodcast.launchOrToast
 import com.steve.mcpodface.ui.components.BackButton
 import com.steve.mcpodface.ui.components.LargeTitleScaffold
 import com.steve.mcpodface.ui.components.formatBytes
@@ -139,13 +140,13 @@ fun SettingsScreen(
         onOpenStats = onOpenStats,
         onOpenHistory = onOpenHistory,
         onUpdate = viewModel::update,
-        onImportOpml = { importPicker.launch(IMPORT_MIME_TYPES) },
-        onExportOpml = { exportPicker.launch(EXPORT_FILE_NAME) },
+        onImportOpml = { importPicker.launchOrToast(IMPORT_MIME_TYPES, context) },
+        onExportOpml = { exportPicker.launchOrToast(EXPORT_FILE_NAME, context) },
         onOpenBatterySettings = { openBatterySettings(context) },
         archive = archive,
         onBackfillNow = viewModel::backfillNow,
         onExportAll = backup::beginExport,
-        onImportAll = { backupImportPicker.launch(BACKUP_IMPORT_MIME_TYPES) },
+        onImportAll = { backupImportPicker.launchOrToast(BACKUP_IMPORT_MIME_TYPES, context) },
     )
 
     // A setting change that would delete downloads waits here until the user confirms (PLAN.md §6.5).
@@ -164,7 +165,7 @@ fun SettingsScreen(
         onIncludeArchive = backup::setIncludeArchive,
         onExportOptionsConfirm = {
             backup.confirmExportOptions()
-            backupExportPicker.launch(backup.exportFileName())
+            backupExportPicker.launchOrToast(backup.exportFileName(), context)
         },
         onImportModeChange = backup::setImportMode,
         onImportConfirm = backup::startImport,

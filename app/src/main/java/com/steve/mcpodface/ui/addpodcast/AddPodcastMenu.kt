@@ -1,7 +1,10 @@
 package com.steve.mcpodface.ui.addpodcast
 
+import android.content.ActivityNotFoundException
+import android.content.Context
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -111,14 +114,14 @@ fun AddPodcastMenu(onOpenPodcast: (Long) -> Unit) {
                 text = { Text("Import OPML") },
                 onClick = {
                     menuOpen = false
-                    importPicker.launch(IMPORT_MIME_TYPES)
+                    importPicker.launchOrToast(IMPORT_MIME_TYPES, context)
                 },
             )
             DropdownMenuItem(
                 text = { Text("Export OPML") },
                 onClick = {
                     menuOpen = false
-                    exportPicker.launch(EXPORT_FILE_NAME)
+                    exportPicker.launchOrToast(EXPORT_FILE_NAME, context)
                 },
             )
         }
@@ -255,5 +258,14 @@ private fun ImportProgressPreview() {
                 )
             }
         }
+    }
+}
+
+/** Opens a system file picker, telling the user instead of crashing when the phone has none. */
+fun <I> ActivityResultLauncher<I>.launchOrToast(input: I, context: Context) {
+    try {
+        launch(input)
+    } catch (_: ActivityNotFoundException) {
+        Toast.makeText(context, "No file picker app found on this phone", Toast.LENGTH_LONG).show()
     }
 }

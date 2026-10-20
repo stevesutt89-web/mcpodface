@@ -35,13 +35,11 @@ the S25 Ultra; the fixes, Chromecast and links haven't been tried on a phone yet
    casting to a Chromecast (local and downloaded episodes, and back to the phone), a
    `podcast://` link, an Apple Podcasts link (after adding it under Open by default) and Share →
    McPodface with a feed URL.
-2. **Merge PR #1** into `main`.
-3. **Release 1.0:** set `versionName = "1.0.0"` (`versionCode` stays 1), tag `v1.0.0`, and build the
+2. ~~Merge PR #1 into `main`~~ (done).
+3. **Release 1.0:** `versionName` is now `1.0.0` (`versionCode` stays 1); once the phone checks pass, tag `v1.0.0`, and build the
    signed APK on the PC, following [BUILDING.md §6](BUILDING.md#6-release-a-signed-apk-to-install-like-a-normal-app).
 
-Known bug: **Import OPML crashes when the phone has no file picker app**: the picker launch in
-`ui/settings/SettingsScreen.kt` (and the Search "+" menu's import) doesn't catch
-`ActivityNotFoundException`. It doesn't happen on the Samsungs, which have a file picker.
+Import OPML and the backup pickers now show a message instead of crashing when the phone has no file picker app.
 
 Feature ideas, roughly in order (from a comparison with Pocket Casts and Player.fm):
 - **Bookmarks:** save a moment in an episode with a note; jump back or share it.
