@@ -67,12 +67,12 @@ To target one device when several are connected, set `ANDROID_SERIAL`, e.g.
 | `release` | `com.steve.mcpodface` | Signed with your release keystore. (R8 minification is currently off.) Installs alongside the debug app |
 
 Back up the release keystore and its passwords somewhere off the machine. Without them you can't
-install an update over an existing release install.
+install an update over an existing release install. See **Release** below.
 
 ## 4. Tests
 
 ```sh
-./gradlew :app:testDebugUnitTest     # JVM + Robolectric (about 550 tests)
+./gradlew :app:testDebugUnitTest     # JVM + Robolectric (about 1,000 tests)
 ./gradlew :app:lintDebug
 ```
 
@@ -100,6 +100,73 @@ adb shell cmd jobscheduler run -f com.steve.mcpodface.debug <jobId>
 ```
 
 Find the job ID with `adb shell dumpsys jobscheduler | grep mcpodface`.
+
+## 6. Release (a signed APK to install like a normal app)
+
+Do steps 1 and 2 once. Keep the keystore and passwords on your own machine: never commit them
+or paste them into a cloud session.
+
+**1. Create the release keystore.** Skip this if you already have one.
+
+```sh
+"/c/Program Files/Android/Android Studio/jbr/bin/keytool" -genkeypair -v \
+  -keystore ~/mcpodface-release.jks -alias mcpodface \
+  -keyalg RSA -keysize 4096 -validity 10000
+```
+
+**Back up the `.jks` file and both passwords** (password manager, cloud drive). Every future
+update must be signed with this same key, on both phones. If it's lost, the only way to update is
+to uninstall, which deletes the app's data.
+
+**2. Add it to `local.properties`** (git-ignored):
+
+```properties
+RELEASE_STORE_FILE=C:/Users/you/mcpodface-release.jks
+RELEASE_STORE_PASSWORD=...
+RELEASE_KEY_ALIAS=mcpodface
+RELEASE_KEY_PASSWORD=...
+```
+
+**3. Set the version** in `app/build.gradle.kts` (`defaultConfig`), and commit it:
+
+```kotlin
+versionCode = 1          // a whole number; add 1 for every release after this
+versionName = "1.0.0"    // what Settings → About shows
+```
+
+Android only installs an update over an existing install if its `versionCode` is higher.
+
+**4. Check, then build:**
+
+```sh
+./gradlew :app:testDebugUnitTest :app:lintDebug
+./gradlew :app:assembleRelease
+```
+
+The APK is `app/build/outputs/apk/release/app-release.apk`. Confirm it's signed with your key:
+
+```sh
+"$ANDROID_HOME/build-tools/<version>/apksigner" verify --print-certs app/build/outputs/apk/release/app-release.apk
+```
+
+**5. Install it.** Either `./gradlew :app:installRelease` with a phone connected, or copy the APK
+to the phone and tap it. The first time, Android asks you to allow installs from that app (Files,
+Chrome), and Play Protect may offer to scan it; both are normal for apps from outside the Play
+Store. Install on both phones from the same APK.
+
+**6. Move your data over.** The release app (`com.steve.mcpodface`) is separate from the debug app
+(`com.steve.mcpodface.debug`) and starts empty. In the debug app use Settings → Backup and
+transfer → Export all data, then Import all data in the release app. After that the debug app
+can be uninstalled.
+
+**7. Tag the release** so you can find the code later:
+
+```sh
+git tag v1.0.0 && git push origin v1.0.0
+```
+
+For the next release: bump `versionCode` and `versionName`, then repeat steps 4, 5 and 7.
+Updates install over the existing app and keep its data.
 
 ## Database migrations
 
