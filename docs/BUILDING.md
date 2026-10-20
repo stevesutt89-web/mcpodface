@@ -168,6 +168,22 @@ git tag v1.0.0 && git push origin v1.0.0
 For the next release: bump `versionCode` and `versionName`, then repeat steps 4, 5 and 7.
 Updates install over the existing app and keep its data.
 
+## Releases on GitHub (automatic)
+
+Pushing a tag like `v1.0.0` runs `.github/workflows/release.yml`: it runs the unit tests, builds the
+signed APK and publishes it as a GitHub Release anyone can download. Running the workflow by hand
+(Actions tab) builds the APK as a downloadable artifact without publishing.
+
+One-time setup, under the repo's Settings -> Secrets and variables -> Actions:
+
+| Secret | Value |
+|---|---|
+| `RELEASE_KEYSTORE_BASE64` | the keystore as base64: `base64 -w0 ~/mcpodface-release.jks` |
+| `RELEASE_STORE_PASSWORD`, `RELEASE_KEY_ALIAS`, `RELEASE_KEY_PASSWORD` | the same values as in `local.properties` |
+| `PODCASTINDEX_KEY`, `PODCASTINDEX_SECRET`, `LISTENNOTES_KEY` | optional: search keys, as in `local.properties` |
+
+Bump `versionCode` and `versionName` before tagging; the APK is named from `versionName`.
+
 ## Cloud sessions (Claude Code on the web)
 
 The container has no Android SDK. With `dl.google.com` allowed in the environment's network

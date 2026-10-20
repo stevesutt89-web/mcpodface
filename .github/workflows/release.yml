@@ -1,0 +1,78 @@
+name: Release APK
+
+# Push a tag like v1.0.0 to build a signed APK and publish it as a GitHub Release.
+# Run manually (Actions tab -> Run workflow) to just get the APK as a build artifact.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Install Android SDK platform 37
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-37.0" "build-tools;37.0.0"
+
+      - name: Write signing config and API keys
+        env:
+          KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+          PODCASTINDEX_KEY: ${{ secrets.PODCASTINDEX_KEY }}
+          PODCASTINDEX_SECRET: ${{ secrets.PODCASTINDEX_SECRET }}
+          LISTENNOTES_KEY: ${{ secrets.LISTENNOTES_KEY }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::Secret RELEASE_KEYSTORE_BASE64 is not set; an unsigned APK can't be installed."
+            exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          {
+            echo "sdk.dir=$ANDROID_HOME"
+            echo "RELEASE_STORE_FILE=$RUNNER_TEMP/release.jks"
+            echo "RELEASE_STORE_PASSWORD=$STORE_PASSWORD"
+            echo "RELEASE_KEY_ALIAS=$KEY_ALIAS"
+            echo "RELEASE_KEY_PASSWORD=$KEY_PASSWORD"
+            echo "PODCASTINDEX_KEY=$PODCASTINDEX_KEY"
+            echo "PODCASTINDEX_SECRET=$PODCASTINDEX_SECRET"
+            echo "LISTENNOTES_KEY=$LISTENNOTES_KEY"
+          } > local.properties
+
+      - name: Unit tests
+        run: bash ./gradlew :app:testDebugUnitTest
+
+      - name: Build signed release APK
+        run: bash ./gradlew :app:assembleRelease
+
+      - name: Name the APK
+        run: |
+          VERSION=$(grep -oP 'versionName = "\K[^"]+' app/build.gradle.kts)
+          cp app/build/outputs/apk/release/app-release.apk "McPodface-$VERSION.apk"
+          echo "APK_NAME=McPodface-$VERSION.apk" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APK_NAME }}
+          path: ${{ env.APK_NAME }}
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" "$APK_NAME" --title "McPodface $GITHUB_REF_NAME" --generate-notes
