@@ -168,6 +168,29 @@ git tag v1.0.0 && git push origin v1.0.0
 For the next release: bump `versionCode` and `versionName`, then repeat steps 4, 5 and 7.
 Updates install over the existing app and keep its data.
 
+## Cloud sessions (Claude Code on the web)
+
+The container has no Android SDK. With `dl.google.com` allowed in the environment's network
+settings, install one and point `local.properties` at it:
+
+```sh
+mkdir -p /root/android-sdk/cmdline-tools && cd /root/android-sdk
+curl -sSo cl.zip https://dl.google.com/android/repository/commandlinetools-linux-13114758_latest.zip
+unzip -q cl.zip -d cmdline-tools && mv cmdline-tools/cmdline-tools cmdline-tools/latest
+yes | cmdline-tools/latest/bin/sdkmanager --sdk_root=/root/android-sdk \
+  "platforms;android-37.0" "build-tools;37.0.0" "platform-tools"
+echo "sdk.dir=/root/android-sdk" > <project>/local.properties
+```
+
+Then `bash ./gradlew …` works (the wrapper isn't executable in the checkout). A first
+`testDebugUnitTest` can fail one class with HTTP 429 while Robolectric downloads its Android jar
+from Maven Central; rerun it.
+
+There is no KVM, so an emulator only runs with `-accel off`: a 30–60 minute boot, the system
+server needs `adb root` then `setprop ro.hw_timeout_multiplier 40` early in boot or the watchdog
+kills it, screenshots come back blank, and injected swipes don't register. It can still drive the
+UI through `uiautomator dump` and taps, which is enough to check navigation and screen contents.
+
 ## Database migrations
 
 The Room schema is exported to `app/schemas/`. Any entity change needs a version bump, a real

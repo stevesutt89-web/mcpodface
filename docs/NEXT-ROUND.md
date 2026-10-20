@@ -2,8 +2,9 @@
 
 Fourteen changes the user asked for after a day of using the app on the S25 Ultra.
 
-> **Status:** all 14 are built (branch `ccr-6ec0b98b-ma67wv`). `compileDebugKotlin`, all 965 unit
-> tests and `lintDebug` pass. Not yet checked on a phone.
+> **Status: done.** All 14 are built (branch `ccr-6ec0b98b-ma67wv`, PR #1) and the layout has been
+> checked on the S25 Ultra. Fixes from that check, Chromecast and podcast links followed; see
+> [ROADMAP.md](ROADMAP.md) for where things stand.
 
 Nothing below this line has been updated since the plan was written. Each item has the request, then notes on where the code lives and how to approach it.
 The work is grouped so parallel agents don't edit the same files (see "Suggested split").

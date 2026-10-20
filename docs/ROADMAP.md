@@ -19,12 +19,40 @@ Task IDs match the phases in [`PLAN.md` §14](../PLAN.md#14-phased-delivery).
 | 9 Extras | Chapters, transcripts, share at timestamp, listening stats, home-screen widget, Android Auto browse tree and voice search, accessibility pass (TalkBack labels and actions, 48dp targets, large fonts), 200k-episode stress test |
 | Design | Liquid Glass pass across the app |
 | Next round | The 14 changes in [NEXT-ROUND.md](NEXT-ROUND.md): fly-off swipe, compact rows with podcast artwork, one snackbar host, playlist mosaic grid, Search back as a tab and Downloads under Playlists, neutral selected tab, white icon background, no Library badge, Settings sections, glass style / accent / reduce effects, customisable resume rewind |
+| Fixes after phone testing | Smooth (blurred) artwork background instead of pixelated; Android Auto skip buttons as custom session commands; row state icons right-aligned; episode titles always two lines |
+| Chromecast | `media3-cast`: Media3 `CastPlayer` over the ExoPlayer, cast button in the full player, downloaded episodes cast from their web URL |
+| Podcast links | `podcast://`, `pcast://`, `feed:`, `itpc://`, Apple Podcasts and subscribeonandroid.com links, and links shared to the app, open the podcast's page |
+| Release docs | [BUILDING.md §6](BUILDING.md#6-release-a-signed-apk-to-install-like-a-normal-app): keystore, version, signed APK, moving data from the debug app |
 
 ## Next
 
-**Check the next round on the phone.** It compiles, and all unit tests and `lintDebug` pass, but it
-hasn't run on a device yet. Try the swipe, the playlist grid, the settings sections and each glass
-style on both phones.
+State on 2026-10-20: all of the above is on branch `ccr-6ec0b98b-ma67wv`, in
+[PR #1](https://github.com/stevesutt89-web/mcpodface/pull/1), **not yet merged into `main`**.
+It compiles, and all ~985 unit tests and `lintDebug` pass. The next round's layout has been seen on
+the S25 Ultra; the fixes, Chromecast and links haven't been tried on a phone yet.
+
+1. **Try on the phone:** the fly-off swipe, the artwork background, Android Auto skip buttons,
+   casting to a Chromecast (local and downloaded episodes, and back to the phone), a
+   `podcast://` link, an Apple Podcasts link (after adding it under Open by default) and Share →
+   McPodface with a feed URL.
+2. **Merge PR #1** into `main`.
+3. **Release 1.0:** set `versionName = "1.0.0"` (`versionCode` stays 1), tag `v1.0.0`, and build the
+   signed APK on the PC, following [BUILDING.md §6](BUILDING.md#6-release-a-signed-apk-to-install-like-a-normal-app).
+
+Known bug: **Import OPML crashes when the phone has no file picker app**: the picker launch in
+`ui/settings/SettingsScreen.kt` (and the Search "+" menu's import) doesn't catch
+`ActivityNotFoundException`. It doesn't happen on the Samsungs, which have a file picker.
+
+Feature ideas, roughly in order (from a comparison with Pocket Casts and Player.fm):
+- **Bookmarks:** save a moment in an episode with a note; jump back or share it.
+- **Mark older as played** from an episode's menu.
+- **Per-podcast episode filters:** skip episodes whose title has given words, and trailers or
+  bonus episodes (`itunes:episodeType`).
+- **Audio:** mono, an equaliser, volume levelling between shows.
+- **Folders** in Library.
+- **Shortcuts:** long-press app icon (Resume, Up Next) and a Quick Settings tile.
+- **More Podcasting 2.0 tags:** `podcast:person`, `podcast:funding`, `podcast:soundbite`.
+- **Start on Bluetooth connect** (opt-in).
 
 Needs real phones:
 - Smoothness on the `fast` build, the first-run notification prompt on Samsung, and the widget's
