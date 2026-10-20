@@ -150,7 +150,8 @@ fun EpisodeRow(
                         color = colors.textSecondary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f, fill = false),
+                        // Fills the line so the state icons sit at the right edge.
+                        modifier = Modifier.weight(1f),
                     )
                     item.downloadState?.let {
                         Spacer(Modifier.width(Spacing.xs))
@@ -175,6 +176,8 @@ fun EpisodeRow(
                     text = title,
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                     color = if (played) colors.textSecondary else colors.textPrimary,
+                    // Always two lines tall, so rows line up whether the title wraps or not.
+                    minLines = 2,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )

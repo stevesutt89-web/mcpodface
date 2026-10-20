@@ -1,5 +1,6 @@
 package com.steve.mcpodface.ui.components.glass
 
+import android.graphics.Bitmap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,6 +27,9 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
 import coil3.request.allowHardware
+import coil3.request.transformations
+import coil3.size.Size
+import coil3.transform.Transformation
 import coil3.toBitmap
 import com.steve.mcpodface.ui.theme.AppTheme
 import kotlinx.coroutines.Dispatchers
@@ -49,12 +53,17 @@ fun ArtworkAmbience(
     Box(modifier.fillMaxSize().background(background)) {
         // Reduce visual effects: no artwork glow, just the page colour.
         if (artworkUrl != null && !LocalGlassEffects.current.reduced && !LocalInspectionMode.current) {
-            // The artwork decoded at ~24px and stretched with bilinear filtering is already a soft
-            // blur, at almost no cost. (A full-screen blur(80.dp) was re-rendered by every glass
-            // control on every scroll frame.)
+            // The artwork decoded tiny, blurred once on the CPU (cached by Coil), then stretched with
+            // bilinear filtering: a smooth wash at almost no cost. Unblurred, the stretched pixels
+            // showed as blocks. (A full-screen blur(80.dp) was re-rendered by every glass control on
+            // every scroll frame.)
             val context = LocalContext.current
             val request = remember(artworkUrl) {
-                ImageRequest.Builder(context).data(artworkUrl).size(AMBIENCE_PX).build()
+                ImageRequest.Builder(context)
+                    .data(artworkUrl)
+                    .size(AMBIENCE_PX)
+                    .transformations(AmbienceBlurTransformation)
+                    .build()
             }
             AsyncImage(
                 model = request,
@@ -121,4 +130,20 @@ internal fun readableAccent(argb: Int, dark: Boolean): Color {
 
 internal fun Color.argbInt(): Int = toArgb()
 
-private const val AMBIENCE_PX = 24
+private const val AMBIENCE_PX = 48
+
+/** Blurs the tiny ambience artwork so it doesn't look pixelated when stretched (see [boxBlurArgb]). */
+private object AmbienceBlurTransformation : Transformation() {
+    private const val RADIUS = 4
+
+    override val cacheKey: String = "ambienceBlur-$RADIUS"
+
+    override suspend fun transform(input: Bitmap, size: Size): Bitmap {
+        val w = input.width
+        val h = input.height
+        val pixels = IntArray(w * h)
+        input.getPixels(pixels, 0, w, 0, 0, w, h)
+        val blurred = boxBlurArgb(pixels, w, h, RADIUS)
+        return Bitmap.createBitmap(blurred, w, h, Bitmap.Config.ARGB_8888)
+    }
+}
