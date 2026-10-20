@@ -90,6 +90,13 @@ import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
 import com.steve.mcpodface.ui.theme.ThemePreviews
 import com.steve.mcpodface.ui.transcript.TranscriptSheet
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.cast.MediaRouteButton
+import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material.icons.rounded.Cast
+import androidx.annotation.OptIn
 
 /**
  * Full player (PLAN.md §8.6, §11): a true full-screen layer (drawn by the shell over everything,
@@ -326,6 +333,7 @@ fun FullPlayerContent(
                 }
                 SleepButton(sleepTimer, accent) { showSleepSheet = true }
                 CapsuleIcon(Icons.Rounded.SpeakerGroup, "Output device", onClick = onOpenOutputSwitcher)
+                CastButton()
             }
 
             // Transcript and share sit under the capsule, so the capsule keeps its width on small phones.
@@ -496,6 +504,20 @@ private fun CapsuleIcon(icon: ImageVector, description: String, enabled: Boolean
             tint = AppTheme.colors.textPrimary.copy(alpha = if (enabled) 0.9f else 0.35f),
             modifier = Modifier.size(22.dp),
         )
+    }
+}
+
+/** Chromecast picker (Media3's route button), tinted like the other capsule icons. */
+@OptIn(UnstableApi::class) // media3-cast
+@Composable
+private fun CastButton() {
+    if (LocalInspectionMode.current) {
+        // Previews can't start the Cast framework.
+        CapsuleIcon(Icons.Rounded.Cast, "Cast") {}
+        return
+    }
+    CompositionLocalProvider(LocalContentColor provides AppTheme.colors.textPrimary.copy(alpha = 0.9f)) {
+        MediaRouteButton(Modifier.size(44.dp))
     }
 }
 

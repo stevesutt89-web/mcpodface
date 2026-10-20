@@ -1,6 +1,7 @@
 package com.steve.mcpodface.playback
 
 import androidx.core.net.toUri
+import androidx.core.os.bundleOf
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import com.steve.mcpodface.data.db.DownloadDao
@@ -24,6 +25,13 @@ class EpisodeMediaResolver @Inject constructor(
         return MediaItem.Builder()
             .setMediaId(episodeId.toString())
             .setUri(uri)
+            // The web URL and type, for Chromecast when [uri] is a downloaded file (see forCast).
+            .setRequestMetadata(
+                MediaItem.RequestMetadata.Builder()
+                    .setMediaUri(episode.enclosureUrl.toUri())
+                    .setExtras(bundleOf(EXTRA_ENCLOSURE_TYPE to episode.enclosureType))
+                    .build(),
+            )
             .setMediaMetadata(
                 MediaMetadata.Builder()
                     .setTitle(episode.title)

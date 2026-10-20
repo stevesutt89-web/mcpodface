@@ -30,6 +30,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:launchMode="singleTask"
             android:theme="@style/Theme.McPodface.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -39,6 +40,34 @@
             <intent-filter>
                 <action android:name="android.media.action.MEDIA_PLAY_FROM_SEARCH" />
                 <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <!-- Podcast links (PLAN.md §8.9): podcast://, pcast://, feed:, itpc:// wrap a feed URL. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="podcast" />
+                <data android:scheme="podcasts" />
+                <data android:scheme="pcast" />
+                <data android:scheme="feed" />
+                <data android:scheme="itpc" />
+            </intent-filter>
+            <!-- Apple Podcasts and subscribeonandroid.com pages. Unverified web links, so Android
+                 only offers McPodface once the user adds them under Open by default. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" />
+                <data android:host="podcasts.apple.com" />
+                <data android:host="subscribeonandroid.com" />
+                <data android:host="www.subscribeonandroid.com" />
+            </intent-filter>
+            <!-- Share a link (a feed URL, an Apple Podcasts page) from any app to McPodface. -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
 

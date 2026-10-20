@@ -48,6 +48,9 @@ Player.fm.
 - **Chapters and transcripts** (Podcasting 2.0): the current chapter under the title, a chapter
   list to jump around, and a transcript that follows along and seeks on tap.
 - **Share** an episode, from the player at the current time.
+- **Chromecast**: cast from the player; downloaded episodes cast from their web URL.
+- **Podcast links**: `podcast://` and Apple Podcasts links, or any feed link shared to the app,
+  open the podcast's page.
 - **Stats**: listening time, a 30-day chart, streaks, time saved by speed, top podcasts.
 - **Home-screen widget** (Glance) and **Android Auto** (browse Up Next, Latest, Downloads,
   Podcasts; voice search).

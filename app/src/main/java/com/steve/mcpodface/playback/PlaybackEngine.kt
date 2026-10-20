@@ -50,7 +50,11 @@ class PlaybackEngine @Inject constructor(
 ) {
     private val sessions = ListeningSessionRecorder(clock)
 
-    private lateinit var player: ExoPlayer
+    /** The local ExoPlayer, for what only it has: trim silence, the audio session, volume fades. */
+    private lateinit var exo: ExoPlayer
+
+    /** The session's player: local or Chromecast (Media3's CastPlayer switches between them). */
+    private lateinit var player: Player
     private lateinit var skipPlayer: SkipForwardingPlayer
     private lateinit var scope: CoroutineScope
 
@@ -63,7 +67,8 @@ class PlaybackEngine @Inject constructor(
     private var lastSavedAt = 0L
     private var loudness: LoudnessEnhancer? = null
 
-    fun attach(player: ExoPlayer, skipPlayer: SkipForwardingPlayer, scope: CoroutineScope) {
+    fun attach(exo: ExoPlayer, player: Player, skipPlayer: SkipForwardingPlayer, scope: CoroutineScope) {
+        this.exo = exo
         this.player = player
         this.skipPlayer = skipPlayer
         this.scope = scope
@@ -72,14 +77,16 @@ class PlaybackEngine @Inject constructor(
                 settings = s
                 skipPlayer.skipBackMs = s.skipBackSec * 1_000L
                 skipPlayer.skipForwardMs = s.skipForwardSec * 1_000L
-                player.skipSilenceEnabled = s.trimSilence
+                exo.skipSilenceEnabled = s.trimSilence
                 applyVoiceBoost()
             }
         }
-        // Sleep timer: fade the volume over its last seconds, then pause.
+        // Sleep timer: fade the volume over its last seconds, then pause. The fade is local only, so
+        // it never changes a Chromecast's (or TV's) own volume.
         sleepTimer.onExpire = { player.pause() }
-        scope.launch { sleepTimer.volume.collect { player.volume = it } }
+        scope.launch { sleepTimer.volume.collect { exo.volume = it } }
         player.addListener(listener)
+        exo.addListener(audioSessionListener)
     }
 
     /** Releases audio effects. Called when the service is destroyed. */
@@ -91,7 +98,7 @@ class PlaybackEngine @Inject constructor(
 
     /** Voice boost (PLAN.md §8.6): a gentle loudness lift on the player's audio session. */
     private fun applyVoiceBoost() {
-        val session = player.audioSessionId
+        val session = exo.audioSessionId
         if (!settings.voiceBoost || session == C.AUDIO_SESSION_ID_UNSET) {
             loudness?.enabled = false
             return
@@ -102,6 +109,14 @@ class PlaybackEngine @Inject constructor(
             effect.enabled = true
         } catch (e: RuntimeException) {
             Log.w("PlaybackEngine", "Voice boost unavailable", e) // some devices lack the effect
+        }
+    }
+
+    private val audioSessionListener = object : Player.Listener {
+        override fun onAudioSessionIdChanged(audioSessionId: Int) {
+            loudness?.release()
+            loudness = null
+            applyVoiceBoost()
         }
     }
 
@@ -122,12 +137,6 @@ class PlaybackEngine @Inject constructor(
                     endSession()
                 }
             }
-        }
-
-        override fun onAudioSessionIdChanged(audioSessionId: Int) {
-            loudness?.release()
-            loudness = null
-            applyVoiceBoost()
         }
 
         override fun onPlaybackStateChanged(playbackState: Int) {

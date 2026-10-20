@@ -75,7 +75,15 @@ import com.steve.mcpodface.ui.settings.SettingsScreen
 import com.steve.mcpodface.ui.settings.SettingsSection
 import com.steve.mcpodface.ui.components.LocalAppSnackbarHostState
 import com.steve.mcpodface.ui.components.showReplacing
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
+
+/** One-off requests from outside the nav graph, e.g. a podcast link opened from the browser. */
+sealed interface ShellEvent {
+    data class OpenPodcast(val podcastId: Long) : ShellEvent
+    data class Message(val text: String) : ShellEvent
+}
 
 /**
  * Bottom tabs + nav graph. [startTab] is read once at launch (the splash screen waits for it);
@@ -86,6 +94,7 @@ fun AppShell(
     startTab: AppTab,
     onTabSelected: (AppTab) -> Unit,
     navController: NavHostController = rememberNavController(),
+    shellEvents: Flow<ShellEvent> = emptyFlow(),
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
@@ -103,6 +112,18 @@ fun AppShell(
 
     LaunchedEffect(playerViewModel) {
         playerViewModel.messages.collect { message -> launch { snackbarHostState.showReplacing(message) } }
+    }
+    LaunchedEffect(shellEvents) {
+        shellEvents.collect { event ->
+            when (event) {
+                is ShellEvent.OpenPodcast -> {
+                    showFullPlayer = false
+                    snackbarHostState.currentSnackbarData?.dismiss()
+                    navController.navigate(PodcastRoute(event.podcastId))
+                }
+                is ShellEvent.Message -> launch { snackbarHostState.showReplacing(event.text) }
+            }
+        }
     }
     // Nothing loaded any more (e.g. playback ended and was cleared): close the full player too.
     LaunchedEffect(playerState == null) {

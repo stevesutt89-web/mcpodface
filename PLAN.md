@@ -42,7 +42,7 @@ task prompt should point them at this file plus `CLAUDE.md` (created in Phase 0)
 | Networking | OkHttp + Retrofit + kotlinx.serialization | Catalogue APIs and feed fetching |
 | RSS parsing | Our own `XmlPullParser` parser | Full control over iTunes and Podcasting 2.0 tags; easy to test |
 | Images | Coil 3 | Compose-native, with a disk cache |
-| Playback | AndroidX Media3: ExoPlayer + `MediaLibraryService` | Gives notification, lock screen, Bluetooth, Android Auto and Samsung quick-panel controls for free |
+| Playback | AndroidX Media3: ExoPlayer + `MediaLibraryService`, `media3-cast` | Gives notification, lock screen, Bluetooth, Android Auto and Samsung quick-panel controls for free; `CastPlayer` adds Chromecast |
 | Background work | WorkManager | Feed refresh, downloads, cleanup and archive backfill, with constraints |
 | Widgets (later) | Jetpack Glance | Home-screen mini player |
 
@@ -536,6 +536,11 @@ politely. It's **best effort**, because no source is guaranteed to hold a show's
   the volume fades out over the final 10 seconds.
 - Toggles for trim silence (`ExoPlayer.skipSilenceEnabled`) and voice boost (`LoudnessEnhancer`).
 - Chapters, show notes, Up Next and an output device picker (system media output switcher).
+- **Chromecast:** a cast button in the player's control capsule (Media3 `MediaRouteButton`). The
+  session player is Media3's `CastPlayer`, which moves playback to the Cast device and back,
+  keeping the position. A downloaded episode is cast from its web URL (`EpisodeCastConverter`), so
+  private feeds that need a password can't be cast. Trim silence, voice boost and the sleep-timer
+  fade apply to local playback only.
 
 ### 8.7 Downloads
 - Opened from the Downloads tile on the Playlists tab, with a back button.
@@ -569,6 +574,12 @@ politely. It's **best effort**, because no source is guaranteed to hold a show's
 - **Discover:** searches Podcast Index with a 300ms debounce, falling back to iTunes. Results are
   cached for 24h. When the field is empty, it shows **Trending** and category chips.
 - "Add by URL" and "Import OPML" actions are available.
+- **Podcast links** open the podcast's page (unsubscribed, like a Discover result):
+  `podcast://`, `pcast://`, `feed:` and `itpc://` links, Apple Podcasts pages (feed found with the
+  iTunes lookup API) and subscribeonandroid.com links, plus any link shared to McPodface from
+  another app (a raw feed URL, for example). `data/links/PodcastLinks.kt` parses them. Web links
+  only open in the app once the user adds them under Settings → Apps → McPodface → Open by
+  default.
 
 ### 8.10 Settings
 The main Settings screen lists only the sections below, then **Listening stats** and **History**.

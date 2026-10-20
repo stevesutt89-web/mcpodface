@@ -32,12 +32,18 @@ import com.steve.mcpodface.data.prefs.AppTab
 import com.steve.mcpodface.data.prefs.GlobalSettings
 import com.steve.mcpodface.data.prefs.SettingsRepository
 import com.steve.mcpodface.data.prefs.ThemeMode
+import com.steve.mcpodface.data.feed.SubscriptionRepository
+import com.steve.mcpodface.data.links.PodcastLinkOpener
 import com.steve.mcpodface.ui.navigation.AppShell
+import com.steve.mcpodface.ui.navigation.ShellEvent
 import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.ThemePreviews
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -49,7 +55,26 @@ class MainViewModel @Inject constructor(
     private val browseTree: BrowseTree,
     private val episodeDao: EpisodeDao,
     private val playerController: PlayerController,
+    private val linkOpener: PodcastLinkOpener,
 ) : ViewModel() {
+    private val _shellEvents = Channel<ShellEvent>(Channel.BUFFERED)
+
+    /** Podcast pages to open and messages to show, for AppShell. Buffered until it collects. */
+    val shellEvents: Flow<ShellEvent> = _shellEvents.receiveAsFlow()
+
+    /** A podcast link opened in, or shared to, the app (PLAN.md §8.9). */
+    fun openLink(text: String) {
+        viewModelScope.launch {
+            _shellEvents.send(ShellEvent.Message("Opening podcast…"))
+            _shellEvents.send(
+                when (val result = linkOpener.open(text)) {
+                    is SubscriptionRepository.OpenResult.Ok -> ShellEvent.OpenPodcast(result.podcastId)
+                    is SubscriptionRepository.OpenResult.Failed -> ShellEvent.Message(result.message)
+                },
+            )
+        }
+    }
+
     /** null until DataStore has loaded; the splash screen stays up until then. */
     val settings: StateFlow<GlobalSettings?> = settingsRepository.settings
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
@@ -139,7 +164,11 @@ class MainActivity : ComponentActivity() {
                     alreadyAsked = s.notificationPermissionAsked,
                     onAsked = viewModel::onNotificationPermissionAsked,
                 )
-                AppShell(startTab = startTab, onTabSelected = viewModel::onTabSelected)
+                AppShell(
+                    startTab = startTab,
+                    onTabSelected = viewModel::onTabSelected,
+                    shellEvents = viewModel.shellEvents,
+                )
             }
         }
     }
@@ -150,8 +179,11 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun handleIntent(intent: Intent?) {
-        if (intent?.action == MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH) {
-            viewModel.playFromSearch(intent.getStringExtra(SearchManager.QUERY))
+        when (intent?.action) {
+            MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH ->
+                viewModel.playFromSearch(intent.getStringExtra(SearchManager.QUERY))
+            Intent.ACTION_VIEW -> intent.dataString?.let(viewModel::openLink)
+            Intent.ACTION_SEND -> intent.getStringExtra(Intent.EXTRA_TEXT)?.let(viewModel::openLink)
         }
     }
 

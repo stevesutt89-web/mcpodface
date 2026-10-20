@@ -5,6 +5,8 @@ import androidx.media3.common.util.UnstableApi
 import android.app.PendingIntent
 import android.content.Intent
 import android.os.Bundle
+import androidx.media3.cast.CastPlayer
+import androidx.media3.cast.RemoteCastPlayer
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -59,6 +61,7 @@ class PlaybackService : MediaLibraryService() {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private lateinit var player: ExoPlayer
+    private lateinit var castPlayer: CastPlayer
     private var session: MediaLibrarySession? = null
 
     override fun onCreate() {
@@ -76,8 +79,13 @@ class PlaybackService : MediaLibraryService() {
             .setHandleAudioBecomingNoisy(true)
             .setWakeMode(C.WAKE_MODE_NETWORK)
             .build()
-        val sessionPlayer = SkipForwardingPlayer(player)
-        engine.attach(player, sessionPlayer, scope)
+        // Plays locally, and moves playback to a Chromecast when one is picked (and back again).
+        castPlayer = CastPlayer.Builder(this)
+            .setLocalPlayer(player)
+            .setRemotePlayer(RemoteCastPlayer.Builder(this).setMediaItemConverter(EpisodeCastConverter()).build())
+            .build()
+        val sessionPlayer = SkipForwardingPlayer(castPlayer)
+        engine.attach(player, castPlayer, sessionPlayer, scope)
 
         session = MediaLibrarySession.Builder(this, sessionPlayer, LibraryCallback())
             .setSessionActivity(
@@ -124,7 +132,7 @@ class PlaybackService : MediaLibraryService() {
             release()
             session = null
         }
-        player.release()
+        castPlayer.release() // releases the local ExoPlayer too
         scope.cancel()
         super.onDestroy()
     }

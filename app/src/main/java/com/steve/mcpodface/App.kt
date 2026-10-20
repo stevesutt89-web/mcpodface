@@ -14,6 +14,9 @@ import okhttp3.OkHttpClient
 import com.steve.mcpodface.refresh.WorkScheduler
 import com.steve.mcpodface.widget.WidgetUpdater
 import javax.inject.Inject
+import androidx.annotation.OptIn
+import androidx.media3.cast.Cast
+import androidx.media3.common.util.UnstableApi
 
 @HiltAndroidApp
 class App : Application(), Configuration.Provider, SingletonImageLoader.Factory {
@@ -23,8 +26,11 @@ class App : Application(), Configuration.Provider, SingletonImageLoader.Factory 
     @Inject lateinit var workScheduler: WorkScheduler
     @Inject lateinit var widgetUpdater: WidgetUpdater
 
+    @OptIn(UnstableApi::class) // media3-cast's Cast entry point
     override fun onCreate() {
         super.onCreate()
+        // Chromecast: the Cast context loads in the background with Media3's default receiver.
+        Cast.getSingletonInstance(this).initialize()
         workScheduler.start()
         widgetUpdater.start()
     }
