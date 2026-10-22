@@ -26,18 +26,20 @@ Task IDs match the phases in [`PLAN.md` §14](../PLAN.md#14-phased-delivery).
 
 ## Next
 
-State on 2026-10-20: all of the above is on branch `ccr-6ec0b98b-ma67wv`, in
-[PR #1](https://github.com/stevesutt89-web/mcpodface/pull/1), **not yet merged into `main`**.
-It compiles, and all ~985 unit tests and `lintDebug` pass. The next round's layout has been seen on
-the S25 Ultra; the fixes, Chromecast and links haven't been tried on a phone yet.
+State on 2026-10-22: everything above is merged into `main` (PR #1). It compiles, and the unit tests
+and `lintDebug` pass. The phone checks (swipe, artwork background, Android Auto, casting, podcast
+links) went well, and `versionName` is `1.0.0` (`versionCode` stays 1).
 
-1. **Try on the phone:** the fly-off swipe, the artwork background, Android Auto skip buttons,
-   casting to a Chromecast (local and downloaded episodes, and back to the phone), a
-   `podcast://` link, an Apple Podcasts link (after adding it under Open by default) and Share →
-   McPodface with a feed URL.
-2. ~~Merge PR #1 into `main`~~ (done).
-3. **Release 1.0:** `versionName` is now `1.0.0` (`versionCode` stays 1); once the phone checks pass, tag `v1.0.0`, and build the
-   signed APK on the PC, following [BUILDING.md §6](BUILDING.md#6-release-a-signed-apk-to-install-like-a-normal-app).
+**To finish release 1.0 (not done yet):**
+
+1. Add the signing secrets under the repo's Settings -> Secrets and variables -> Actions
+   (see [BUILDING.md, Releases on GitHub](BUILDING.md#releases-on-github-automatic)).
+2. Tag it: `git tag v1.0.0 && git push origin v1.0.0`. That runs `.github/workflows/release.yml`,
+   which tests, builds the signed APK and publishes it as a GitHub Release. If the run fails
+   (for example a missing secret), fix it and re-run from the Actions tab; re-run manually only
+   builds an artifact, so delete and re-push the tag to publish the Release.
+3. Install the Release APK (`com.steve.mcpodface`) on both phones, then move data over from the
+   debug app with Settings -> Backup and transfer (BUILDING.md §6, step 6).
 
 Import OPML and the backup pickers now show a message instead of crashing when the phone has no file picker app.
 
