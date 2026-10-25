@@ -10,6 +10,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.net.Uri
 import android.os.ParcelFileDescriptor
+import com.steve.mcpodface.core.Clock
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
@@ -28,6 +29,7 @@ import java.security.MessageDigest
 @InstallIn(SingletonComponent::class)
 interface ArtworkProviderEntryPoint {
     fun okHttpClient(): OkHttpClient
+    fun clock(): Clock
 }
 
 /**
@@ -70,12 +72,11 @@ class ArtworkProvider : ContentProvider() {
     private fun cachedArtwork(context: Context, url: String): File {
         val dir = File(context.cacheDir, CACHE_DIR).apply { mkdirs() }
         val target = File(dir, "${sha256Hex(url)}.jpg")
-        if (target.isFile && target.length() > 0) return target
+        val graph = EntryPointAccessors.fromApplication(context.applicationContext, ArtworkProviderEntryPoint::class.java)
+        // Touched on every read, so trim() drops the least recently used images.
+        if (target.isFile && target.length() > 0) return target.also { it.setLastModified(graph.clock().now()) }
 
-        val client = EntryPointAccessors
-            .fromApplication(context.applicationContext, ArtworkProviderEntryPoint::class.java)
-            .okHttpClient()
-        val bitmap = fetchBitmap(client, url) ?: throw FileNotFoundException("Artwork unavailable: $url")
+        val bitmap = fetchBitmap(graph.okHttpClient(), url) ?: throw FileNotFoundException("Artwork unavailable: $url")
         try {
             // Write to a temp file, then rename, so a concurrent reader never sees a partial JPEG.
             val tmp = File.createTempFile("artwork", ".tmp", dir)
@@ -92,7 +93,15 @@ class ArtworkProvider : ContentProvider() {
         } finally {
             bitmap.recycle()
         }
+        trim(dir)
         return target
+    }
+
+    /** Keeps the cache to the newest [MAX_FILES] images (about 30 KB each). */
+    private fun trim(dir: File) {
+        val files = dir.listFiles { f -> f.name.endsWith(".jpg") } ?: return
+        if (files.size <= MAX_FILES) return
+        files.sortedByDescending { it.lastModified() }.drop(MAX_FILES).forEach { it.delete() }
     }
 
     /** Downloads and decodes [url], or returns null if it is not a small enough image. */
@@ -156,5 +165,6 @@ class ArtworkProvider : ContentProvider() {
         const val MAX_BYTES = 10L * 1024 * 1024
         const val MAX_SIDE = 512
         const val JPEG_QUALITY = 85
+        const val MAX_FILES = 500
     }
 }
