@@ -3,11 +3,13 @@ package com.steve.mcpodface.playback
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.common.ForwardingPlayer
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 
 /**
  * Maps next/previous (Galaxy Buds double/triple press, car and Bluetooth buttons, the lock screen)
- * to skip forward/back by the user's intervals, since we play one episode at a time.
+ * to skip forward/back by the user's intervals, since we play one episode at a time. Also gives
+ * connection errors a message people can act on: the car and system media controls show it as is.
  */
 @OptIn(UnstableApi::class) // Media3 APIs marked unstable (ForwardingPlayer, skip silence, session tweaks)
 class SkipForwardingPlayer(player: Player) : ForwardingPlayer(player) {
@@ -37,8 +39,32 @@ class SkipForwardingPlayer(player: Player) : ForwardingPlayer(player) {
         seekTo(if (d > 0) target.coerceAtMost(d) else target)
     }
 
+    private var lastError: PlaybackException? = null
+    private var shownError: PlaybackException? = null
+
+    override fun getPlayerError(): PlaybackException? {
+        val error = super.getPlayerError()
+        if (error !== lastError) {
+            lastError = error
+            shownError = error?.let(::friendlyError)
+        }
+        return shownError
+    }
+
     override fun seekToNext() = seekForward()
     override fun seekToNextMediaItem() = seekForward()
     override fun seekToPrevious() = seekBack()
     override fun seekToPreviousMediaItem() = seekBack()
+
+    companion object {
+        const val NO_CONNECTION_MESSAGE = "No connection. Downloaded episodes still play"
+
+        /** [error] with a plain message when it is a lost or missing connection; otherwise unchanged. */
+        fun friendlyError(error: PlaybackException): PlaybackException = when (error.errorCode) {
+            PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED,
+            PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT,
+            -> PlaybackException(NO_CONNECTION_MESSAGE, error, error.errorCode)
+            else -> error
+        }
+    }
 }

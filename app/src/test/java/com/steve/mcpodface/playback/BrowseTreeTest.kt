@@ -177,4 +177,13 @@ class BrowseTreeTest {
         assertThat(tree.search("rockets")).hasSize(4)
         assertThat(tree.search("  ")).isEmpty()
     }
+
+    @Test fun recentIsTheLastPlayedEpisode() = runBlocking<Unit> {
+        assertThat(tree.children(BrowseTree.RECENT)).isEmpty()
+        setPosition("s2", 60_000, PlayState.IN_PROGRESS)
+        val recent = tree.children(BrowseTree.RECENT)
+        assertThat(recent.map { it.mediaId }).containsExactly(ids.getValue("s2").toString())
+        assertThat(recent.single().mediaMetadata.isPlayable).isTrue()
+        assertThat(recent.single().mediaMetadata.artist.toString()).isEqualTo("A Serial")
+    }
 }
