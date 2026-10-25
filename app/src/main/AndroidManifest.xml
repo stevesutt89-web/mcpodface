@@ -107,6 +107,13 @@
                 tools:node="remove" />
         </provider>
 
+        <!-- Read-only: serves podcast artwork to Android Auto (task A3). Exported because the car
+             host, another app, reads it. -->
+        <provider
+            android:name=".playback.auto.ArtworkProvider"
+            android:authorities="${applicationId}.artwork"
+            android:exported="true" />
+
         <!-- Long-running download workers (PLAN.md §6.7). -->
         <service
             android:name="androidx.work.impl.foreground.SystemForegroundService"
