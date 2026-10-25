@@ -224,6 +224,9 @@ class PlaybackEngine @Inject constructor(
         playNext(next, now)
     }
 
+    /** Mark the current episode played and move on, as at the end of the episode (car "Mark played & next"). */
+    suspend fun completeNow() = complete()
+
     private suspend fun nextEpisode(id: Long): Long? =
         queue.observeIds().first().firstOrNull() ?: nextInPodcast(id)
 
