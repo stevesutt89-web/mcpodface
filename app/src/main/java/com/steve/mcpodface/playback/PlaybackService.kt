@@ -139,19 +139,29 @@ class PlaybackService : MediaLibraryService() {
 
     private inner class LibraryCallback : MediaLibrarySession.Callback {
 
-        /** The default grants, plus the skip commands for every controller (car, notification, watch). */
+        /**
+         * The default grants, plus the skip commands for every controller (car, notification, watch).
+         * Media3 gives untrusted controllers read-only commands, and the Android Auto app is untrusted
+         * unless it has notification access, so its play/pause taps were dropped: cars get full control.
+         */
         override fun onConnectAsync(
             session: MediaSession,
             controller: MediaSession.ControllerInfo,
         ): ListenableFuture<MediaSession.ConnectionResult> {
+            val car = session.isAutoCompanionController(controller) || session.isAutomotiveController(controller)
             val defaults = MediaSession.ConnectionResult.AcceptedResultBuilder(session, controller).build()
-            val sessionCommands = defaults.availableSessionCommands.buildUpon()
+            val baseSessionCommands =
+                if (car) MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS else defaults.availableSessionCommands
+            val sessionCommands = baseSessionCommands.buildUpon()
                 .add(SKIP_BACK_COMMAND)
                 .add(SKIP_FORWARD_COMMAND)
                 .build()
+            val playerCommands =
+                if (car) MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS else defaults.availablePlayerCommands
             return Futures.immediateFuture(
                 MediaSession.ConnectionResult.AcceptedResultBuilder(session, controller)
                     .setAvailableSessionCommands(sessionCommands)
+                    .setAvailablePlayerCommands(playerCommands)
                     .build(),
             )
         }

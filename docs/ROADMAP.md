@@ -43,6 +43,9 @@ links) went well, and `versionName` is `1.0.0` (`versionCode` stays 1).
 
 Import OPML and the backup pickers now show a message instead of crashing when the phone has no file picker app.
 
+**Android Auto, full car experience:** planned in [ANDROID-AUTO.md](ANDROID-AUTO.md) (car play/pause
+fixed 2026-10-25).
+
 Feature ideas, roughly in order (from a comparison with Pocket Casts and Player.fm):
 - **Bookmarks:** save a moment in an episode with a note; jump back or share it.
 - **Mark older as played** from an episode's menu.
