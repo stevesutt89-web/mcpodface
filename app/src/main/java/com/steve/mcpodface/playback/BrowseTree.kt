@@ -39,7 +39,7 @@ class BrowseTree @Inject constructor(
                 BrowseItems.folder(PODCASTS, "Podcasts", childrenAsGrid = true),
                 BrowseItems.folder(LIBRARY, "Library"),
             )
-            UP_NEXT -> db.queueDao().observeQueueItems().first().map { BrowseItems.episodeItem(it.toCarEpisode(), now) }
+            UP_NEXT -> db.queueDao().observeQueueItems().first().take(LIST_LIMIT).map { BrowseItems.episodeItem(it.toCarEpisode(), now) }
             LATEST -> db.episodeDao()
                 .observeLatest(since = now - LATEST_WINDOW_MS, limit = LIST_LIMIT, unplayedOnly = true, downloadedOnly = false)
                 .first().map { item ->
@@ -58,6 +58,7 @@ class BrowseTree @Inject constructor(
             DOWNLOADS -> db.downloadDao().observeDownloadItems().first()
                 .filter { it.download.state == DownloadState.COMPLETED }
                 .sortedByDescending { it.download.downloadedAt ?: 0 }
+                .take(LIST_LIMIT)
                 .map { BrowseItems.episodeItem(it.toCarEpisode(), now) }
             // Approximation: there is no episodes query for positionMs > 0 and not PLAYED, so this filters
             // the existing history query (last 500 listened episodes, most recent first). An in-progress
@@ -150,6 +151,7 @@ class BrowseTree @Inject constructor(
         const val RECENT = "recent"
         const val PODCAST_PREFIX = "podcast:"
         const val PLAYLIST_PREFIX = "playlist:"
+        /** Most rows in any episode list, a driving-friendly length (subscriptions aren't capped). */
         const val LIST_LIMIT = 100
         private const val LATEST_WINDOW_MS = 30L * 86_400_000
     }

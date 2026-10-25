@@ -6,6 +6,31 @@ That means browsing, playing, managing Up Next, and asking by voice.
 Read [`CLAUDE.md`](../CLAUDE.md) first. The current tree is `playback/BrowseTree.kt` and the session
 is `playback/PlaybackService.kt` (PLAN.md §12, task 9.5).
 
+## Status (2026-10-25): built, waiting for a car test
+
+Waves 0 to 3 are done on branch `android-auto`. 1081 unit tests and `lintDebug` pass. Not yet run
+on a phone, the Desktop Head Unit or the car: work through the "Android Auto" checklist in
+[`TESTING.md`](../TESTING.md).
+
+What changed against the design below:
+- **The overflow buttons (speed, star, mark played & next, sleep) only show while a car is
+  connected** (`NowPlayingButtons`). Android Auto reads the same platform session as the phone's
+  media controls, so without this the phone notification would gain four buttons.
+- **The "No connection" message is done.** `SkipForwardingPlayer.getPlayerError` rewords lost or
+  missing connection errors. The car and system media controls show that message.
+- **No "No subscriptions" message.** Media3 would need library errors copied into the playback
+  state to show it, which is risky for one empty state. An empty tab shows the car's own "No items".
+- **Voice requests that match nothing play nothing.** No error message is set for them.
+- **A9 skipped:** the app keeps all its text in code (`strings.xml` has only the app name), so car
+  text does the same.
+- **Car row actions reuse the phone's helpers.** `BrowseActions` imports `playedToggleTarget` and
+  `downloadMenuAction` from `ui/`, so the car does exactly what the phone does. Move them to
+  `domain/policy` if that layering bothers you.
+- **A car download that would need the mobile-data prompt is queued for Wi-Fi**, which is the
+  phone prompt's "Wait for Wi-Fi" choice.
+- **Wave 4 (Up Next as the player queue, the "car downloads only" setting) is not started.** It
+  needs the owner's go-ahead.
+
 ## What is possible (read before planning anything else)
 
 Android Auto does **not** run our Compose UI. A media app gets the car's own templated screens,
@@ -39,7 +64,7 @@ only if something below turns out to be impossible.
   `isAutomotiveController`. **Rule for every task below: any new custom command must be added to
   the commands granted in `onConnectAsync`, or the car silently ignores it.**
 
-## Bugs found while planning (fixed in wave 2)
+## Bugs found while planning (all fixed in wave 2)
 
 - **Voice "play X on McPodface" plays nothing.** Voice requests arrive as a `MediaItem` with an
   empty `mediaId` and `requestMetadata.searchQuery` set. `onSetMediaItems` maps only numeric ids,
@@ -149,16 +174,16 @@ Commit after every task.
 
 | ID | Task | Done when |
 |---|---|---|
-| A7 | In `LibraryCallback` and `PlaybackService`: (1) `setCommandButtonsForMediaItems` with the row actions and the overflow buttons in `setMediaButtonPreferences`. Refresh the overflow labels when speed, star or sleep change. (2) `onCustomCommand` dispatches to `CarActions` and the row-action handler. (3) `onSetMediaItems` / `onAddMediaItems` send items that have a `searchQuery` through `VoiceSearch`. (4) `onGetLibraryRoot` returns the last-played item as a playable root when `params.isRecent`, and sets root extras for the default content style. (5) Start `BrowseInvalidator` with `session.notifyChildrenChanged`. (6) Error results for an empty library and offline streams (`setPlaybackException` with an "Open McPodface" resolution intent) | `testDebugUnitTest` + `lintDebug` green; `dumpsys media_session` shows the custom actions; DHU screenshots of every tab and now playing look right |
-| A8 (H, parallel with A7) | **Row actions handler**: implement `BrowseActions.run(action, episodeId)` in `playback/auto/BrowseActions.kt` (the episode id comes from `args.getString(MediaConstants.EXTRA_KEY_MEDIA_ID)`, parsed by A7). It does add/remove Up Next through `QueueRepository`, download/remove through `DownloadManager` (honour the cellular rule and never prompt; if blocked, return an error result with the message "Waiting for Wi-Fi"), star, and mark played through the same DAO call the phone UI uses. Plus tests | Tests green |
+| A7 ✅ | In `LibraryCallback` and `PlaybackService`: (1) `setCommandButtonsForMediaItems` with the row actions and the overflow buttons in `setMediaButtonPreferences`. Refresh the overflow labels when speed, star or sleep change. (2) `onCustomCommand` dispatches to `CarActions` and the row-action handler. (3) `onSetMediaItems` / `onAddMediaItems` send items that have a `searchQuery` through `VoiceSearch`. (4) `onGetLibraryRoot` returns the last-played item as a playable root when `params.isRecent`, and sets root extras for the default content style. (5) Start `BrowseInvalidator` with `session.notifyChildrenChanged`. (6) Error results for an empty library and offline streams (`setPlaybackException` with an "Open McPodface" resolution intent) | `testDebugUnitTest` + `lintDebug` green; `dumpsys media_session` shows the custom actions; DHU screenshots of every tab and now playing look right |
+| A8 ✅ (H, parallel with A7) | **Row actions handler**: implement `BrowseActions.run(action, episodeId)` in `playback/auto/BrowseActions.kt` (the episode id comes from `args.getString(MediaConstants.EXTRA_KEY_MEDIA_ID)`, parsed by A7). It does add/remove Up Next through `QueueRepository`, download/remove through `DownloadManager` (honour the cellular rule and never prompt; if blocked, return an error result with the message "Waiting for Wi-Fi"), star, and mark played through the same DAO call the phone UI uses. Plus tests | Tests green |
 
 ### Wave 3: polish and checks
 
 | ID | Owner | Task | Done when |
 |---|---|---|---|
-| A9 | H | Car-friendly strings in `res/values/strings.xml` (`car_*`) for every label and message above; replace literals in `playback/auto/` | Lint has no hard-coded text warnings in `playback/` |
-| A10 | O | Pass the driving rules: lists capped (Auto pages them, keep `LIST_LIMIT` 100), no more than 4 tabs, no tab over 1 level of folders before episodes except Library → Playlists → playlist | DHU walk-through |
-| A11 | H | Add an "Android Auto" checklist to `TESTING.md` covering the steps below | File updated |
+| A9 ⏭ skipped | H | Car-friendly strings in `res/values/strings.xml` (`car_*`) for every label and message above; replace literals in `playback/auto/` | Lint has no hard-coded text warnings in `playback/` |
+| A10 ✅ | O | Pass the driving rules: lists capped (Auto pages them, keep `LIST_LIMIT` 100), no more than 4 tabs, no tab over 1 level of folders before episodes except Library → Playlists → playlist | DHU walk-through |
+| A11 ✅ | H | Add an "Android Auto" checklist to `TESTING.md` covering the steps below | File updated |
 
 The A11 checklist steps:
 
