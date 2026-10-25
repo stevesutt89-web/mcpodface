@@ -134,6 +134,17 @@ Commit after every task.
 | A5 | **Now-playing actions.** Implement `CarActions.run`: speed cycle (saved as the podcast's `playbackSpeed` in `podcast_settings`), star toggle (`isStarred`), mark played & next (same path as the engine's end-of-episode, so expose `PlaybackEngine.completeNow()` as a one-line O-reviewed change), sleep cycle via `SleepTimer`. Give each its `CommandButton` icon (`CommandButton.ICON_PLAYBACK_SPEED`, `ICON_STAR_FILLED/UNFILLED`, `ICON_CHECK_CIRCLE_FILLED`) and a display name that shows the current value ("1.5×", "Sleep 15 min"). Media3 has no timer icon, so sleep uses a new `res/drawable/ic_car_sleep.xml` (Material "bedtime" moon, same format as `ic_car_download.xml`) via `setCustomIconResId`. Also implement `overflowButtons` | `playback/auto/CarActions.kt`, `playback/PlaybackEngine.kt` (only `completeNow()`), `res/drawable/ic_car_sleep.xml`, `test/…/CarActionsTest.kt` | Tests for each cycle; speed persists |
 | A6 | **List refresh.** `BrowseInvalidator.start` collects the Up Next, downloads, episode play-state and subscription flows, debounces 500 ms, and calls `notify` with the parent ids affected (`upnext`, `downloads`, `latest`, `podcast:<id>`, library folders) | `playback/auto/BrowseInvalidator.kt`, `test/…/BrowseInvalidatorTest.kt` | Test with Turbine-free fakes: one DB change → one notify per affected id |
 
+**Wave 1 done 2026-10-25** (A1–A6 merged into `android-auto`; 1068 unit tests and `lintDebug` green). Notes from review:
+- A2: *In progress* filters the History query (the last 500 episodes listened to), because no
+  `positionMs > 0 and not PLAYED` episode query exists. Add `EpisodeDao.observeInProgress()` if
+  older in-progress episodes go missing.
+- A3: the provider is exported (lint `ExportedContentProvider`) because the car host reads it. It only
+  fetches http(s) URLs, refuses bodies over 10 MB, and keeps the 500 most recently used images.
+- A6: bounded to the newest 300 episodes plus recent history, and compares "started" rather than the
+  position, so the 10 s position saves don't refresh car lists.
+- A5: speed steps up to the next preset (1.1× → 1.2×). The sleep label is "Sleep 15 min" or
+  "Sleep 30 min", worked out from the time left.
+
 ### Wave 2: wiring (O)
 
 | ID | Task | Done when |

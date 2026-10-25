@@ -1,6 +1,7 @@
 package com.steve.mcpodface.playback.auto
 
 import android.net.Uri
+import androidx.core.net.toUri
 import com.steve.mcpodface.BuildConfig
 
 /** Authority of the artwork provider is `${applicationId}` + this suffix (see AndroidManifest). */
@@ -16,7 +17,7 @@ private const val ARTWORK_PARAM = "u"
  */
 fun artworkUri(url: String?): Uri? {
     if (url.isNullOrBlank()) return null
-    val parsed = Uri.parse(url)
+    val parsed = url.toUri()
     if (!isHttpUrl(parsed.scheme)) return parsed
     return Uri.Builder()
         .scheme("content")
@@ -32,7 +33,7 @@ internal fun originalUrl(uri: Uri): String? {
     if (uri.authority != BuildConfig.APPLICATION_ID + ARTWORK_AUTHORITY_SUFFIX) return null
     if (uri.pathSegments != listOf(ARTWORK_PATH)) return null
     val url = uri.getQueryParameter(ARTWORK_PARAM) ?: return null
-    return url.takeIf { isHttpUrl(Uri.parse(it).scheme) }
+    return url.takeIf { isHttpUrl(it.toUri().scheme) }
 }
 
 private fun isHttpUrl(scheme: String?): Boolean =

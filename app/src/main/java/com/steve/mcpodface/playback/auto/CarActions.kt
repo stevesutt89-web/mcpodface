@@ -116,14 +116,9 @@ class CarActions @Inject constructor(
         /** Between the two presets: a running timer with less time than this is the 15-minute one. */
         const val MIDPOINT_MS = 22 * 60_000L + 30_000L
 
-        /**
-         * The step after the nearest step at or above [current]; anything above the top step (or
-         * the top step itself) wraps to 1.0.
-         */
-        fun nextSpeed(current: Float): Float {
-            val index = SPEED_STEPS.indexOfFirst { it >= current - 0.001f }
-            return if (index < 0) SPEED_STEPS.first() else SPEED_STEPS[(index + 1) % SPEED_STEPS.size]
-        }
+        /** The next step above [current] (1.1 goes to 1.2); the top step or above wraps to 1.0. */
+        fun nextSpeed(current: Float): Float =
+            SPEED_STEPS.firstOrNull { it > current + 0.001f } ?: SPEED_STEPS.first()
 
         /** 1.0 → "1×", 1.2 → "1.2×". */
         fun speedLabel(speed: Float): String =

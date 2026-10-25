@@ -10,6 +10,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.net.Uri
 import android.os.ParcelFileDescriptor
+import androidx.core.graphics.createBitmap
 import com.steve.mcpodface.core.Clock
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -126,7 +127,7 @@ class ArtworkProvider : ContentProvider() {
             },
         ) ?: return null
         // JPEG has no alpha, so flatten transparent pixels onto white rather than black.
-        val flat = Bitmap.createBitmap(decoded.width, decoded.height, Bitmap.Config.ARGB_8888)
+        val flat = createBitmap(decoded.width, decoded.height)
         Canvas(flat).apply {
             drawColor(Color.WHITE)
             drawBitmap(decoded, 0f, 0f, null)
