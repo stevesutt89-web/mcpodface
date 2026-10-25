@@ -17,6 +17,7 @@ import com.steve.mcpodface.data.db.PodcastEntity
 import com.steve.mcpodface.data.playlist.PlaylistRepository
 import com.steve.mcpodface.data.playlist.SmartRules
 import com.steve.mcpodface.data.search.SearchRepository
+import com.steve.mcpodface.playback.auto.artworkUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -85,7 +86,7 @@ class BrowseTreeTest {
         assertThat(first.mediaId).isEqualTo(ids.getValue("n1").toString())
         assertThat(first.mediaMetadata.isPlayable).isTrue()
         assertThat(first.mediaMetadata.artist.toString()).isEqualTo("News")
-        assertThat(first.mediaMetadata.artworkUri.toString()).isEqualTo("https://n/art.jpg")
+        assertThat(first.mediaMetadata.artworkUri).isEqualTo(artworkUri("https://n/art.jpg")) // via ArtworkProvider
     }
 
     @Test fun latestHidesPlayedEpisodes() = runBlocking<Unit> {

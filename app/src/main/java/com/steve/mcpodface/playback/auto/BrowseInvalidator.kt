@@ -1,13 +1,21 @@
 package com.steve.mcpodface.playback.auto
 
 import com.steve.mcpodface.data.db.AppDatabase
-import com.steve.mcpodface.data.db.EpisodeListItem
 import com.steve.mcpodface.data.db.PlayState
+import com.steve.mcpodface.playback.BrowseTree.Companion.DOWNLOADS
+import com.steve.mcpodface.playback.BrowseTree.Companion.HISTORY
+import com.steve.mcpodface.playback.BrowseTree.Companion.IN_PROGRESS
+import com.steve.mcpodface.playback.BrowseTree.Companion.LATEST
+import com.steve.mcpodface.playback.BrowseTree.Companion.PLAYLISTS
+import com.steve.mcpodface.playback.BrowseTree.Companion.PODCASTS
+import com.steve.mcpodface.playback.BrowseTree.Companion.PODCAST_PREFIX
+import com.steve.mcpodface.playback.BrowseTree.Companion.STARRED
+import com.steve.mcpodface.playback.BrowseTree.Companion.UP_NEXT
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
@@ -50,17 +58,21 @@ class BrowseInvalidator @Inject constructor(
     private fun upNext(): Flow<List<Long>> = db.queueDao().observe().map { queue -> queue.map { it.episodeId } }
 
     /**
-     * Subscribed episodes, grouped by podcast, compared as (id, playState, positionMs) sets. A change
-     * in play state or position, or the episode set itself (a refresh adding episodes), shows up
-     * here. Download and queue changes also re-run the Latest query, but leave the snapshot equal,
-     * so they notify nothing.
+     * The newest episodes plus the recently played ones (what the car's Latest, In progress, History
+     * and podcast lists show), grouped by podcast and compared as (id, playState, started) sets. Both
+     * queries are bounded, because Room re-runs them on every episodes write, including the position
+     * save every 10 s during playback. Tracking "started" rather than the position means those saves
+     * notify nothing. Download and queue changes also re-run the queries but leave the snapshot equal.
      */
     private suspend fun watchEpisodes(notify: (String) -> Unit) {
         var initial: Map<Long, Set<Mark>>? = null
         var previous: Map<Long, Set<Mark>>? = null
-        db.episodeDao()
-            .observeLatest(since = Long.MIN_VALUE, limit = Int.MAX_VALUE, unplayedOnly = false, downloadedOnly = false)
-            .map { snapshot(it) }
+        val latest = db.episodeDao()
+            .observeLatest(since = Long.MIN_VALUE, limit = WATCHED_LATEST, unplayedOnly = false, downloadedOnly = false)
+            .map { items -> items.map { Mark(it.episode.podcastId, it.episode.id, it.episode.playState, it.episode.positionMs > 0) } }
+        val recent = db.listeningSessionDao().observeRecentlyPlayed()
+            .map { items -> items.map { Mark(it.episode.podcastId, it.episode.id, it.episode.playState, it.episode.positionMs > 0) } }
+        combine(latest, recent) { a, b -> snapshot(a + b) }
             .distinctUntilChanged()
             // The first raw emission is the baseline. The debounced value is then compared with it, so
             // no change made in the first 500 ms is lost.
@@ -85,24 +97,13 @@ class BrowseInvalidator @Inject constructor(
             .collect { notify(parentId) }
     }
 
-    private fun snapshot(items: List<EpisodeListItem>): Map<Long, Set<Mark>> =
-        items
-            .groupBy({ it.episode.podcastId }, { Mark(it.episode.id, it.episode.playState, it.episode.positionMs) })
-            .mapValues { it.value.toSet() }
+    private fun snapshot(marks: List<Mark>): Map<Long, Set<Mark>> =
+        marks.groupBy { it.podcastId }.mapValues { it.value.toSet() }
 
-    private data class Mark(val id: Long, val playState: PlayState, val positionMs: Long)
+    private data class Mark(val podcastId: Long, val id: Long, val playState: PlayState, val started: Boolean)
 
     private companion object {
         const val DEBOUNCE_MS = 500L
-        // BrowseTree node ids. Some are not in BrowseTree yet (A2 adds them).
-        const val UP_NEXT = "upnext"
-        const val DOWNLOADS = "downloads"
-        const val LATEST = "latest"
-        const val IN_PROGRESS = "inprogress"
-        const val HISTORY = "history"
-        const val STARRED = "starred"
-        const val PODCASTS = "podcasts"
-        const val PLAYLISTS = "playlists"
-        const val PODCAST_PREFIX = "podcast:"
+        const val WATCHED_LATEST = 300
     }
 }
