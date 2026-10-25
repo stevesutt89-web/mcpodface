@@ -58,7 +58,17 @@ fun DownloadListItem.toCarEpisode() = CarEpisode(
  */
 object BrowseItems {
 
-    fun folder(id: String, title: String, artworkUrl: String? = null, isPodcast: Boolean = false): MediaItem =
+    /**
+     * A browsable folder. [childrenAsGrid] shows its browsable children as a grid (the Podcasts tab);
+     * A1 sets the content-style extras from it (playable children are always a list).
+     */
+    fun folder(
+        id: String,
+        title: String,
+        artworkUrl: String? = null,
+        isPodcast: Boolean = false,
+        childrenAsGrid: Boolean = false,
+    ): MediaItem =
         MediaItem.Builder()
             .setMediaId(id)
             .setMediaMetadata(
