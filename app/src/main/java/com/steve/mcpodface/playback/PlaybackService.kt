@@ -16,11 +16,14 @@ import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import com.steve.mcpodface.MainActivity
 import com.steve.mcpodface.playback.auto.AutoCommands
+import com.steve.mcpodface.playback.auto.BrowseInvalidator
+import com.steve.mcpodface.playback.auto.NowPlayingButtons
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import javax.inject.Inject
@@ -37,6 +40,9 @@ class PlaybackService : MediaLibraryService() {
     @Inject lateinit var okHttpClient: OkHttpClient
     @Inject lateinit var engine: PlaybackEngine
     @Inject lateinit var libraryCallback: LibraryCallback
+    @Inject lateinit var nowPlayingButtons: NowPlayingButtons
+    @Inject lateinit var browseInvalidator: BrowseInvalidator
+    @Inject lateinit var browseTree: BrowseTree
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private lateinit var player: ExoPlayer
@@ -67,6 +73,7 @@ class PlaybackService : MediaLibraryService() {
         engine.attach(player, castPlayer, sessionPlayer, scope)
 
         libraryCallback.scope = scope
+        libraryCallback.engine = engine
         session = MediaLibrarySession.Builder(this, sessionPlayer, libraryCallback)
             .setSessionActivity(
                 PendingIntent.getActivity(
@@ -75,7 +82,15 @@ class PlaybackService : MediaLibraryService() {
                 ),
             )
             .setMediaButtonPreferences(AutoCommands.skipButtons)
+            .setCommandButtonsForMediaItems(AutoCommands.rowButtons)
             .build()
+            .also { s ->
+                nowPlayingButtons.start(scope, s)
+                // Refresh car lists when the queue, downloads or episodes change.
+                browseInvalidator.start(scope) { parentId ->
+                    scope.launch { s.notifyChildrenChanged(parentId, browseTree.children(parentId).size, null) }
+                }
+            }
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? = session

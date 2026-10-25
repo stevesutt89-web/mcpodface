@@ -71,6 +71,7 @@ class BrowseTree @Inject constructor(
                 .map { BrowseItems.episodeItem(it.toCarEpisode(), now) }
             PLAYLISTS -> playlists.observePlaylists().first()
                 .map { BrowseItems.folder(PLAYLIST_PREFIX + it.playlist.id, it.playlist.name) }
+            RECENT -> listOfNotNull(lastPlayed(now))
             HISTORY -> db.listeningSessionDao().observeRecentlyPlayed().first()
                 .take(LIST_LIMIT)
                 .map { BrowseItems.episodeItem(it.toCarEpisode(), now) }
@@ -111,6 +112,26 @@ class BrowseTree @Inject constructor(
             .map { BrowseItems.episodeItem(it.toCarEpisode(), now) }
     }
 
+    /** The car's "resume" card (the library root asked for with LibraryParams.isRecent). */
+    private suspend fun lastPlayed(now: Long): MediaItem? {
+        val e = db.episodeDao().getLastPlayed() ?: return null
+        val podcast = db.podcastDao().getById(e.podcastId) ?: return null
+        val car = CarEpisode(
+            id = e.id,
+            title = e.title,
+            podcastTitle = podcast.title,
+            artworkUrl = e.artworkUrl ?: podcast.artworkUrl,
+            pubDate = e.pubDate,
+            durationSec = e.durationSec,
+            positionMs = e.positionMs,
+            playState = e.playState,
+            downloaded = db.downloadDao().get(e.id)?.state == DownloadState.COMPLETED,
+            isStarred = e.isStarred,
+            inQueue = false,
+        )
+        return BrowseItems.episodeItem(car, now)
+    }
+
     private fun isInProgress(positionMs: Long, playState: PlayState): Boolean =
         positionMs > 0 && playState != PlayState.PLAYED
 
@@ -125,6 +146,8 @@ class BrowseTree @Inject constructor(
         const val STARRED = "starred"
         const val PLAYLISTS = "playlists"
         const val HISTORY = "history"
+        /** Root for the car's resume card; its only child is the last played episode. */
+        const val RECENT = "recent"
         const val PODCAST_PREFIX = "podcast:"
         const val PLAYLIST_PREFIX = "playlist:"
         const val LIST_LIMIT = 100
