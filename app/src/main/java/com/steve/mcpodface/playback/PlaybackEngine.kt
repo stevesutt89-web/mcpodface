@@ -6,11 +6,13 @@ import android.media.audiofx.LoudnessEnhancer
 import android.util.Log
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.steve.mcpodface.core.Clock
 import com.steve.mcpodface.data.db.EpisodeDao
+import com.steve.mcpodface.data.db.EpisodeEntity
 import com.steve.mcpodface.data.db.ListeningSessionDao
 import com.steve.mcpodface.data.db.PlayState
 import com.steve.mcpodface.data.db.PodcastDao
@@ -35,6 +37,10 @@ import javax.inject.Inject
  * Lives inside PlaybackService. Applies per-podcast settings when an episode starts, saves the
  * position every 10s and on pause, marks episodes played (PLAN.md §6.0), skips outros, and moves
  * on to the next Up Next item (or the next episode of the podcast if autoplay is on) at the end.
+ *
+ * The player's playlist is the playing episode followed by Up Next ([UpNextTimeline]), so the car
+ * can show and jump through the queue. The player moves to the next item by itself at the end of
+ * an episode; [listener] then finishes the one that ended and starts the new one at its resume point.
  */
 @OptIn(UnstableApi::class) // Media3 APIs marked unstable (ForwardingPlayer, skip silence, session tweaks)
 class PlaybackEngine @Inject constructor(
@@ -65,7 +71,11 @@ class PlaybackEngine @Inject constructor(
     private var completing = false
     private var ticker: Job? = null
     private var lastSavedAt = 0L
+    /** The playing episode's position as last seen, so it can be saved after the player has moved on. */
+    private var lastPositionMs = 0L
     private var loudness: LoudnessEnhancer? = null
+    private lateinit var timeline: UpNextTimeline
+    private var queueIds: List<Long> = emptyList()
 
     fun attach(exo: ExoPlayer, player: Player, skipPlayer: SkipForwardingPlayer, scope: CoroutineScope) {
         this.exo = exo
@@ -85,6 +95,22 @@ class PlaybackEngine @Inject constructor(
         // it never changes a Chromecast's (or TV's) own volume.
         sleepTimer.onExpire = { player.pause() }
         scope.launch { sleepTimer.volume.collect { exo.volume = it } }
+        // "End of episode": stop at the end of this one rather than running on into Up Next. Local
+        // playback only; on a Chromecast the transition handler pauses just after the next one starts.
+        scope.launch {
+            sleepTimer.state.collect { exo.pauseAtEndOfMediaItems = it == SleepTimerState.EndOfEpisode }
+        }
+        timeline = UpNextTimeline(player, resolver::resolve)
+        // The car shows this as the queue's title.
+        if (player.isCommandAvailable(Player.COMMAND_SET_PLAYLIST_METADATA)) {
+            player.playlistMetadata = MediaMetadata.Builder().setTitle("Up Next").build()
+        }
+        scope.launch {
+            queue.observeIds().collect { ids ->
+                queueIds = ids
+                timeline.sync(ids)
+            }
+        }
         player.addListener(listener)
         exo.addListener(audioSessionListener)
     }
@@ -122,8 +148,32 @@ class PlaybackEngine @Inject constructor(
 
     private val listener = object : Player.Listener {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+            val previous = currentId
+            val previousPositionMs = lastPositionMs
+            val previousMarked = markedPlayed
+            val previousCompleting = completing
+            val next = mediaItem?.episodeId()
             scope.launch { endSession() }
-            onEpisodeStarted(mediaItem?.episodeId())
+            onEpisodeStarted(next, reason)
+            scope.launch {
+                if (previous != null && previous != next && !previousCompleting) {
+                    if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO) {
+                        // Played to the end and the player went on to the next Up Next item by itself.
+                        finish(previous, previousMarked)
+                        // On a Chromecast "end of episode" can't stop at the end, so stop just after.
+                        if (sleepTimer.consumeEndOfEpisode()) player.pause()
+                    } else {
+                        // Jumped to another episode (a car queue tap): keep where the last one got to.
+                        savePositionOf(previous, previousPositionMs, previousMarked)
+                    }
+                }
+                timeline.sync(queueIds)
+            }
+        }
+
+        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+            // The "end of episode" sleep timer stopped playback at the end of the episode.
+            if (reason == Player.PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM) scope.launch { complete() }
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -144,11 +194,12 @@ class PlaybackEngine @Inject constructor(
         }
     }
 
-    private fun onEpisodeStarted(episodeId: Long?) {
+    private fun onEpisodeStarted(episodeId: Long?, reason: Int) {
         currentId = episodeId
         markedPlayed = false
         completing = false
         skipOutroSec = 0
+        lastPositionMs = 0
         if (episodeId == null) return
         scope.launch {
             val episode = episodeDao.getById(episodeId) ?: return@launch
@@ -157,6 +208,15 @@ class PlaybackEngine @Inject constructor(
             markedPlayed = episode.playState == PlayState.PLAYED && episode.positionMs > 0
             val speed = podcastSettings?.playbackSpeed ?: settings.defaultSpeed
             player.playbackParameters = PlaybackParameters(speed)
+            // Items reached through the playlist (the end of the last one, a car queue tap) start at 0;
+            // move to the saved position, as when an episode is picked on the phone. Picked episodes
+            // (a new playlist) already start there.
+            val movedWithin = reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO ||
+                reason == Player.MEDIA_ITEM_TRANSITION_REASON_SEEK
+            if (movedWithin && player.currentMediaItem?.episodeId() == episodeId) {
+                val start = startPosition(episode, podcastSettings?.skipIntroSec ?: 0, clock.now())
+                if (start > 0) player.seekTo(start)
+            }
         }
     }
 
@@ -173,6 +233,7 @@ class PlaybackEngine @Inject constructor(
     private suspend fun tick() {
         val id = currentId ?: return
         val pos = player.currentPosition
+        lastPositionMs = pos
         val duration = player.duration.coerceAtLeast(0)
         if (duration > 0) {
             val reachedOutro = skipOutroSec > 0 && pos >= duration - skipOutroSec * 1_000L
@@ -193,9 +254,14 @@ class PlaybackEngine @Inject constructor(
         val id = currentId ?: return@withContext
         if (completing) return@withContext
         val pos = player.currentPosition
+        lastPositionMs = pos
+        savePositionOf(id, pos, markedPlayed)
+    }
+
+    private suspend fun savePositionOf(id: Long, pos: Long, played: Boolean) = withContext(NonCancellable) {
         if (pos <= 0) return@withContext
         lastSavedAt = clock.now()
-        val state = if (markedPlayed) PlayState.PLAYED else PlayState.IN_PROGRESS
+        val state = if (played) PlayState.PLAYED else PlayState.IN_PROGRESS
         episodeDao.updatePosition(id, pos, state, lastSavedAt)
     }
 
@@ -204,24 +270,42 @@ class PlaybackEngine @Inject constructor(
         sessions.stop()?.let { listeningSessionDao.insert(it) }
     }
 
-    /** End of episode (or outro reached): mark played, drop it from Up Next, play what's next. */
+    /**
+     * End of episode (or outro reached, or "Mark played & next"): mark played, drop it from Up Next,
+     * play what's next. Up Next is already in the playlist, so that is a move to the next item; past
+     * the end of Up Next it loads the next episode of the podcast, if autoplay is on.
+     */
     private suspend fun complete() {
         val id = currentId ?: return
         if (completing) return
         completing = true
         val now = clock.now()
-        if (!markedPlayed) episodeDao.setPlayState(id, PlayState.PLAYED, playedAt = now, positionMs = 0)
-        episodeDao.updatePosition(id, 0, PlayState.PLAYED, now)
+        finish(id, markedPlayed)
         markedPlayed = true
-        queue.remove(id)
 
-        val next = if (sleepTimer.consumeEndOfEpisode()) null else nextEpisode(id)
+        val stopHere = sleepTimer.consumeEndOfEpisode()
+        val nextIndex = player.nextMediaItemIndex
+        if (nextIndex != C.INDEX_UNSET) {
+            // The transition starts it at its resume point and applies its podcast's speed.
+            player.seekToDefaultPosition(nextIndex)
+            if (stopHere) player.pause() else player.play()
+            return
+        }
+        val next = if (stopHere) null else nextEpisode(id)
         if (next == null) {
             player.pause()
             player.seekTo(0)
             return
         }
         playNext(next, now)
+    }
+
+    /** Marks [id] played at the end and takes it out of Up Next. */
+    private suspend fun finish(id: Long, alreadyMarked: Boolean) {
+        val now = clock.now()
+        if (!alreadyMarked) episodeDao.setPlayState(id, PlayState.PLAYED, playedAt = now, positionMs = 0)
+        episodeDao.updatePosition(id, 0, PlayState.PLAYED, now)
+        queue.remove(id)
     }
 
     /** Mark the current episode played and move on, as at the end of the episode (car "Mark played & next"). */
@@ -233,15 +317,17 @@ class PlaybackEngine @Inject constructor(
     private suspend fun playNext(next: Long, now: Long) {
         val item = resolver.resolve(next) ?: return
         val episode = episodeDao.getById(next) ?: return
-        val start = PlaybackDecisions.startPosition(
-            episode.positionMs, episode.playState, episode.lastPlayedAt, now, settings.resumeRewind,
-            settings.resumeRewindSec, settings.longPauseMinutes,
-            podcastSettingsDao.get(episode.podcastId)?.skipIntroSec ?: 0, episode.durationSec?.times(1_000L),
-        )
+        val start = startPosition(episode, podcastSettingsDao.get(episode.podcastId)?.skipIntroSec ?: 0, now)
         player.setMediaItem(item, start)
         player.prepare()
         player.play()
     }
+
+    private fun startPosition(episode: EpisodeEntity, skipIntroSec: Int, now: Long): Long =
+        PlaybackDecisions.startPosition(
+            episode.positionMs, episode.playState, episode.lastPlayedAt, now, settings.resumeRewind,
+            settings.resumeRewindSec, settings.longPauseMinutes, skipIntroSec, episode.durationSec?.times(1_000L),
+        )
 
     private suspend fun nextInPodcast(episodeId: Long): Long? {
         if (!settings.autoplayNext) return null

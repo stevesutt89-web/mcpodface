@@ -6,11 +6,21 @@ That means browsing, playing, managing Up Next, and asking by voice.
 Read [`CLAUDE.md`](../CLAUDE.md) first. The current tree is `playback/BrowseTree.kt` and the session
 is `playback/PlaybackService.kt` (PLAN.md §12, task 9.5).
 
-## Status (2026-10-25): built, waiting for a car test
+## Status (2026-10-27): built and merged, waiting for a car test
 
-Waves 0 to 3 are done on branch `android-auto`. 1081 unit tests and `lintDebug` pass. Not yet run
-on a phone, the Desktop Head Unit or the car: work through the "Android Auto" checklist in
-[`TESTING.md`](../TESTING.md).
+Waves 0 to 3 are merged into `main`. A12 (Up Next as the player queue) is done on branch
+`up-next-timeline`; A13 is not started. 1086 unit tests and `lintDebug` pass. Not yet run in the
+Desktop Head Unit or the car: work through the "Android Auto" checklist in [`TESTING.md`](../TESTING.md),
+including the A12 section.
+
+**How A12 works:** the player's playlist is the playing episode followed by Up Next
+(`playback/UpNextTimeline.kt`), rebuilt whenever Up Next or the playing episode changes. Up Next in
+the database stays the source of truth. At the end of an episode the player moves on by itself;
+`PlaybackEngine` then marks the finished one played, takes it out of Up Next, and starts the new one
+at its saved position and speed. A car queue tap saves the position of the episode it leaves. Next
+and previous (Buds, steering wheel, lock screen) still skip by time. "End of episode" on the sleep
+timer uses ExoPlayer's pause at the end of each item; on a Chromecast it pauses just after the next
+episode starts.
 
 What changed against the design below:
 - **The overflow buttons (speed, star, mark played & next, sleep) only show while a car is
@@ -28,8 +38,8 @@ What changed against the design below:
   `domain/policy` if that layering bothers you.
 - **A car download that would need the mobile-data prompt is queued for Wi-Fi**, which is the
   phone prompt's "Wait for Wi-Fi" choice.
-- **Wave 4 (Up Next as the player queue, the "car downloads only" setting) is not started.** It
-  needs the owner's go-ahead.
+- **Wave 4:** A12 (Up Next as the player queue) is done. A13 (the "car downloads only" setting) is
+  not started.
 
 ## What is possible (read before planning anything else)
 
@@ -200,7 +210,7 @@ The A11 checklist steps:
 
 | ID | Owner | Task |
 |---|---|---|
-| A12 | O | Up Next as the player timeline (current episode + queue items), so the car's queue button lists and jumps. This changes `PlaybackEngine`'s one-episode model (`complete()`, `playNext`, `onMediaItemTransition`) and must keep Chromecast working. Biggest risk in this plan |
+| A12 ✅ | O | Up Next as the player timeline (current episode + queue items), so the car's queue button lists and jumps. This changes `PlaybackEngine`'s one-episode model (`complete()`, `playNext`, `onMediaItemTransition`) and must keep Chromecast working. Biggest risk in this plan |
 | A13 | H | Settings → Android Auto: "Downloaded episodes only in the car" (new DataStore key `carDownloadedOnly`, also in backup), read by `BrowseTree` |
 
 ## Order and size

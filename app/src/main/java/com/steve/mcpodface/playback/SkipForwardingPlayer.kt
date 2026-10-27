@@ -8,7 +8,9 @@ import androidx.media3.common.Player
 
 /**
  * Maps next/previous (Galaxy Buds double/triple press, car and Bluetooth buttons, the lock screen)
- * to skip forward/back by the user's intervals, since we play one episode at a time. Also gives
+ * to skip forward/back by the user's intervals: in a podcast those buttons mean "skip a bit", not
+ * "next episode", even though the playlist holds Up Next. Jumping to an Up Next episode (the car's
+ * queue list) uses seekToDefaultPosition(index), which passes through unchanged. Also gives
  * connection errors a message people can act on: the car and system media controls show it as is.
  */
 @OptIn(UnstableApi::class) // Media3 APIs marked unstable (ForwardingPlayer, skip silence, session tweaks)

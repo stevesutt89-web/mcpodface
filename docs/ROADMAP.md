@@ -43,14 +43,17 @@ links) went well, and `versionName` is `1.0.0` (`versionCode` stays 1).
 
 Import OPML and the backup pickers now show a message instead of crashing when the phone has no file picker app.
 
-**Android Auto, full car experience:** built on branch `android-auto` (2026-10-25). Built so far:
+**Android Auto, full car experience:** merged into `main` (2026-10-27). Built:
 - car play/pause fixed;
 - four tabs and row badges;
 - row actions and the buttons on the playing screen;
 - voice requests;
 - the car's resume card, list refresh and artwork.
 
-Next: the car test in TESTING.md, then merge. See [ANDROID-AUTO.md](ANDROID-AUTO.md).
+- Up Next as the player's queue, so the car's queue button lists it and can jump to any episode
+  (A12, branch `up-next-timeline`).
+
+Next: the car test in TESTING.md. See [ANDROID-AUTO.md](ANDROID-AUTO.md).
 
 Feature ideas, roughly in order (from a comparison with Pocket Casts and Player.fm):
 - **Bookmarks:** save a moment in an episode with a note; jump back or share it.

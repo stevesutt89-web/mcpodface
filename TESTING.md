@@ -58,3 +58,15 @@ Run these in the car, or on the Desktop Head Unit where noted. Tick items after 
 - [ ] With the car not connected, the phone notification shows only skip back, play/pause and skip forward.
 - [ ] The phone's lock screen controls play, pause and skip.
 - [ ] Galaxy Buds play/pause and skip controls still work on the phone.
+
+**Up Next as the player queue (A12):**
+- [ ] With two or more episodes in Up Next, play an episode. The car's queue button (on the playing screen) lists the playing episode, then Up Next in order, under the title "Up Next".
+- [ ] Tap an Up Next episode in the car's queue. It starts at its saved position, at its podcast's speed. The episode you left keeps its position (check it on the phone).
+- [ ] Reorder, add or remove Up Next on the phone. The car's queue follows within a second or two.
+- [ ] Let an episode play to the end (seek to the last minute). It is marked played, leaves Up Next, and the next Up Next episode starts by itself at its saved position.
+- [ ] With an outro skip set on a podcast, the next Up Next episode starts when the outro is reached.
+- [ ] Mark played & next still marks the episode played and starts the next Up Next episode.
+- [ ] Sleep timer "End of episode" with Up Next waiting: playback stops at the end of the episode and the next episode is loaded, paused. Pressing play starts it.
+- [ ] Past the end of Up Next, with "Autoplay next episode" on, the podcast's next episode plays as before.
+- [ ] Phone: the mini player, full player and Up Next screen look and behave as before. Skip back/forward and Galaxy Buds double/triple press still skip by time, not to the next episode.
+- [ ] Chromecast: cast an episode with Up Next waiting. At the end the next episode plays on the Chromecast. Stopping casting carries on locally.
