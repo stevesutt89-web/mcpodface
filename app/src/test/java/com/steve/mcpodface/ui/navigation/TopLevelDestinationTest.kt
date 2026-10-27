@@ -5,9 +5,9 @@ import com.steve.mcpodface.data.prefs.AppTab
 import org.junit.Test
 
 class TopLevelDestinationTest {
-    @Test fun tabsAreLatestLibraryPlaylistsUpNextSearch() {
+    @Test fun tabsAreLatestLibraryPlaylistsUpNextDiscover() {
         assertThat(TopLevelDestination.entries.map { it.label })
-            .containsExactly("Latest", "Library", "Playlists", "Up Next", "Search").inOrder()
+            .containsExactly("Latest", "Library", "Playlists", "Up Next", "Discover").inOrder()
     }
 
     @Test fun storedDownloadsTabFallsBackToLatest() {

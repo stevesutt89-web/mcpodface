@@ -83,6 +83,7 @@ import com.steve.mcpodface.ui.components.glass.GlassStyle
 import com.steve.mcpodface.ui.components.glass.glass
 import com.steve.mcpodface.ui.components.glass.glassCard
 import com.steve.mcpodface.ui.components.glass.rememberArtworkAccent
+import com.steve.mcpodface.ui.components.glass.onGlass
 import com.steve.mcpodface.ui.episode.ShowNotes
 import com.steve.mcpodface.ui.episode.buildEpisodeShareText
 import com.steve.mcpodface.ui.episode.shareEpisodeText
@@ -317,7 +318,7 @@ fun FullPlayerContent(
             ) {
                 Text(
                     text = formatSpeed(state.speed),
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.labelLarge.onGlass(accent),
                     fontWeight = FontWeight.SemiBold,
                     color = accent,
                     modifier = Modifier

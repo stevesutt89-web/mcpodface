@@ -67,6 +67,7 @@ import com.steve.mcpodface.data.prefs.LatestFilter
 import com.steve.mcpodface.ui.components.CellularPromptDialog
 import com.steve.mcpodface.ui.components.LargeTitleScaffold
 import com.steve.mcpodface.ui.components.LocalAppSnackbarHostState
+import com.steve.mcpodface.ui.components.SearchButton
 import com.steve.mcpodface.ui.components.SettingsButton
 import com.steve.mcpodface.ui.components.showReplacing
 import com.steve.mcpodface.ui.components.SwipeableEpisodeRow
@@ -87,6 +88,7 @@ private const val PREVIEW_NOW = 1_792_411_200_000L // 2026-10-19T12:00Z
 @Composable
 fun LatestScreen(
     onOpenSettings: () -> Unit,
+    onSearch: () -> Unit,
     onOpenPodcast: (Long) -> Unit,
     onOpenEpisode: (Long) -> Unit,
 ) {
@@ -119,6 +121,7 @@ fun LatestScreen(
     LatestContent(
         state = state,
         onOpenSettings = onOpenSettings,
+        onSearch = onSearch,
         onOpenPodcast = onOpenPodcast,
         onOpenEpisode = onOpenEpisode,
         onFilterSelected = viewModel::setFilter,
@@ -144,6 +147,7 @@ fun LatestScreen(
 private fun LatestContent(
     state: LatestUiState,
     onOpenSettings: () -> Unit,
+    onSearch: () -> Unit = {},
     onOpenPodcast: (Long) -> Unit,
     onOpenEpisode: (Long) -> Unit,
     onFilterSelected: (LatestFilter) -> Unit,
@@ -164,6 +168,7 @@ private fun LatestContent(
             title = "Latest",
             background = Color.Transparent,
             actions = {
+                SearchButton(onSearch)
                 SettingsButton(onOpenSettings)
             },
         ) { padding ->

@@ -120,7 +120,7 @@ fun GlassTabBar(
                     Text(
                         tab.label,
                         color = color,
-                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp).onGlass(color),
                         fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
                         maxLines = 1,
                         // Labels shrink to ellipsis at large font scales; the icon always stays.

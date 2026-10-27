@@ -36,7 +36,7 @@ class BrowseActions @Inject constructor(
         val episode = db.episodeDao().getById(episodeId)
             ?: return SessionResult(SessionError.ERROR_BAD_VALUE)
         when (action) {
-            // Swipe right / Up Next menu: append, or remove when already queued.
+            // Swipe right / Up Next menu: add at the top, or remove when already queued.
             AutoCommands.ROW_UP_NEXT -> queue.toggle(episodeId)
             AutoCommands.ROW_DOWNLOAD -> toggleDownload(episodeId)
             // Starred toggle, as EpisodeViewModel.toggleStarred / LatestViewModel.toggleStar.

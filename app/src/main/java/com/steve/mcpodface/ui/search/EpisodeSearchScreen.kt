@@ -18,8 +18,9 @@ import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.ThemePreviews
 
 /**
- * Episode search scoped to one podcast (PLAN.md §7.1), opened from "Search this podcast". The
- * podcast id comes from the route; the scope chip can widen the search to all subscriptions.
+ * Search of your subscribed podcasts' episodes (PLAN.md §7), opened from the search button on Latest
+ * and Library, or scoped to one podcast from "Search this podcast" (§7.1). The podcast id comes from
+ * the route; the scope chip can widen the search to all subscriptions.
  */
 @Composable
 fun EpisodeSearchScreen(onBack: () -> Unit, onOpenEpisode: (Long) -> Unit) {
@@ -47,8 +48,9 @@ private fun EpisodeSearchContent(
                     query = state.query,
                     onQueryChange = actions.onQueryChange,
                     loading = false,
-                    placeholder = state.scopeName?.let { "Search $it" } ?: "Podcasts, episodes",
+                    placeholder = state.scopeName?.let { "Search $it" } ?: "Search your podcasts",
                     onSubmit = actions.onSubmit,
+                    autoFocus = true,
                 )
                 YourPodcastsContent(
                     state = state,

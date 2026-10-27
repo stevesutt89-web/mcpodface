@@ -12,6 +12,7 @@ import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import dagger.hilt.android.HiltAndroidApp
 import okhttp3.OkHttpClient
 import com.steve.mcpodface.refresh.WorkScheduler
+import com.steve.mcpodface.ui.library.LibraryArtworkWarmer
 import com.steve.mcpodface.widget.WidgetUpdater
 import javax.inject.Inject
 import androidx.annotation.OptIn
@@ -25,6 +26,7 @@ class App : Application(), Configuration.Provider, SingletonImageLoader.Factory 
     @Inject lateinit var okHttpClient: OkHttpClient
     @Inject lateinit var workScheduler: WorkScheduler
     @Inject lateinit var widgetUpdater: WidgetUpdater
+    @Inject lateinit var libraryArtworkWarmer: LibraryArtworkWarmer
 
     @OptIn(UnstableApi::class) // media3-cast's Cast entry point
     override fun onCreate() {
@@ -33,6 +35,7 @@ class App : Application(), Configuration.Provider, SingletonImageLoader.Factory 
         Cast.getSingletonInstance(this).initialize()
         workScheduler.start()
         widgetUpdater.start()
+        libraryArtworkWarmer.start()
     }
 
     override val workManagerConfiguration: Configuration

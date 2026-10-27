@@ -37,11 +37,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -62,6 +67,7 @@ import com.steve.mcpodface.ui.components.LargeTitleScaffold
 import com.steve.mcpodface.ui.components.glass.GlassPage
 import com.steve.mcpodface.ui.components.glass.GlassStyle
 import com.steve.mcpodface.ui.components.glass.glass
+import com.steve.mcpodface.ui.components.glass.onGlass
 import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.Spacing
 import com.steve.mcpodface.ui.theme.ThemePreviews
@@ -70,21 +76,17 @@ import com.steve.mcpodface.ui.components.showReplacing
 import kotlinx.coroutines.launch
 
 /**
- * The Search tab (PLAN.md §8.9): "Your podcasts" (local episode search)
- * or "Discover". One search field serves both: its text goes to the Discover ViewModel and to the
- * episode search ViewModel.
+ * The Discover tab (PLAN.md §8.9): trending shows and catalogue search, for finding new podcasts.
+ * Searching the episodes of your own podcasts is [EpisodeSearchScreen], opened from the search
+ * button on Latest and Library.
  */
 @Composable
 fun SearchScreen(
     onOpenSettings: () -> Unit,
     onOpenPodcast: (Long) -> Unit,
-    onOpenEpisode: (Long) -> Unit = {},
 ) {
     val viewModel: SearchViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val episodeViewModel: EpisodeSearchViewModel = hiltViewModel()
-    val episodeState by episodeViewModel.uiState.collectAsStateWithLifecycle()
-    val episodeActions = rememberEpisodeSearchActions(episodeViewModel, onOpenEpisode)
     val snackbarHostState = LocalAppSnackbarHostState.current
     val currentOnOpenPodcast by rememberUpdatedState(onOpenPodcast)
 
@@ -99,15 +101,9 @@ fun SearchScreen(
 
     SearchContent(
         state = state,
-        episodeState = episodeState,
-        episodeActions = episodeActions,
         onOpenSettings = onOpenSettings,
         onOpenPodcast = onOpenPodcast,
-        onQueryChange = { text ->
-            viewModel.onQueryChange(text)
-            episodeActions.onQueryChange(text)
-        },
-        onModeChange = viewModel::onModeChange,
+        onQueryChange = viewModel::onQueryChange,
         onCategorySelected = viewModel::onCategorySelected,
         onResultClick = viewModel::onResultClick,
         onRetry = viewModel::retry,
@@ -118,28 +114,25 @@ fun SearchScreen(
 @Composable
 private fun SearchContent(
     state: SearchUiState,
-    episodeState: EpisodeSearchUiState,
-    episodeActions: EpisodeSearchActions,
     onOpenSettings: () -> Unit = {},
     onOpenPodcast: (Long) -> Unit,
     onQueryChange: (String) -> Unit,
-    onModeChange: (SearchMode) -> Unit,
     onCategorySelected: (String?) -> Unit,
     onResultClick: (CatalogPodcast) -> Unit,
     onRetry: () -> Unit,
 ) {
-    val discoverLoading = state.mode == SearchMode.DISCOVER && state.discover == DiscoverState.Loading
+    val discoverLoading = state.discover == DiscoverState.Loading
 
     GlassPage {
         LargeTitleScaffold(
-            title = "Search",
+            title = "Discover",
             background = Color.Transparent,
             actions = {
                 AddPodcastMenu(onOpenPodcast)
                 SettingsButton(onOpenSettings)
             },
         ) { padding ->
-            // The search field and mode switch stay pinned under the large title; the results
+            // The search field stays pinned under the large title; the results
             // below scroll under the floating tab bar, which the bottom padding clears.
             val bottomPadding = PaddingValues(bottom = padding.calculateBottomPadding())
             Box(Modifier.fillMaxSize()) {
@@ -148,33 +141,21 @@ private fun SearchContent(
                         query = state.query,
                         onQueryChange = onQueryChange,
                         loading = discoverLoading,
-                        onSubmit = episodeActions.onSubmit,
+                        placeholder = "Find new podcasts",
                     )
-                    // Mode is unknown until the default is resolved; show nothing rather than flip.
-                    state.mode?.let { mode ->
-                        ModeSwitcher(mode = mode, onModeChange = onModeChange)
-                        when (mode) {
-                            SearchMode.YOUR_PODCASTS -> YourPodcastsContent(
-                                state = episodeState,
-                                actions = episodeActions,
-                                modifier = Modifier.weight(1f),
-                                contentPadding = bottomPadding,
-                            )
-                            SearchMode.DISCOVER -> DiscoverContent(
-                                query = state.query,
-                                state = state.discover,
-                                categories = state.categories,
-                                selectedCategory = state.selectedCategory,
-                                subscribedFeedUrls = state.subscribedFeedUrls,
-                                openingFeedUrl = state.openingFeedUrl,
-                                onCategorySelected = onCategorySelected,
-                                onResultClick = onResultClick,
-                                onRetry = onRetry,
-                                modifier = Modifier.weight(1f),
-                                contentPadding = bottomPadding,
-                            )
-                        }
-                    }
+                    DiscoverContent(
+                        query = state.query,
+                        state = state.discover,
+                        categories = state.categories,
+                        selectedCategory = state.selectedCategory,
+                        subscribedFeedUrls = state.subscribedFeedUrls,
+                        openingFeedUrl = state.openingFeedUrl,
+                        onCategorySelected = onCategorySelected,
+                        onResultClick = onResultClick,
+                        onRetry = onRetry,
+                        modifier = Modifier.weight(1f),
+                        contentPadding = bottomPadding,
+                    )
                 }
             }
         }
@@ -189,8 +170,18 @@ internal fun SearchField(
     loading: Boolean,
     placeholder: String = "Podcasts, episodes",
     onSubmit: () -> Unit = {},
+    /** Opens the keyboard the first time the field is shown (not again on coming back to it). */
+    autoFocus: Boolean = false,
 ) {
     val focusManager = LocalFocusManager.current
+    val focusRequester = remember { FocusRequester() }
+    var focusedOnce by rememberSaveable { mutableStateOf(false) }
+    if (autoFocus && !focusedOnce) {
+        LaunchedEffect(Unit) {
+            focusRequester.requestFocus()
+            focusedOnce = true
+        }
+    }
     val colors = AppTheme.colors
     val capsule = remember { Capsule() }
     Column(Modifier.fillMaxWidth().padding(horizontal = Spacing.m)) {
@@ -213,15 +204,15 @@ internal fun SearchField(
                 if (query.isEmpty()) {
                     Text(
                         placeholder,
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = MaterialTheme.typography.bodyLarge.onGlass(colors.textSecondary),
                         color = colors.textSecondary,
                     )
                 }
                 BasicTextField(
                     value = query,
                     onValueChange = onQueryChange,
-                    modifier = Modifier.fillMaxWidth(),
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = colors.textPrimary),
+                    modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = colors.textPrimary).onGlass(colors.textPrimary),
                     cursorBrush = SolidColor(colors.accent),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
@@ -260,93 +251,6 @@ internal fun SearchField(
     }
 }
 
-@Composable
-private fun ModeSwitcher(mode: SearchMode, onModeChange: (SearchMode) -> Unit) {
-    val options = listOf(
-        SearchMode.YOUR_PODCASTS to "Your podcasts",
-        SearchMode.DISCOVER to "Discover",
-    )
-    GlassSegmentedControl(
-        labels = options.map { it.second },
-        selectedIndex = options.indexOfFirst { it.first == mode },
-        onSelect = { onModeChange(options[it].first) },
-        modifier = Modifier.padding(horizontal = Spacing.m, vertical = Spacing.s),
-    )
-}
-
-/**
- * Two equal segments in a Regular glass capsule. A Clear glass lens tinted with the accent slides
- * behind the selected segment (same spring as the tab bar).
- */
-@Composable
-private fun GlassSegmentedControl(
-    labels: List<String>,
-    selectedIndex: Int,
-    onSelect: (Int) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val colors = AppTheme.colors
-    val haptics = LocalHapticFeedback.current
-    val barShape = remember { Capsule() }
-    val lensShape = remember { Capsule() }
-    BoxWithConstraints(
-        modifier
-            .fillMaxWidth()
-            .height(44.dp)
-            .glass(barShape, GlassStyle.Regular)
-            .padding(4.dp),
-    ) {
-        val itemWidth = maxWidth / labels.size.coerceAtLeast(1)
-        val lensX by animateDpAsState(
-            targetValue = itemWidth * selectedIndex.coerceAtLeast(0),
-            animationSpec = spring(dampingRatio = 0.68f, stiffness = 420f),
-            label = "segmentLens",
-        )
-        if (selectedIndex >= 0) {
-            Box(
-                Modifier
-                    .offset(x = lensX)
-                    .width(itemWidth)
-                    .fillMaxHeight()
-                    .glass(lensShape, GlassStyle.Selected),
-            )
-        }
-        Row(Modifier.fillMaxSize()) {
-            labels.forEachIndexed { index, label ->
-                val selected = index == selectedIndex
-                val color by animateColorAsState(
-                    if (selected) colors.textPrimary else colors.textSecondary,
-                    label = "segmentColor",
-                )
-                Box(
-                    Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                        .selectable(
-                            selected = selected,
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null,
-                            role = Role.Tab,
-                        ) {
-                            if (!selected) haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
-                            onSelect(index)
-                        },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        label,
-                        style = MaterialTheme.typography.labelLarge,
-                        color = color,
-                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-            }
-        }
-    }
-}
-
 @ThemePreviews
 @Composable
 private fun SearchContentPreview() {
@@ -358,11 +262,8 @@ private fun SearchContentPreview() {
                     query = "",
                     discover = DiscoverState.Loading,
                 ),
-                episodeState = EpisodeSearchUiState(),
-                episodeActions = EpisodeSearchActions(),
                 onOpenPodcast = {},
                 onQueryChange = {},
-                onModeChange = {},
                 onCategorySelected = {},
                 onResultClick = {},
                 onRetry = {},
@@ -378,12 +279,6 @@ private fun SearchFieldWithQueryPreview() {
         Surface {
             Column(Modifier.fillMaxWidth().padding(vertical = Spacing.m)) {
                 SearchField(query = "radiolab", onQueryChange = {}, loading = true)
-                GlassSegmentedControl(
-                    labels = listOf("Your podcasts", "Discover"),
-                    selectedIndex = 1,
-                    onSelect = {},
-                    modifier = Modifier.padding(horizontal = Spacing.m, vertical = Spacing.s),
-                )
             }
         }
     }

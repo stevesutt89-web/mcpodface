@@ -77,7 +77,7 @@ class EpisodeSearchViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val form = MutableStateFlow(
-        SearchForm(filters = SearchFilters(podcastIds = setOfNotNull(savedStateHandle.get<Long>(ARG_PODCAST_ID)))),
+        SearchForm(filters = SearchFilters(podcastIds = setOfNotNull(savedStateHandle.get<Long>(ARG_PODCAST_ID)?.takeIf { it > 0 }))),
     )
 
     private val filters: Flow<SearchFilters> = form.map { it.filters }.distinctUntilChanged()

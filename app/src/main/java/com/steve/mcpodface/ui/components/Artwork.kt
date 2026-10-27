@@ -15,7 +15,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -29,6 +32,7 @@ import com.steve.mcpodface.ui.theme.ThemePreviews
  * Square podcast or episode artwork with continuous rounded corners (PLAN.md §11). The corner
  * radius scales with the size (18%, at least 8dp) so small thumbnails and large covers both look
  * right. Shows a neutral placeholder while loading, when there is no URL, or on error.
+ * [greyedOut] draws it faded and in greyscale, for played episodes.
  */
 @Composable
 fun Artwork(
@@ -36,10 +40,11 @@ fun Artwork(
     contentDescription: String?,
     modifier: Modifier = Modifier,
     size: Dp = 56.dp,
+    greyedOut: Boolean = false,
 ) {
     val corner = (size * 0.18f).coerceAtLeast(8.dp)
     val shape = remember(corner) { RoundedRectangle(corner) }
-    val frame = modifier.size(size).clip(shape)
+    val frame = modifier.size(size).clip(shape).alpha(if (greyedOut) GREYED_ALPHA else 1f)
     if (url.isNullOrBlank()) {
         ArtworkPlaceholder(frame)
     } else {
@@ -48,11 +53,15 @@ fun Artwork(
             contentDescription = contentDescription,
             modifier = frame,
             contentScale = ContentScale.Crop,
+            colorFilter = if (greyedOut) greyscale else null,
             loading = { ArtworkPlaceholder(Modifier.fillMaxSize()) },
             error = { ArtworkPlaceholder(Modifier.fillMaxSize()) },
         )
     }
 }
+
+private const val GREYED_ALPHA = 0.6f
+private val greyscale = ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) })
 
 @Composable
 private fun ArtworkPlaceholder(modifier: Modifier) {
@@ -82,6 +91,7 @@ private fun ArtworkPreview() {
                 Artwork(url = null, contentDescription = null)
                 Artwork(url = "https://example.invalid/cover.jpg", contentDescription = "Cover")
                 Artwork(url = null, contentDescription = null, size = 96.dp)
+                Artwork(url = null, contentDescription = null, greyedOut = true)
             }
         }
     }

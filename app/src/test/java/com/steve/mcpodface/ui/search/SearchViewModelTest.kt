@@ -8,9 +8,7 @@ import com.steve.mcpodface.data.catalog.CatalogRepository
 import com.steve.mcpodface.data.db.PodcastDao
 import com.steve.mcpodface.data.db.PodcastEntity
 import com.steve.mcpodface.data.feed.SubscriptionRepository
-import com.steve.mcpodface.data.prefs.GlobalSettings
 import com.steve.mcpodface.data.prefs.SearchMode
-import com.steve.mcpodface.data.prefs.SettingsRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -37,7 +35,6 @@ class SearchViewModelTest {
     private val dispatcher = StandardTestDispatcher()
 
     private lateinit var catalog: FakeCatalog
-    private lateinit var settings: FakeSettings
     private lateinit var subscribed: MutableStateFlow<List<PodcastEntity>>
     private lateinit var dao: PodcastDao
     private lateinit var subscriptions: SubscriptionRepository
@@ -45,7 +42,6 @@ class SearchViewModelTest {
     @Before fun setUp() {
         Dispatchers.setMain(dispatcher)
         catalog = FakeCatalog()
-        settings = FakeSettings()
         subscribed = MutableStateFlow(emptyList())
         dao = mockk()
         every { dao.observeSubscribed() } returns subscribed
@@ -58,41 +54,23 @@ class SearchViewModelTest {
     }
 
     private fun TestScope.createViewModel(): SearchViewModel =
-        SearchViewModel(catalog, settings, dao, subscriptions).also { vm ->
+        SearchViewModel(catalog, dao, subscriptions).also { vm ->
             // Keep a collector attached, as the screen does, so the state is observed like in the app.
             backgroundScope.launch { vm.uiState.collect {} }
         }
 
     @Test
-    fun `defaults to Discover when there are no subscriptions, even if Your podcasts is persisted`() = runTest(dispatcher) {
-        settings.set(GlobalSettings(searchMode = SearchMode.YOUR_PODCASTS))
+    fun `is always Discover, even with subscriptions`() = runTest(dispatcher) {
+        subscribed.value = listOf(entity("https://example.com/a.xml"))
+        catalog.searchResult = { listOf(podcast(1)) }
         val vm = createViewModel()
+        advanceUntilIdle()
+
+        vm.onQueryChange("radio")
         advanceUntilIdle()
 
         assertThat(vm.uiState.value.mode).isEqualTo(SearchMode.DISCOVER)
-    }
-
-    @Test
-    fun `defaults to the persisted mode when there are subscriptions`() = runTest(dispatcher) {
-        settings.set(GlobalSettings(searchMode = SearchMode.YOUR_PODCASTS))
-        subscribed.value = listOf(entity("https://example.com/a.xml"))
-        val vm = createViewModel()
-        advanceUntilIdle()
-
-        assertThat(vm.uiState.value.mode).isEqualTo(SearchMode.YOUR_PODCASTS)
-    }
-
-    @Test
-    fun `changing mode is persisted to settings`() = runTest(dispatcher) {
-        subscribed.value = listOf(entity("https://example.com/a.xml"))
-        val vm = createViewModel()
-        advanceUntilIdle()
-
-        vm.onModeChange(SearchMode.DISCOVER)
-        advanceUntilIdle()
-
-        assertThat(vm.uiState.value.mode).isEqualTo(SearchMode.DISCOVER)
-        assertThat(settings.current.searchMode).isEqualTo(SearchMode.DISCOVER)
+        assertThat(catalog.searchCalls).containsExactly("radio")
     }
 
     @Test
@@ -181,20 +159,6 @@ class SearchViewModelTest {
         advanceUntilIdle()
 
         assertThat(vm.uiState.value.discover).isEqualTo(DiscoverState.Empty)
-    }
-
-    @Test
-    fun `search does not run in Your podcasts mode`() = runTest(dispatcher) {
-        subscribed.value = listOf(entity("https://example.com/a.xml"))
-        val vm = createViewModel()
-        advanceUntilIdle()
-
-        vm.onQueryChange("radio")
-        advanceTimeBy(1_000)
-        advanceUntilIdle()
-
-        assertThat(vm.uiState.value.mode).isEqualTo(SearchMode.YOUR_PODCASTS)
-        assertThat(catalog.searchCalls).isEmpty()
     }
 
     @Test
@@ -291,21 +255,5 @@ class SearchViewModelTest {
         override suspend fun categories(): List<CatalogCategory> = categoryList
 
         override suspend fun lookupByFeedUrl(feedUrl: String): CatalogPodcast? = null
-    }
-
-    private class FakeSettings : SettingsRepository {
-        private val state = MutableStateFlow(GlobalSettings())
-        val current: GlobalSettings get() = state.value
-
-        override val settings: Flow<GlobalSettings> get() = state
-
-        override suspend fun update(transform: (GlobalSettings) -> GlobalSettings): GlobalSettings {
-            state.value = transform(state.value)
-            return state.value
-        }
-
-        fun set(value: GlobalSettings) {
-            state.value = value
-        }
     }
 }

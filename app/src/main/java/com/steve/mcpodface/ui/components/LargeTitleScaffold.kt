@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBackIos
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -40,6 +41,7 @@ import com.steve.mcpodface.ui.components.glass.GlassStyle
 import com.steve.mcpodface.ui.components.glass.LocalChromePadding
 import com.steve.mcpodface.ui.components.glass.LocalGlassBackdrop
 import com.steve.mcpodface.ui.components.glass.glass
+import com.steve.mcpodface.ui.components.glass.onGlass
 import com.steve.mcpodface.ui.theme.AppTheme
 import com.steve.mcpodface.ui.theme.ThemePreviews
 
@@ -70,7 +72,7 @@ fun LargeTitleScaffold(
         glassAlpha = { scrollBehavior.state.collapsedFraction },
         topBar = {
             LargeTopAppBar(
-                title = { Text(title, modifier = Modifier.semantics { heading() }) }, // M3 animates headlineMedium (expanded) -> titleLarge (collapsed)
+                title = { Text(title, style = LocalTextStyle.current.onGlass(AppTheme.colors.textPrimary), modifier = Modifier.semantics { heading() }) }, // M3 animates headlineMedium (expanded) -> titleLarge (collapsed)
                 navigationIcon = navigationIcon,
                 actions = actions,
                 scrollBehavior = scrollBehavior,
@@ -107,7 +109,15 @@ fun GlassTopBarScaffold(
         glassAlpha = { scrollBehavior.state.overlappedFraction },
         topBar = {
             TopAppBar(
-                title = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.semantics { heading() }) },
+                title = {
+                    Text(
+                        title,
+                        style = LocalTextStyle.current.onGlass(AppTheme.colors.textPrimary),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.semantics { heading() },
+                    )
+                },
                 navigationIcon = navigationIcon,
                 actions = actions,
                 scrollBehavior = scrollBehavior,

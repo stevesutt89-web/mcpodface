@@ -2,7 +2,6 @@ package com.steve.mcpodface.ui.components
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -40,9 +39,10 @@ import com.steve.mcpodface.ui.theme.Spacing
 import com.steve.mcpodface.ui.theme.ThemePreviews
 
 /**
- * 36dp accent-tinted circle with a play/pause icon. A 2.5dp accent ring with round caps shows
- * [progress] (0..1) over a faint track when progress is non-null and above zero. The button
- * springs down to 90% while pressed and gives a haptic tick on click.
+ * 36dp hollow accent ring with a play/pause icon. The ring is the time left: it starts full and
+ * wipes away clockwise from 12 o'clock like a clock hand as [progress] (0..1, null = not started)
+ * grows, leaving a faint track; at 1 (played) only the track is left. The button springs down to
+ * 90% while pressed and gives a haptic tick on click.
  */
 @Composable
 fun PlayProgressButton(
@@ -53,7 +53,8 @@ fun PlayProgressButton(
 ) {
     val colors = AppTheme.colors
     val haptic = LocalHapticFeedback.current
-    val ring = progress?.coerceIn(0f, 1f)?.takeIf { it > 0f }
+    // Animated so the wipe glides when the saved position moves on, rather than jumping.
+    val played by animateFloatAsState(progress?.coerceIn(0f, 1f) ?: 0f, label = "playWipe")
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val scale by animateFloatAsState(if (pressed) 0.9f else 1f, GlassPressSpring, label = "playPress")
@@ -75,32 +76,36 @@ fun PlayProgressButton(
                     scaleX = scale
                     scaleY = scale
                 }
-                .clip(CircleShape)
-                .background(colors.accent.copy(alpha = 0.14f)),
+                .clip(CircleShape),
             contentAlignment = Alignment.Center,
         ) {
-        if (ring != null) {
-            Canvas(Modifier.fillMaxSize()) {
-                val stroke = 2.5.dp.toPx()
-                val inset = stroke / 2f
-                val arcSize = Size(size.width - stroke, size.height - stroke)
+        Canvas(Modifier.fillMaxSize()) {
+            val stroke = 2.5.dp.toPx()
+            val inset = stroke / 2f
+            val arcSize = Size(size.width - stroke, size.height - stroke)
+            if (played > 0f) {
                 drawArc(
-                    color = colors.textPrimary.copy(alpha = 0.18f),
+                    color = colors.textPrimary.copy(alpha = 0.14f),
                     startAngle = 0f,
                     sweepAngle = 360f,
                     useCenter = false,
                     topLeft = Offset(inset, inset),
                     size = arcSize,
-                    style = Stroke(width = stroke, cap = StrokeCap.Round),
+                    style = Stroke(width = stroke),
                 )
+            }
+            // Time left: from where the hand has reached, clockwise back round to 12 o'clock.
+            val left = 1f - played
+            if (left > 0f) {
                 drawArc(
                     color = colors.accent,
-                    startAngle = -90f,
-                    sweepAngle = 360f * ring,
+                    startAngle = -90f + 360f * played,
+                    sweepAngle = 360f * left,
                     useCenter = false,
                     topLeft = Offset(inset, inset),
                     size = arcSize,
-                    style = Stroke(width = stroke, cap = StrokeCap.Round),
+                    // Butt caps while whole, so the full ring has no seam; round once it is wiping.
+                    style = Stroke(width = stroke, cap = if (played > 0f) StrokeCap.Round else StrokeCap.Butt),
                 )
             }
         }
@@ -128,6 +133,7 @@ private fun PlayProgressButtonPreview() {
                 PlayProgressButton(progress = 0.0f, isPlaying = false, onClick = {})
                 PlayProgressButton(progress = 0.4f, isPlaying = false, onClick = {})
                 PlayProgressButton(progress = 0.8f, isPlaying = true, onClick = {})
+                PlayProgressButton(progress = 1f, isPlaying = false, onClick = {})
             }
         }
     }

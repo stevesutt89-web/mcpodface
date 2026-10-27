@@ -9,7 +9,6 @@ import com.steve.mcpodface.data.catalog.CatalogRepository
 import com.steve.mcpodface.data.db.PodcastDao
 import com.steve.mcpodface.data.feed.SubscriptionRepository
 import com.steve.mcpodface.data.prefs.SearchMode
-import com.steve.mcpodface.data.prefs.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -23,7 +22,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
@@ -45,8 +43,11 @@ sealed interface DiscoverState {
 }
 
 data class SearchUiState(
-    /** null until the default mode has been resolved from settings and subscriptions. */
-    val mode: SearchMode? = null,
+    /**
+     * Always Discover now: searching your own podcasts moved to the search button on Latest and
+     * Library. Kept so the stored `searchMode` setting (part of the backup format) stays readable.
+     */
+    val mode: SearchMode = SearchMode.DISCOVER,
     val query: String = "",
     /** Category chips (PLAN.md §8.9): first 20 from the catalogue, "All" is added by the UI. */
     val categories: List<CatalogCategory> = emptyList(),
@@ -68,7 +69,6 @@ sealed interface SearchEvent {
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val catalog: CatalogRepository,
-    private val settingsRepository: SettingsRepository,
     private val podcastDao: PodcastDao,
     private val subscriptionRepository: SubscriptionRepository,
 ) : ViewModel() {
@@ -101,12 +101,6 @@ class SearchViewModel @Inject constructor(
     }.distinctUntilChanged()
 
     init {
-        viewModelScope.launch {
-            val persisted = settingsRepository.settings.first().searchMode
-            val hasSubscriptions = podcastDao.getSubscribed().isNotEmpty()
-            _state.update { it.copy(mode = if (hasSubscriptions) persisted else SearchMode.DISCOVER) }
-        }
-
         podcastDao.observeSubscribed()
             .onEach { rows -> _state.update { it.copy(subscribedFeedUrls = rows.map { r -> r.feedUrl }.toSet()) } }
             .launchIn(viewModelScope)
@@ -133,13 +127,6 @@ class SearchViewModel @Inject constructor(
 
     fun onQueryChange(query: String) {
         _state.update { it.copy(query = query) }
-    }
-
-    fun onModeChange(mode: SearchMode) {
-        _state.update { it.copy(mode = mode) }
-        viewModelScope.launch {
-            settingsRepository.update { it.copy(searchMode = mode) }
-        }
     }
 
     /** null selects "All". */

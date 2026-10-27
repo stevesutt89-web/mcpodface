@@ -140,7 +140,7 @@ class EpisodeViewModel @Inject constructor(
     fun toggleQueue() {
         val inUpNext = uiState.value.inQueue
         viewModelScope.launch {
-            if (inUpNext) queueRepository.remove(episodeId) else queueRepository.addLast(episodeId)
+            if (inUpNext) queueRepository.remove(episodeId) else queueRepository.addFirst(episodeId)
         }
     }
 

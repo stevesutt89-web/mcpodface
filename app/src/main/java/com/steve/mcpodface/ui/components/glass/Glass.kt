@@ -10,12 +10,18 @@ import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.Shadow as TextShadow
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
@@ -214,4 +220,25 @@ fun GlassPage(
             content()
         }
     }
+}
+
+/**
+ * A very small drop shadow for text on see-through glass (tab bar, mini player, top bars, glass
+ * buttons, chips and fields), so it keeps its contrast over busy content scrolling beneath. Light
+ * text gets a soft dark shadow and dark text a soft light one, so it helps in both themes.
+ */
+@Composable
+fun TextStyle.onGlass(textColor: Color): TextStyle {
+    val density = LocalDensity.current
+    val lightText = textColor.luminance() > 0.5f
+    val shadow = remember(lightText, density) {
+        with(density) {
+            TextShadow(
+                color = if (lightText) Color.Black.copy(alpha = 0.45f) else Color.White.copy(alpha = 0.7f),
+                offset = Offset(0f, 0.5.dp.toPx()),
+                blurRadius = 1.5.dp.toPx(),
+            )
+        }
+    }
+    return copy(shadow = shadow)
 }

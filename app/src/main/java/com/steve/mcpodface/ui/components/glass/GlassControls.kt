@@ -91,7 +91,7 @@ fun GlassButton(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         CompositionLocalProvider(LocalContentColor provides contentColor) {
-            androidx.compose.material3.ProvideTextStyle(MaterialTheme.typography.labelLarge) { content() }
+            androidx.compose.material3.ProvideTextStyle(MaterialTheme.typography.labelLarge.onGlass(contentColor)) { content() }
         }
     }
 }
@@ -186,7 +186,7 @@ fun GlassChip(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (leadingIcon != null) Icon(leadingIcon, null, tint = contentColor, modifier = Modifier.size(16.dp))
-            Text(label, style = MaterialTheme.typography.labelLarge, color = contentColor)
+            Text(label, style = MaterialTheme.typography.labelLarge.onGlass(contentColor), color = contentColor)
         }
     }
 }

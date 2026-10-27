@@ -162,9 +162,11 @@ fun AppShell(
             val openEpisode = { id: Long -> navController.navigate(EpisodeRoute(id)) }
             val back: () -> Unit = { navController.popBackStack() }
 
+            val searchYourPodcasts = { navController.navigate(EpisodeSearchRoute()) }
             composable<LatestRoute> {
                 LatestScreen(
                     onOpenSettings = openSettings,
+                    onSearch = searchYourPodcasts,
                     onOpenPodcast = openPodcast,
                     onOpenEpisode = openEpisode,
                 )
@@ -172,6 +174,7 @@ fun AppShell(
             composable<LibraryRoute> {
                 LibraryScreen(
                     onOpenSettings = openSettings,
+                    onSearch = searchYourPodcasts,
                     onOpenPodcast = openPodcast,
                 )
             }
@@ -209,7 +212,7 @@ fun AppShell(
             composable<DownloadsRoute> { DownloadsScreen(onBack = back) }
             composable<UpNextRoute> { UpNextScreen(onOpenSettings = openSettings) }
             composable<SearchRoute> {
-                SearchScreen(onOpenSettings = openSettings, onOpenPodcast = openPodcast, onOpenEpisode = openEpisode)
+                SearchScreen(onOpenSettings = openSettings, onOpenPodcast = openPodcast)
             }
             composable<SettingsRoute> {
                 SettingsScreen(

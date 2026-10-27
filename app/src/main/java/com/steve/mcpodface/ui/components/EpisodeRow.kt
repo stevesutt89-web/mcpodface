@@ -26,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -54,6 +55,8 @@ import androidx.compose.ui.tooling.preview.Preview
  * One episode in a list (PLAN.md §8.2). Left: artwork with the play/progress button under it.
  * Right: the meta line (podcast · date · duration or time left, then download / star / queue
  * icons), a thin progress bar while in progress, the title, and the summary or search snippet.
+ * Played episodes are greyed out (faded text, grey artwork, an emptied play ring) so they stand
+ * apart at a glance.
  * Mixed lists show the podcast's artwork so the show is easy to spot; a podcast's own page passes
  * [preferPodcastArtwork] = false to show per-episode artwork.
  */
@@ -133,16 +136,17 @@ fun EpisodeRow(
                     url = artworkUrl,
                     contentDescription = null,
                     size = 56.dp,
+                    greyedOut = played,
                 )
                 Spacer(Modifier.height(Spacing.xs))
                 PlayProgressButton(
-                    progress = progress,
+                    progress = if (played) 1f else progress,
                     isPlaying = isPlaying,
                     onClick = onPlayClick,
                 )
             }
             Spacer(Modifier.width(12.dp))
-            Column(Modifier.weight(1f)) {
+            Column(Modifier.weight(1f).alpha(if (played) PLAYED_TEXT_ALPHA else 1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = meta,
@@ -194,6 +198,9 @@ fun EpisodeRow(
         }
     }
 }
+
+/** How faded a played episode's text is. */
+private const val PLAYED_TEXT_ALPHA = 0.55f
 
 /** A 3dp capsule progress bar, shown under the meta line of an in-progress episode. */
 @Composable

@@ -56,18 +56,18 @@ class QueueRepositoryTest {
         assertThat(queue.observeIds().first()).containsExactly(ids["a"], ids["b"]).inOrder()
     }
 
-    @Test fun toggleAppendsWhenMissingAndRemovesWhenQueued() = runBlocking<Unit> {
+    @Test fun togglePutsAtTheTopWhenMissingAndRemovesWhenQueued() = runBlocking<Unit> {
         queue.addLast(ids.getValue("a"))
 
         assertThat(queue.toggle(ids.getValue("c"))).isTrue()
-        assertThat(queue.observeIds().first()).containsExactly(ids["a"], ids["c"]).inOrder()
+        assertThat(queue.observeIds().first()).containsExactly(ids["c"], ids["a"]).inOrder()
 
         assertThat(queue.toggle(ids.getValue("a"))).isFalse()
         assertThat(queue.observeIds().first()).containsExactly(ids["c"])
 
-        // Re-adding puts it at the end, not back where it was.
+        // Re-adding puts it at the top, not back where it was.
         assertThat(queue.toggle(ids.getValue("a"))).isTrue()
-        assertThat(queue.observeIds().first()).containsExactly(ids["c"], ids["a"]).inOrder()
+        assertThat(queue.observeIds().first()).containsExactly(ids["a"], ids["c"]).inOrder()
     }
 
     @Test fun replaceAllWithNothingEmptiesTheQueue() = runBlocking<Unit> {

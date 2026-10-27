@@ -120,7 +120,7 @@ class LatestViewModel @Inject constructor(
 
     fun togglePlay(episodeId: Long) = player.togglePlayPause(episodeId)
 
-    /** Swipe right and the long-press menu: appends to Up Next, or removes it when already queued (PLAN.md §8.8, §8.11). */
+    /** Swipe right and the long-press menu: puts it at the top of Up Next, or removes it when already queued (PLAN.md §8.8, §8.11). */
     fun toggleUpNext(episodeId: Long) {
         viewModelScope.launch {
             val added = queue.toggle(episodeId)

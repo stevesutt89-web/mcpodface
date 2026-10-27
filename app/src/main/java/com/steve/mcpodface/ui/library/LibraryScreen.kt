@@ -67,13 +67,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.SubcomposeAsyncImage
+import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
 import com.kyant.shapes.RoundedRectangle
 import com.steve.mcpodface.data.db.LibraryPodcast
 import com.steve.mcpodface.data.db.PodcastEntity
 import com.steve.mcpodface.data.prefs.LibraryLayout
 import com.steve.mcpodface.data.prefs.LibrarySort
 import com.steve.mcpodface.ui.components.LargeTitleScaffold
+import com.steve.mcpodface.ui.components.SearchButton
 import com.steve.mcpodface.ui.components.SettingsButton
 import com.steve.mcpodface.ui.components.glass.GlassIconButton
 import com.steve.mcpodface.ui.components.glass.GlassPage
@@ -96,6 +98,7 @@ private val fullRow: LazyGridItemSpanScope.() -> GridItemSpan = { GridItemSpan(m
 fun LibraryScreen(
     onOpenSettings: () -> Unit,
     onOpenPodcast: (Long) -> Unit,
+    onSearch: () -> Unit,
 ) {
     val viewModel: LibraryViewModel = hiltViewModel()
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -104,6 +107,7 @@ fun LibraryScreen(
         state = state,
         onOpenSettings = onOpenSettings,
         onOpenPodcast = onOpenPodcast,
+        onSearch = onSearch,
         onSortSelected = viewModel::setSort,
         onLayoutSelected = viewModel::setLayout,
         onRefresh = viewModel::refresh,
@@ -117,6 +121,7 @@ private fun LibraryContent(
     state: LibraryUiState,
     onOpenSettings: () -> Unit,
     onOpenPodcast: (Long) -> Unit,
+    onSearch: () -> Unit,
     onSortSelected: (LibrarySort) -> Unit,
     onLayoutSelected: (LibraryLayout) -> Unit,
     onRefresh: () -> Unit,
@@ -135,6 +140,7 @@ private fun LibraryContent(
             title = "Library",
             background = Color.Transparent,
             actions = {
+                SearchButton(onSearch)
                 Box(Modifier.padding(end = Spacing.xs)) {
                     GlassIconButton(
                         icon = Icons.AutoMirrored.Outlined.Sort,
@@ -327,7 +333,10 @@ private fun PodcastListRow(item: LibraryPodcast, onClick: () -> Unit, onLongClic
 
 /**
  * Podcast artwork clipped to [shape]. The shared [com.steve.mcpodface.ui.components.Artwork] only
- * knows its fixed corner, so tiles that need continuous corners draw their own frame.
+ * knows its fixed corner, so tiles that need continuous corners draw their own frame. Loads at the
+ * fixed Library size ([libraryArtworkRequest]), which [LibraryArtworkWarmer] decodes into memory
+ * at app start, so subscribed covers show at once. The placeholder icon sits behind the image
+ * rather than in a subcomposition, which keeps grid scrolling cheap.
  */
 @Composable
 internal fun ShapedArtwork(
@@ -340,16 +349,14 @@ internal fun ShapedArtwork(
         modifier = modifier.clip(shape).background(AppTheme.colors.surfaceGrouped),
         contentAlignment = Alignment.Center,
     ) {
-        if (url.isNullOrBlank()) {
-            ArtworkPlaceholderIcon()
-        } else {
-            SubcomposeAsyncImage(
-                model = url,
+        ArtworkPlaceholderIcon()
+        if (!url.isNullOrBlank()) {
+            val context = LocalPlatformContext.current
+            AsyncImage(
+                model = remember(url) { libraryArtworkRequest(context, url) },
                 contentDescription = contentDescription,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
-                loading = { ArtworkPlaceholderIcon() },
-                error = { ArtworkPlaceholderIcon() },
             )
         }
     }
@@ -483,7 +490,7 @@ private fun LibraryGridPreview() {
         Surface {
             LibraryContent(
                 state = LibraryUiState(podcasts = previewLibrary(), loaded = true),
-                onOpenSettings = {}, onOpenPodcast = {},
+                onOpenSettings = {}, onOpenPodcast = {}, onSearch = {},
                 onSortSelected = {}, onLayoutSelected = {}, onRefresh = {}, onUnsubscribe = { _, _ -> },
             )
         }
@@ -501,7 +508,7 @@ private fun LibraryListPreview() {
                     layout = LibraryLayout.LIST,
                     loaded = true,
                 ),
-                onOpenSettings = {}, onOpenPodcast = {},
+                onOpenSettings = {}, onOpenPodcast = {}, onSearch = {},
                 onSortSelected = {}, onLayoutSelected = {}, onRefresh = {}, onUnsubscribe = { _, _ -> },
             )
         }
@@ -515,7 +522,7 @@ private fun LibraryEmptyPreview() {
         Surface {
             LibraryContent(
                 state = LibraryUiState(loaded = true),
-                onOpenSettings = {}, onOpenPodcast = {},
+                onOpenSettings = {}, onOpenPodcast = {}, onSearch = {},
                 onSortSelected = {}, onLayoutSelected = {}, onRefresh = {}, onUnsubscribe = { _, _ -> },
             )
         }
